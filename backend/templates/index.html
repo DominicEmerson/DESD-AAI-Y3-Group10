@@ -1,25 +1,93 @@
+<!-- backend/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Django Full Stack</title>
-    <script>
-        function fetchData() {
-            fetch("/api/hello/")
-            .then(response => response.json())
-            .then(data => document.getElementById("output").innerText = data.message)
-            .catch(error => console.error("Error:", error));
-        }
-    </script>
+    <title>Login & Sign Up</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b3b3b3; /* Grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #c2c2c2; /* Slightly darker grey */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 600px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-container {
+            width: 45%;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            background: #d3d3d3;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .login-btn {
+            background: #8bc34a; /* Green */
+            color: black;
+        }
+        .signup-btn {
+            background: #64b5f6; /* Blue */
+            color: black;
+        }
+        .forgot-password {
+            color: blue;
+            font-size: 14px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to Django API</h1>
-    <button onclick="fetchData()">Fetch API Data</button>
-    <p id="output"></p>
+    <div class="container">
+        <!-- Login Form -->
+        <div class="form-container">
+            <h2>Login</h2>
+            <form>
+                <input type="text" placeholder="Username" required>
+                <input type="password" placeholder="Password" required>
+                <button class="login-btn" type="submit">Login</button>
+                <br>
+                <a href="#" class="forgot-password">Forgotten Password?</a>
+            </form>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div class="form-container">
+            <h2>Sign Up</h2>
+            <form>
+                <input type="text" placeholder="Username" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <input type="password" placeholder="Confirm Password" required>
+                <button class="signup-btn" type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

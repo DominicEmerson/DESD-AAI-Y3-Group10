@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.urls import path
-from .views import home, hello_world
+from .views import login_page
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", home, name="home"),
-    path("api/hello/", hello_world),
+    path("", login_page, name="login"), 
 ]

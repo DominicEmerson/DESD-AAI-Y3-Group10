@@ -1,0 +1,9 @@
+venv
+*.pyc
+__pycache__
+.git
+.env
+.code-workspace
+.idea
+.vscode
+.venv

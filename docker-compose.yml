@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   db:
     image: mysql:latest
@@ -10,6 +11,17 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8009
+    volumes:
+      - .:/app
+    ports:
+      - "8009:8009"
+    environment:
+      - DJANGO_SECRET_KEY=your-secret-key
+      - DJANGO_DEBUG=1
 
 volumes:
   mysql_data:

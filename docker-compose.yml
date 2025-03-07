@@ -1,0 +1,28 @@
+
+services:
+  mysql_db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: insurance_ai
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"  # Expose MySQL to host system (optional)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  django_app:
+    build: .  # Build the Django app from the Dockerfile
+    depends_on:
+      mysql_db:
+        condition: service_healthy  # Wait for MySQL to be ready
+    ports:
+      - "8000:8000"  # Ensure Django is accessible
+    environment:
+      - DJANGO_SETTINGS_MODULE=insurance_ai.settings
+    command: ["/app/wait-for-mysql.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]

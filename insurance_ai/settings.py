@@ -78,10 +78,11 @@ DATABASES = {
         'NAME': 'insurance_ai',
         'USER': 'user',
         'PASSWORD': 'password',
-        'HOST': 'insurance_ai-mysql_db-1',
+        'HOST': 'mysql_db',
         'PORT': '3306',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -122,3 +123,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'claims.CustomUser'
+
+LOGIN_REDIRECT_URL = '/redirect/'
+
+LOGIN_URL = '/accounts/login/'

@@ -4,9 +4,10 @@ FROM python:3.10
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y netcat-openbsd
-
+# Install system dependencies (including MySQL client)
+RUN apt-get update && apt-get install -y \
+    netcat-openbsd \
+    default-mysql-client  #
 
 # Install Pipenv globally
 RUN pip install --no-cache-dir pipenv

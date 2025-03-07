@@ -4,6 +4,10 @@ FROM python:3.10
 # Set the working directory inside the container
 WORKDIR /app
 
+# Copy wait-for-mysql.sh early to ensure it exists in the container
+COPY wait-for-mysql.sh /app/wait-for-mysql.sh
+RUN chmod +x /app/wait-for-mysql.sh  # Ensure it is executable
+
 # Install system dependencies (including MySQL client)
 RUN apt-get update && apt-get install -y \
     netcat-openbsd \
@@ -23,9 +27,6 @@ RUN pip install django
 
 # Copy the rest of the project files into the container
 COPY . .
-
-# Make sure the wait-for-mysql script is executable
-RUN chmod +x /app/wait-for-mysql.sh
 
 # Expose the port Django runs on
 EXPOSE 8000

@@ -15,4 +15,3 @@ done
 
 echo "MySQL started!"
 exec "$@"
-e

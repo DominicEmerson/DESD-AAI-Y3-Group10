@@ -2,6 +2,7 @@
 services:
   mysql_db:
     image: mysql:latest
+    container_name: desd-aai-y3-group10-mysql_db-1
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -18,11 +19,19 @@ services:
 
   django_app:
     build: .  # Build the Django app from the Dockerfile
+    container_name: desd-aai-y3-group10-django_app-1
     depends_on:
       mysql_db:
         condition: service_healthy  # Wait for MySQL to be ready
+    volumes:
+      - .:/app  # ✅ Ensures the local code is reflected in the container
     ports:
       - "8000:8000"  # Ensure Django is accessible
     environment:
       - DJANGO_SETTINGS_MODULE=insurance_ai.settings
+      - DATABASE_NAME=insurance_ai
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=mysql_db
+      - DATABASE_PORT=3306
     command: ["/app/wait-for-mysql.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]

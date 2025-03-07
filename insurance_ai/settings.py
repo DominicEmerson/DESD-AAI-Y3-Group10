@@ -122,3 +122,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'claims.CustomUser'
+
+LOGIN_REDIRECT_URL = '/redirect/'
+
+LOGIN_URL = '/accounts/login/'

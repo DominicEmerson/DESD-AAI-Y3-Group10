@@ -23,6 +23,7 @@ docker-compose exec django_app python manage.py migrate
 Then load some initial data
 
 docker-compose exec django_app python manage.py create_test_users
+
 docker-compose exec django_app python manage.py import_claims
 
 For 4 defualt users and claims info filled out

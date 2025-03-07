@@ -10,6 +10,7 @@ If you're on windows in powershell run run git config --global core.autocrlf fal
 
 In VSCode terminal: 
 cd DESD-AAI-Y3-Group10
+
 docker-compose up -d
 
 Once complete and all three showing green in docker

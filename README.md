@@ -4,9 +4,9 @@ Have Docker installed and running
 
 Have MySQl installed.
 
-clone the right branch (currently test branch) ** git clone --branch Dom-Test0703 --single-branch https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
+***If you're on windows in powershell run run git config --global core.autocrlf false**"
 
-If you're on windows in powershell run run git config --global core.autocrlf false
+clone the right branch (currently test branch) ** git clone --branch Dom-Test0703 --single-branch https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
 
 In VSCode terminal: 
 cd DESD-AAI-Y3-Group10

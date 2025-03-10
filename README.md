@@ -4,7 +4,9 @@ Have Docker installed and running
 
 Have MySQl installed.
 
-***If you're on windows in powershell run run git config --global core.autocrlf false**"
+New version runs py 3.12 rather than 3.10
+
+No longer need powershell commands to stop windows changing lf to clrf as .sh no longer required.
 
 clone the right branch (currently test branch) ** git clone --branch Dom-Test0703 --single-branch https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
 

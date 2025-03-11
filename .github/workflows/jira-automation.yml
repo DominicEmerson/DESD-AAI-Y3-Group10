@@ -10,25 +10,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Jira Integration - Create Issue
         uses: atlassian/gajira-create@v3
         with:
-          project: "DESD"
+          project: "DESD"  # Replace with your actual Jira project key
           issuetype: "Task"
           summary: "New commit pushed to main"
           description: "A new commit has been made to the repository and should be tracked in Jira."
         env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER: ${{ secrets.JIRA_USER }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_BASE_URL: "${{ secrets.JIRA_BASE_URL }}"
+          JIRA_USER: "${{ secrets.JIRA_USER }}"
+          JIRA_API_TOKEN: "${{ secrets.JIRA_API_TOKEN }}"
 
-      - name: Jira Integration - Add Comment to Issue
-        uses: atlassian/gajira-comment@v3
-        with:
-          issue: "DESD-123" # Replace with actual issue key dynamically if needed
-          comment: "New commit pushed to main. Check GitHub for details."
-        env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER: ${{ secrets.JIRA_USER }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}

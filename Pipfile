@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 django = "*"
 djangorestframework = "*"
-mysqlclient = "*"
+psycopg2-binary = "*"  # PostgreSQL dependency
 django-environ = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
@@ -14,5 +14,5 @@ djangorestframework-simplejwt = "*"
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.12"
 

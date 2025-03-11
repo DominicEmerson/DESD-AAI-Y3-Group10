@@ -4,9 +4,13 @@ Have Docker installed and running
 
 Have MySQl installed.
 
-***If you're on windows in powershell run run git config --global core.autocrlf false**"
+New version runs py 3.12 rather than 3.10
 
-clone the right branch (currently test branch) ** git clone --branch Dom-Test0703 --single-branch https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
+No longer need powershell commands to stop windows changing lf to clrf as .sh no longer required.
+
+clone the right branch (currently test branch) ** 
+
+git clone --branch PostgreTest https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
 
 In VSCode terminal: 
 cd DESD-AAI-Y3-Group10
@@ -15,11 +19,12 @@ docker-compose up -d
 
 Once complete and all three showing green in docker
 
+docker exec -it desd-aai-y3-group10-django_app-1 python manage.py makemigrations
+
 docker exec -it desd-aai-y3-group10-django_app-1 python manage.py migrate
 
-docker-compose exec django_app python manage.py makemigrations
 
-docker-compose exec django_app python manage.py migrate
+docker exec -it desd-aai-y3-group10-django_app-1 python manage.py showmigrations
 
 Then load some initial data
 

@@ -74,12 +74,12 @@ WSGI_APPLICATION = 'insurance_ai.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'insurance_ai',
         'USER': 'user',
         'PASSWORD': 'password',
-        'HOST': 'mysql_db',
-        'PORT': '3306',
+        'HOST': 'postgres_db',  # PostgreSQL service name in docker-compose.yml
+        'PORT': '5432',
     }
 }
 

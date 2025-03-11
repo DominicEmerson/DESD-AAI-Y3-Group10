@@ -2,7 +2,7 @@ name: Jira Automation
 on:
   push:
     branches:
-      - main
+      - "**"  # Triggers on all branches
 
 jobs:
   update_jira:

@@ -15,7 +15,7 @@ git clone --branch PostgreTest https://github.com/DominicEmerson/DESD-AAI-Y3-Gro
 In VSCode terminal: 
 cd DESD-AAI-Y3-Group10
 
-docker-compose up -d
+docker compose up -d --build
 
 Once complete and all three showing green in docker
 

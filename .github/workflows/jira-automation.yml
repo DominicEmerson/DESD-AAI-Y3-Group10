@@ -18,14 +18,21 @@ jobs:
           echo "JIRA_USER is set"
           echo "JIRA API Token is set"
 
+      - name: Jira Login (Workaround for Missing Config)
+        run: |
+          echo "JIRA_BASE_URL=${{ secrets.JIRA_BASE_URL }}" >> ~/.jira.d/config.yml
+          echo "JIRA_USER=${{ secrets.JIRA_USER }}" >> ~/.jira.d/config.yml
+          echo "JIRA_API_TOKEN=${{ secrets.JIRA_API_TOKEN }}" >> ~/.jira.d/config.yml
+        shell: bash
+
       - name: Jira Integration - Create Issue
         uses: atlassian/gajira-create@v3
+        with:
+          project: "SCRUM"
+          issuetype: "Task"
+          summary: "New commit pushed to main"
+          description: "A new commit has been made to the repository and should be tracked in Jira."
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER: ${{ secrets.JIRA_USER }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-        with:
-          project: "SCRUM"  # Your Jira project key
-          issuetype: "Task"
-          summary: "New commit pushed to main"
-          description: "A new commit has been made to the repository and should be tracked in Jira."

@@ -18,6 +18,12 @@ jobs:
           echo "JIRA_USER is set"
           echo "JIRA API Token is set"
 
+      - name: Ensure Jira Config Directory Exists
+        run: |
+          mkdir -p ~/.jira.d
+          touch ~/.jira.d/config.yml
+        shell: bash
+
       - name: Jira Login (Workaround for Missing Config)
         run: |
           echo "JIRA_BASE_URL=${{ secrets.JIRA_BASE_URL }}" >> ~/.jira.d/config.yml
@@ -36,3 +42,4 @@ jobs:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER: ${{ secrets.JIRA_USER }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+

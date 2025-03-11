@@ -55,3 +55,10 @@ docker-compose down -v --rmi all --remove-orphans
 docker system prune -a --volumes
 
 Any problems contact me --- after tomorrow :D
+
+***Further:
+
+GitHub is now linked. I'm going to see if I can link some old issues. But anytime you address a jira issue in your GitHub commit you should tag the issue like this
+
+git commit -m "Fix bug in authentication SCRUM-456"
+git push origin main

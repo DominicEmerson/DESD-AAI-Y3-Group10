@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
             for row in reader:
                 try:
-                    # Handle Date Parsing with Fallbacks
+                    # Handles Date Parsing with Fallbacks
                     try:
                         accident_date = make_aware(datetime.strptime(row['Accident Date'], "%Y-%m-%d %H:%M:%S.%f"))
                     except ValueError:
@@ -63,15 +63,15 @@ class Command(BaseCommand):
                     # Create Vehicle
                     Vehicle.objects.create(
                         accident=accident,
-                        vehicle_age=int(row.get('Vehicle Age', 0) or 0),
+                        vehicle_age=int(float(row.get('Vehicle Age', 0) or 0)),
                         vehicle_type=row.get('Vehicle Type', 'Unknown'),
-                        number_of_passengers=int(row.get('Number of Passengers', 0) or 0)
+                        number_of_passengers=int(float(row.get('Number of Passengers', 0) or 0))
                     )
 
                     # Create Driver
                     Driver.objects.create(
                         accident=accident,
-                        driver_age=int(row.get('Driver Age', 18) or 18),
+                        driver_age=int(float(row.get('Driver Age', 18) or 18)),
                         gender=row.get('Gender', 'Unknown')
                     )
 

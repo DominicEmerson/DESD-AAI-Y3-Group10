@@ -18,15 +18,19 @@ jobs:
           echo "JIRA_USER is set"
           echo "JIRA API Token is set"
 
-      - name: Authenticate with Jira (Avoid Config File Issue)
+      - name: Authenticate with Jira
         uses: atlassian/gajira-login@v3
-        with:
-          site: ${{ secrets.JIRA_BASE_URL }}
-          email: ${{ secrets.JIRA_USER }}
-          api-token: ${{ secrets.JIRA_API_TOKEN }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER: ${{ secrets.JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 
       - name: Jira Integration - Create Issue
         uses: atlassian/gajira-create@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER: ${{ secrets.JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
         with:
           project: "SCRUM"
           issuetype: "Task"

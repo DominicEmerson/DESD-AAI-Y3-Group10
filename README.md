@@ -8,11 +8,9 @@ New version runs py 3.12 rather than 3.10
 
 No longer need powershell commands to stop windows changing lf to clrf as .sh no longer required.
 
-clone the right branch (currently test branch) ** 
-
-git clone --branch PostgreTest https://github.com/DominicEmerson/DESD-AAI-Y3-Group10.git
 
 In VSCode terminal: 
+
 cd DESD-AAI-Y3-Group10
 
 docker-compose up --build -d

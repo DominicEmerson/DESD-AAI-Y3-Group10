@@ -18,18 +18,12 @@ jobs:
           echo "JIRA_USER is set"
           echo "JIRA API Token is set"
 
-      - name: Ensure Jira Config Directory Exists
-        run: |
-          mkdir -p ~/.jira.d
-          touch ~/.jira.d/config.yml
-        shell: bash
-
-      - name: Jira Login (Workaround for Missing Config)
-        run: |
-          echo "JIRA_BASE_URL=${{ secrets.JIRA_BASE_URL }}" >> ~/.jira.d/config.yml
-          echo "JIRA_USER=${{ secrets.JIRA_USER }}" >> ~/.jira.d/config.yml
-          echo "JIRA_API_TOKEN=${{ secrets.JIRA_API_TOKEN }}" >> ~/.jira.d/config.yml
-        shell: bash
+      - name: Authenticate with Jira (Avoid Config File Issue)
+        uses: atlassian/gajira-login@v3
+        with:
+          site: ${{ secrets.JIRA_BASE_URL }}
+          email: ${{ secrets.JIRA_USER }}
+          api-token: ${{ secrets.JIRA_API_TOKEN }}
 
       - name: Jira Integration - Create Issue
         uses: atlassian/gajira-create@v3
@@ -38,8 +32,4 @@ jobs:
           issuetype: "Task"
           summary: "New commit pushed to main"
           description: "A new commit has been made to the repository and should be tracked in Jira."
-        env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER: ${{ secrets.JIRA_USER }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 

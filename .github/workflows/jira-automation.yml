@@ -36,3 +36,4 @@ jobs:
           issuetype: "Task"
           summary: "New commit pushed to main"
           description: "A new commit has been made to the repository and should be tracked in Jira."
+

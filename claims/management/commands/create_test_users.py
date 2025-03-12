@@ -34,5 +34,5 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.SUCCESS(f"User {user_data['username']} already exists."))
 
-        self.stdout.write(self.style.SUCCESS("✅ Default test users and specific superuser created!"))
+        self.stdout.write(self.style.SUCCESS("Default test users and specific superuser created!"))
 

@@ -11,7 +11,7 @@ No longer need powershell commands to stop windows changing lf to clrf as .sh no
 
 In VSCode terminal: 
 
-cd DESD-AAI-Y3-Group10
+'cd DESD-AAI-Y3-Group10'
 
 docker-compose up --build -d
 

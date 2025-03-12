@@ -121,9 +121,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'  # Fixed STATIC_ROOT using BASE_DIR
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
 AUTH_USER_MODEL = 'claims.CustomUser'
 
-LOGIN_REDIRECT_URL = '/redirect/'
-
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'role_redirect'
+LOGOUT_REDIRECT_URL = 'login'

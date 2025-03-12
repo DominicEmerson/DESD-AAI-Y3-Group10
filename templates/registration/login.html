@@ -71,36 +71,52 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Login Form -->
-        <div class="form-container">
-            <h2>Login</h2>
-            {% if form.errors %}
-                <p class="error">Invalid username or password. Please try again.</p>
-            {% endif %}
-            <form method="post" action="{% url 'login' %}">
-                {% csrf_token %}
-                {{ form.username.label_tag }}
-                <input type="text" name="{{ form.username.name }}" placeholder="Username" required>
-                {{ form.password.label_tag }}
-                <input type="password" name="{{ form.password.name }}" placeholder="Password" required>
-                <button class="login-btn" type="submit">Login</button>
-                <br>
-                <a href="#" class="forgot-password">Forgotten Password?</a>
-            </form>
-        </div>
+        <div class="container">
+            <!-- LOGIN FORM -->
+            <div class="form-container">
+                <h2>Login</h2>
+        
+                {% if form.errors %}
+                    <p class="error">Invalid username or password. Please try again.</p>
+                {% endif %}
+        
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button class="login-btn" type="submit">Login</button>
+                </form>
+            </div>
+        
+            <!-- SIGNUP FORM -->
+            <div class="form-container">
+                <h2>Sign Up</h2>
+        
+                {% if signup_form.errors %}
+                    <div class="error">
+                        {% for field in signup_form %}
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in signup_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+        
+                <form method="post" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="password_confirm" placeholder="Confirm Password" required>
 
-        <!-- Sign Up Form -->
-        <div class="form-container">
-            <h2>Sign Up</h2>
-            <form>
-                <input type="text" placeholder="Username" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <input type="password" placeholder="Confirm Password" required>
-                <button class="signup-btn" type="button">Sign Up</button>
-            </form>
+                    <button class="signup-btn" type="submit">Sign Up</button>
+                </form>
+            </div>
         </div>
-    </div>
+        
+    
 </body>
 </html>

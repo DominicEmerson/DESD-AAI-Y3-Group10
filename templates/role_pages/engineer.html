@@ -1,46 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineer Dashboard</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="role-container">
     <h1>Engineer Dashboard</h1>
-
-    <h2>Accidents</h2>
-    <ul>
-        {% for accident in accidents %}
-            <li>{{ accident.accident_type }} - {{ accident.accident_date }} - {{ accident.weather_conditions }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Claims</h2>
-    <ul>
-        {% for claim in claims %}
-            <li>Claim ID: {{ claim.id }} - Accident ID: {{ claim.accident.id }} - Settlement: ${{ claim.settlement_value }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Vehicles</h2>
-    <ul>
-        {% for vehicle in vehicles %}
-            <li>Vehicle ID: {{ vehicle.id }} - Age: {{ vehicle.vehicle_age }} - Type: {{ vehicle.vehicle_type }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Drivers</h2>
-    <ul>
-        {% for driver in drivers %}
-            <li>Driver ID: {{ driver.id }} - Age: {{ driver.driver_age }} - Gender: {{ driver.gender }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Injuries</h2>
-    <ul>
-        {% for injury in injuries %}
-            <li>Injury ID: {{ injury.id }} - Prognosis: {{ injury.injury_prognosis }} - Dominant Injury: {{ injury.dominant_injury }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+    <p>Welcome, <strong>{{ user.username }}</strong>. Here's your engineer dashboard.</p>
+</div>
+{% endblock %}

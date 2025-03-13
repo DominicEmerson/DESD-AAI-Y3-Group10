@@ -1,2 +1,8 @@
-<h1>End User Dashboard</h1>
-<p>This will be the End User page.</p>
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>User Dashboard</h1>
+<p>Welcome, {{ user.username }}.</p>
+{% endblock %}

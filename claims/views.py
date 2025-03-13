@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
 from .forms import SignupForm
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib import messages
 
 # Role-Based Pages
@@ -66,3 +66,7 @@ def signup(request):
         signup_form = SignupForm()
 
     return render(request, 'registration/login.html', {'signup_form': signup_form})
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')

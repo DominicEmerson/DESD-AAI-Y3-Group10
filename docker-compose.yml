@@ -19,16 +19,16 @@ services:
     container_name: desd-aai-y3-group10-django_app-1
     depends_on:
       postgres_db:
-        condition: service_healthy  # ✅ Wait for PostgreSQL to be ready
+        condition: service_healthy  # Wait for PostgreSQL to be ready
     volumes:
-      - .:/app  # ✅ Ensures the local code is reflected in the container
+      - .:/app  # Ensures the local code is reflected in the container
     ports:
-      - "8000:8000"  # ✅ Ensure Django is accessible
+      - "8000:8000"  # Ensure Django is accessible
     environment:
       - DJANGO_SETTINGS_MODULE=insurance_ai.settings
       - DATABASE_NAME=insurance_ai
       - DATABASE_USER=user
       - DATABASE_PASSWORD=password
-      - DATABASE_HOST=postgres_db  # ✅ Updated to PostgreSQL service name
-      - DATABASE_PORT=5432  # ✅ Updated to PostgreSQL port
+      - DATABASE_HOST=postgres_db  # Updated to PostgreSQL service name
+      - DATABASE_PORT=5432  # pdated to PostgreSQL port
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]

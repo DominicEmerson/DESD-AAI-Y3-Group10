@@ -17,7 +17,6 @@ docker-compose up --build -d
 
 Once complete and all three showing green in docker
 
-docker exec -it desd-aai-y3-group10-django_app-1 python manage.py makemigrations
 
 docker exec -it desd-aai-y3-group10-django_app-1 python manage.py migrate
 
@@ -25,6 +24,7 @@ docker exec -it desd-aai-y3-group10-django_app-1 python manage.py migrate
 docker exec -it desd-aai-y3-group10-django_app-1 python manage.py showmigrations
 
 Then load some initial data
+docker exec -it desd-aai-y3-group10-django_app-1 python manage.py makemigrations
 
 docker-compose exec django_app python manage.py create_test_users
 

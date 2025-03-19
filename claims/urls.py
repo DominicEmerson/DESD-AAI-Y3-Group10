@@ -10,6 +10,7 @@ urlpatterns = [
     path('enduser/', views.enduser_page, name='enduser_page'),
     path('redirect/', views.role_redirect, name='role_redirect'),
     path('admin-page/', views.admin_page, name='admin_page'),
+    path('create-user/', views.create_user, name='create_user'),
 
     # Claims URLs
     # Author: Ahmed Mohamed

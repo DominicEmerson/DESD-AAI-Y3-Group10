@@ -2,10 +2,14 @@
 
 from re import A
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Accident, Claim, Vehicle, Driver, Injury
+from .models import CustomUser
+
+
 
 User = get_user_model()
 
@@ -32,12 +36,58 @@ class SignupForm(forms.ModelForm):
             user.save()
         return user
 
+
+class CreateUserForm(UserCreationForm):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('engineer', 'Engineer'),
+        ('finance', 'Finance'),
+        ('enduser', 'End User'),
+    ]
+
+    role = forms.ChoiceField(choices=ROLE_CHOICES, required=True)
+    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
+    password2 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'role', 'password1', 'password2']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords do not match.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        role = self.cleaned_data.get('role')
+        user.role = role
+        if role == 'admin':
+            user.is_staff = True
+            user.is_superuser = True
+        elif role in ['engineer', 'finance']:
+            user.is_staff = True
+            user.is_superuser = False
+        else:  # 'enduser'
+            user.is_staff = False
+            user.is_superuser = False
+
+        if commit:
+            user.save()
+
+        return user
+
 # Author: Ahmed Mohamed
 class AccidentForm(forms.ModelForm):
     """Form for accident details in a claim."""
     class Meta:
         model = Accident
-        fields = ['accident_date', 'accident_type', 'accident_description', 
+        fields = ['accident_date', 'accident_type', 'accident_description',
                   'police_report_filed', 'witness_present', 'weather_conditions']
         widgets = {
             'accident_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
@@ -171,7 +221,7 @@ class ClaimSubmissionForm(forms.ModelForm):
             injury.accident = accident
             injury.save()
 
-        # Save main claim 
+        # Save main claim
         claim = super().save(commit=False)
         claim.accident = accident
         if commit:

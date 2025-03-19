@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
+from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
+from .forms import SignupForm, CreateUserForm
+from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, DetailView
 from django.urls import reverse_lazy
@@ -10,6 +13,10 @@ from django.http import JsonResponse
 from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
 from .forms import SignupForm, ClaimSubmissionForm
 
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser
 
 # Role-Based Pages
 @never_cache 
@@ -22,6 +29,7 @@ def engineer_page(request):
     drivers = Driver.objects.all()  # Fetch all drivers
     injuries = Injury.objects.all()  # Fetch all injuries
 
+    # Pass the data to the template
     context = {
         'accidents': accidents,
         'claims': claims,
@@ -29,6 +37,7 @@ def engineer_page(request):
         'drivers': drivers,
         'injuries': injuries,
     }
+
     return render(request, 'role_pages/engineer.html', context)
 
 @never_cache 
@@ -39,23 +48,27 @@ def finance_page(request):
 @never_cache
 @login_required
 def enduser_page(request):
-    return redirect('claim_dashboard')
+    return render(request, 'role_pages/enduser.html')
+
 
 @login_required
 def role_redirect(request):
-    """Redirect users to the correct page based on their role."""
+    """ Redirect users to the correct page based on their role. """
     user = request.user
     if user.is_authenticated:
         if isinstance(user, CustomUser):
             if user.role == 'admin':
-                return redirect('admin_page')
+                return redirect('admin_page')  # Redirect admins to the admin page
             elif user.role == 'engineer':
                 return redirect('engineer_page')
             elif user.role == 'finance':
                 return redirect('finance_page')
             else:
                 return redirect('enduser_page')
-    return redirect('login')
+    return redirect('login')  # Redirect to login if not authenticated
+
+
+
 
 def signup(request):
     if request.method == 'POST':
@@ -79,6 +92,25 @@ def user_logout(request):
 
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
+
+
+@login_required
+@user_passes_test(is_admin)
+def create_user(request):
+    if request.method == 'POST':
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'User "{user.username}" created successfully!')
+            form = CreateUserForm()
+        else:
+            messages.error(request, "There was an error creating the user.")
+    else:
+        form = CreateUserForm()
+
+    return render(request, 'admin/create_user.html', {'form': form})
+
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -113,7 +145,7 @@ class ClaimDashboardView(LoginRequiredMixin, ListView):
         context['approved_claims'] = approved_claims
         return context
 
-# Author: Ahmed Mohamed 
+# Author: Ahmed Mohamed
 class ClaimSubmissionView(LoginRequiredMixin, CreateView):
     """View for submitting new claims."""
     form_class = ClaimSubmissionForm
@@ -133,7 +165,7 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
             # Clear any previous claim_id from the session
             if 'claim_id' in self.request.session:
                 del self.request.session['claim_id']
-                
+
             self.object = form.save(commit=False)
             if self.object.accident:
                 self.object.accident.reported_by = self.request.user
@@ -141,12 +173,12 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
             self.object.save()
             messages.success(self.request, 'Claim submitted successfully!')
             self.request_prediction(self.object)
-            
+
             # Store the claim in the session for the success page
             self.request.session['claim_id'] = self.object.id
             # Make sure session is saved
             self.request.session.modified = True
-            
+
             # Redirect to success page instead of dashboard
             return redirect('claim_submission_success')
         except Exception as e:
@@ -161,7 +193,7 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
 class ClaimPredictionView(LoginRequiredMixin, DetailView):
     """View for handling MLaaS prediction requests."""
     model = Claim
-    
+
     def get(self, request, *args, **kwargs):
         claim = self.get_object()
         prediction_data = {
@@ -175,7 +207,7 @@ class ClaimSuccessView(LoginRequiredMixin, DetailView):
     model = Claim
     template_name = 'claims/claim_success.html'
     context_object_name = 'claim'
-    
+
     def get_object(self):
         claim_id = self.request.session.get('claim_id')
         if not claim_id:
@@ -183,10 +215,11 @@ class ClaimSuccessView(LoginRequiredMixin, DetailView):
             # Return None will trigger Http404 (which is what we want)
             return None
         return Claim.objects.select_related('accident').get(id=claim_id)
-    
+
     def dispatch(self, request, *args, **kwargs):
         # Check for claim_id before any processing
         if not request.session.get('claim_id'):
             return redirect('claim_dashboard')
         return super().dispatch(request, *args, **kwargs)
 ## new commit just cos view was being dodgy!!
+    return render(request, 'admin/admin_page.html')

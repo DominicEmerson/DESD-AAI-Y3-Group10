@@ -45,7 +45,7 @@ def enduser_page(request):
 
 @login_required
 def role_redirect(request):
-    """ Redirect users to the correct page based on their role. """
+    """Redirect users to the correct page based on their role."""
     user = request.user
     if user.is_authenticated:
         if isinstance(user, CustomUser):
@@ -58,7 +58,6 @@ def role_redirect(request):
             else:
                 return redirect('enduser_page')
     return redirect('login')  # Redirect to login if not authenticated
-
 
 def signup(request):
     if request.method == 'POST':
@@ -81,7 +80,6 @@ def user_logout(request):
     response['Expires'] = '0'
     return response
 
-
 # Check if user is an admin
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
@@ -90,7 +88,6 @@ def is_admin(user):
 @user_passes_test(is_admin)  # <-- Only admins can access this page
 def admin_page(request):
     return render(request, 'admin_page.html')
-
 
 # Author: Ahmed Mohamed
 class ClaimDashboardView(LoginRequiredMixin, ListView):
@@ -103,10 +100,10 @@ class ClaimDashboardView(LoginRequiredMixin, ListView):
         """Filter claims based on user role."""
         if self.request.user.role == 'enduser':
             # End users only see claims related to accidents they reported
-            return Claim.objects.filter(accident__customuser=self.request.user)
+            return Claim.objects.filter(accident__reported_by=self.request.user).select_related('accident')
         elif self.request.user.role in ['admin', 'finance']:
             # Admin and finance see all claims
-            return Claim.objects.all()
+            return Claim.objects.all().select_related('accident')
         elif self.request.user.role == 'engineer':
             # Engineers see all claims for analysis
             return Claim.objects.all().select_related('accident', 'accident__vehicle', 'accident__driver', 'accident__injury')
@@ -147,11 +144,21 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         """Process the form submission."""
         try:
-            claim = form.save(commit=True)
+            # Save the claim instance without committing so we can modify it
+            self.object = form.save(commit=False)
+            
+            # If there is an accident instance, set the reported_by field to the current user
+            if self.object.accident:
+                self.object.accident.reported_by = self.request.user
+                self.object.accident.save()
+            
+            # Now save the claim instance
+            self.object.save()
+
             messages.success(self.request, 'Claim submitted successfully!')
             
             # Request prediction from MLaaS (will be implemented when service is ready)
-            self.request_prediction(claim)
+            self.request_prediction(self.object)
             
             return super().form_valid(form)
         except Exception as e:
@@ -174,7 +181,7 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
         """Get prediction for a specific claim."""
         claim = self.get_object()
         # Placeholder for MLaaS integration
-        # This will be replaced with actual API call when MLaaS is ready
+        # This will be replaced with an actual API call when MLaaS is ready
         prediction_data = {
             'status': 'pending',
             'message': 'Prediction service not yet available'

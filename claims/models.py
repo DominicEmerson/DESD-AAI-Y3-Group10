@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.template.defaulttags import now
+from django.conf import settings
+from django.utils.timezone import now
 
 
 class CustomUserManager(BaseUserManager):
@@ -39,8 +40,16 @@ class CustomUser(AbstractUser):
 
 # claims models to be moved at a later date
 
+
 class Accident(models.Model):
-    accident_date = models.DateTimeField(default=now)  # Default to current timestamp
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='accidents',
+        null=True, # temporary
+        blank=True # temporary
+    )
+    accident_date = models.DateTimeField(default=now)
     accident_type = models.CharField(max_length=255)
     accident_description = models.TextField(blank=True, null=True)
     police_report_filed = models.BooleanField(default=False)
@@ -49,6 +58,8 @@ class Accident(models.Model):
 
     def __str__(self):
         return f"Accident {self.id} - {self.accident_type} on {self.accident_date}"
+
+
 
 
 class Claim(models.Model):

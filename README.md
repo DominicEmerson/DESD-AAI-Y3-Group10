@@ -1,90 +1,95 @@
-Instructions to run and build in VSCode:
-
-Have Docker installed and running
-
-Have MySQl installed.
-
-New version runs py 3.12 rather than 3.10
-
-No longer need powershell commands to stop windows changing lf to clrf as .sh no longer required.
-
-
-In VSCode terminal: 
-
-'cd DESD-AAI-Y3-Group10'
-
+Instructions to Run and Build in VSCode
+Prerequisites:
+Docker installed and running
+MySQL installed
+Python 3.12 (previously used 3.10)
+No longer need PowerShell commands to stop Windows from changing LF to CRLF, as .sh scripts are no longer required.
+Running the Project
+Start the Project:
+sh
+Copy
+Edit
+cd DESD-AAI-Y3-Group10
 docker-compose up --build -d
-
-Once complete and all three showing green in docker
-
-
-docker exec -it desd-aai-y3-group10-django_app-1 python manage.py migrate
-
-
-docker exec -it desd-aai-y3-group10-django_app-1 python manage.py showmigrations
-
-Then load some initial data
-docker exec -it desd-aai-y3-group10-django_app-1 python manage.py makemigrations
-
-docker-compose exec django_app python manage.py create_test_users
-
-docker-compose exec django_app python manage.py import_claims
-
-For 4 defualt users and claims info filled out
-
-***Additional: 
-
-
-If you try some front end work you will need to restart the django app with: docker restart insurance_ai-django_app-1
-
-If you do any back end table addition or the like you will need to rebuild : docker-compose up --build -d
-
-If you want to stop docker with all containers left as they are between uses: docker-compose stop
-
-To resume from stop: docker-compose start
-
-
-
-If gou fuck up realy bad and want to get rid of all docker containers and any atifacts: 
-
-
+Wait until all three services show as green in Docker.
+Key Updates (19/03/2025 - Dom)
+PostgreSQL now mounts a persistent database, meaning data will be saved unless the containers are completely rebuilt.
+First-time setup: Running docker-compose up --build -d will now automatically:
+Apply migrations
+Create a set of default users
+Fixed broken Jira updater.
+Managing the Project
+Stopping and Restarting:
+Stop the containers (without losing data):
+sh
+Copy
+Edit
+docker-compose down
+Start a new session:
+sh
+Copy
+Edit
+docker-compose up
+Stop Docker but keep all containers intact:
+sh
+Copy
+Edit
+docker-compose stop
+Resume from a stopped state:
+sh
+Copy
+Edit
+docker-compose start
+Restarting Services:
+Restart the Django app (for front-end changes):
+sh
+Copy
+Edit
+docker restart insurance_ai-django_app-1
+Rebuild after backend table changes (WARNING: This wipes the database!):
+sh
+Copy
+Edit
+docker-compose up --build -d
+Cleaning Up Docker (if things go really wrong):
+Remove all containers and images:
+sh
+Copy
+Edit
 docker-compose down -v --rmi all --remove-orphans
-
+Prune Docker system (removes all volumes and cached data):
+sh
+Copy
+Edit
 docker system prune -a --volumes
+GitHub & Jira Integration
+GitHub is now linked. If you reference a Jira issue in a commit, use:
 
-Any problems contact me --- after tomorrow :D
-
-***Further:
-
-GitHub is now linked. I'm going to see if I can link some old issues. But anytime you address a jira issue in your GitHub commit you should tag the issue like this
-
+sh
+Copy
+Edit
 git commit -m "Fix bug in authentication SCRUM-456"
 git push origin main
-
-Tested retroactive updates and status change from git.
-
-### User Persistence & Automated Setup
-
-- **Users now persist across restarts** – Any new users added via Django Admin, API, or shell will be saved in the PostgreSQL database.
-- **User creation is automated** – On a fresh setup, default test users will be created automatically.
-- **Updated `docker-compose.yml`** – The startup process now runs migrations and ensures users exist before launching the app.
-
-#### How to Start the Project:
-```sh
-docker-compose up --build -d
-
-stop without losing data
-docker-compose down
-
-Check if a user exists
-
+Tested: Retroactive updates and status changes from GitHub work.
+User Persistence & Automated Setup
+Users now persist across restarts – Any new users added via Django Admin, API, or shell will be saved in the PostgreSQL database.
+User creation is automated – On a fresh setup, default test users will be created automatically.
+Updated docker-compose.yml – The startup process now:
+Runs migrations
+Ensures users exist before launching the app.
+Checking Users in the Database:
+sh
+Copy
+Edit
 docker exec -it desd-aai-y3-group10-django_app-1 python manage.py shell
+Then run:
 
+python
+Copy
+Edit
 from claims.models import CustomUser
 print(CustomUser.objects.all())  # Should list all users
 exit()
-
-
 
 
 

@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
-from .forms import SignupForm
+from .forms import SignupForm, CreateUserForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import CustomUser
 
 # Role-Based Pages
 @never_cache 
@@ -84,7 +88,26 @@ def user_logout(request):
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
 
+
 @login_required
-@user_passes_test(is_admin)  # <-- Only admins can access this page
+@user_passes_test(is_admin)
+def create_user(request):
+    if request.method == 'POST':
+        form = CreateUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'User "{user.username}" created successfully!')
+            form = CreateUserForm()  
+        else:
+            messages.error(request, "There was an error creating the user.")
+    else:
+        form = CreateUserForm()
+
+    return render(request, 'admin/create_user.html', {'form': form})
+
+
+
+@login_required
+@user_passes_test(is_admin) 
 def admin_page(request):
-    return render(request, 'admin_page.html')
+    return render(request, 'admin/admin_page.html')

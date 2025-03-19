@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Create User{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Create New User</h1>
+    
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    <form method="post" class="user-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create User</button>
+    </form>
+
+    <a href="{% url 'admin_page' %}">Back to Admin Dashboard</a>
+</div>
+
+<style>
+    .admin-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-form input, .user-form select, .user-form button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .user-form button {
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+    }
+
+    .user-form button:hover {
+        background-color: #45a049;
+    }
+
+    .messages {
+        padding: 10px;
+        background-color: #e7f3fe;
+        border-left: 6px solid #2196F3;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}

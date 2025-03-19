@@ -62,3 +62,14 @@ git commit -m "Fix bug in authentication SCRUM-456"
 git push origin main
 
 Tested retroactive updates and status change from git.
+
+### User Persistence & Automated Setup
+
+- **Users now persist across restarts** – Any new users added via Django Admin, API, or shell will be saved in the PostgreSQL database.
+- **User creation is automated** – On a fresh setup, default test users will be created automatically.
+- **Updated `docker-compose.yml`** – The startup process now runs migrations and ensures users exist before launching the app.
+
+#### How to Start the Project:
+```sh
+docker-compose up -d
+

@@ -1,0 +1,267 @@
+<!--Author:Ahmed Mohamed-->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Claims Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Claims Dashboard</h2>
+        {% if user.role == 'enduser' %}
+        <a href="{% url 'claim_submission' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Submit New Claim
+        </a>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if user.role == 'engineer' %}
+    <!-- Engineer Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Claims</h5>
+                    <h2 class="card-text">{{ total_claims }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Claims</h5>
+                    <h2 class="card-text">{{ pending_claims }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if claims %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    {% if user.role in 'admin,finance' %}
+                    <th>Settlement Value</th>
+                    {% endif %}
+                    {% if user.role in 'admin,finance,engineer' %}
+                    <th>Prediction</th>
+                    {% endif %}
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td>{{ claim.id }}</td>
+                    <td>{{ claim.accident.accident_date|date:"d/m/Y H:i" }}</td>
+                    <td>{{ claim.accident.accident_type }}</td>
+                    <td>
+                        {% if claim.settlement_value > 0 %}
+                        <span class="badge bg-success">Settled</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    {% if user.role in 'admin,finance' %}
+                    <td>£{{ claim.settlement_value }}</td>
+                    {% endif %}
+                    {% if user.role in 'admin,finance,engineer' %}
+                    <td>
+                        <!-- Placeholder for ML Prediction -->
+                        <span class="badge bg-info prediction-badge" data-claim-id="{{ claim.id }}">
+                            Awaiting Prediction
+                        </span>
+                    </td>
+                    {% endif %}
+                    <td>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#claimModal{{ claim.id }}">
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Claim Details Modal -->
+                <div class="modal fade" id="claimModal{{ claim.id }}" tabindex="-1" aria-labelledby="claimModalLabel{{ claim.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="claimModalLabel{{ claim.id }}">Claim Details #{{ claim.id }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Accident Details -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Accident Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Date:</strong> {{ claim.accident.accident_date|date:"d/m/Y H:i" }}</p>
+                                        <p><strong>Type:</strong> {{ claim.accident.accident_type }}</p>
+                                        <p><strong>Description:</strong> {{ claim.accident.accident_description }}</p>
+                                        <p><strong>Police Report:</strong> {% if claim.accident.police_report_filed %}Yes{% else %}No{% endif %}</p>
+                                        <p><strong>Weather:</strong> {{ claim.accident.weather_conditions }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Details -->
+                                {% if claim.accident.vehicle_set.first %}
+                                {% with vehicle=claim.accident.vehicle_set.first %}
+                                <div class="card mb-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Vehicle Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Type:</strong> {{ vehicle.vehicle_type }}</p>
+                                        <p><strong>Age:</strong> {{ vehicle.vehicle_age }} years</p>
+                                        <p><strong>Passengers:</strong> {{ vehicle.number_of_passengers }}</p>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endif %}
+
+                                <!-- Driver Details -->
+                                {% if claim.accident.driver_set.first %}
+                                {% with driver=claim.accident.driver_set.first %}
+                                <div class="card mb-3">
+                                    <div class="card-header bg-warning">
+                                        <h5 class="mb-0">Driver Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Age:</strong> {{ driver.driver_age }}</p>
+                                        <p><strong>Gender:</strong> {{ driver.gender }}</p>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endif %}
+
+                                <!-- Injury Details -->
+                                {% if claim.accident.injury_set.first %}
+                                {% with injury=claim.accident.injury_set.first %}
+                                <div class="card mb-3">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">Injury Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Prognosis:</strong> {{ injury.injury_prognosis }}</p>
+                                        <p><strong>Description:</strong> {{ injury.injury_description }}</p>
+                                        <p><strong>Dominant Injury:</strong> {{ injury.dominant_injury }}</p>
+                                        <p><strong>Whiplash:</strong> {% if injury.whiplash %}Yes{% else %}No{% endif %}</p>
+                                        <p><strong>Psychological Injury:</strong> {% if injury.minor_psychological_injury %}Yes{% else %}No{% endif %}</p>
+                                        <p><strong>Exceptional Circumstances:</strong> {% if injury.exceptional_circumstances %}Yes{% else %}No{% endif %}</p>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endif %}
+
+                                <!-- Financial Details -->
+                                {% if user.role in 'admin,finance,engineer' %}
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Financial Details</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>Health Expenses:</strong> £{{ claim.special_health_expenses }}</p>
+                                                <p><strong>Earnings Loss:</strong> £{{ claim.special_earnings_loss }}</p>
+                                                <p><strong>Asset Damage:</strong> £{{ claim.special_asset_damage }}</p>
+                                                <p><strong>Rehabilitation:</strong> £{{ claim.special_rehabilitation }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>Trip Costs:</strong> £{{ claim.special_trip_costs }}</p>
+                                                <p><strong>Therapy:</strong> £{{ claim.special_therapy }}</p>
+                                                <p><strong>General Fixed:</strong> £{{ claim.general_fixed }}</p>
+                                                <p><strong>Settlement Value:</strong> £{{ claim.settlement_value }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if user.role in 'admin,finance,engineer' %}
+                                <!-- Prediction Details -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Prediction Analysis</h5>
+                                    </div>
+                                    <div class="card-body prediction-details" data-claim-id="{{ claim.id }}">
+                                        <div class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading prediction...</span>
+                                            </div>
+                                            <p class="mt-2">Analyzing claim data...</p>
+                                        </div>
+                                        <!-- Prediction content will be loaded here -->
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        {% if user.role == 'enduser' %}
+        No claims found. Click "Submit New Claim" to create your first claim.
+        {% else %}
+        No claims available.
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Placeholder for ML prediction integration
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to fetch prediction from MLaaS
+        async function fetchPrediction(claimId) {
+            try {
+                // This will be replaced with actual MLaaS API call
+                const response = await fetch(`/claim/${claimId}/prediction/`);
+                if (!response.ok) throw new Error('Prediction request failed');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching prediction:', error);
+                return null;
+            }
+        }
+
+        // Update prediction badges and details
+        document.querySelectorAll('.prediction-badge').forEach(badge => {
+            const claimId = badge.dataset.claimId;
+            // This will be activated when MLaaS is ready
+            // fetchPrediction(claimId).then(prediction => {
+            //     if (prediction) {
+            //         updatePredictionUI(claimId, prediction);
+            //     }
+            // });
+        });
+    });
+</script>
+{% endblock %}

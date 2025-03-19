@@ -11,9 +11,14 @@ urlpatterns = [
     path('redirect/', views.role_redirect, name='role_redirect'),
     path('admin-page/', views.admin_page, name='admin_page'),
 
+    # Claims URLs
+    # Author: Ahmed Mohamed
+    path('dashboard/', views.ClaimDashboardView.as_view(), name='claim_dashboard'),
+    path('claim/new/', views.ClaimSubmissionView.as_view(), name='claim_submission'),
+    path('claim/<int:pk>/prediction/', views.ClaimPredictionView.as_view(), name='claim_prediction'),
+
     # Auth URLs
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('signup/', views.signup, name='signup'),
     path('logout/', views.user_logout, name='logout'),
 ]
-

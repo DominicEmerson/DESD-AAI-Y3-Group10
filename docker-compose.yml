@@ -35,8 +35,10 @@ services:
       - DATABASE_PORT=5432  # Updated to PostgreSQL port
     command: >
       sh -c "python manage.py migrate &&
-             python manage.py loaddata default_users.json || python manage.py create_users || true &&
+             python manage.py loaddata default_users.json || python manage.py create_test_users || true &&
              python manage.py runserver 0.0.0.0:8000"
+
+
 
 volumes:
   postgres_data:  # Named volume to persist PostgreSQL data

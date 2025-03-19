@@ -1,5 +1,5 @@
 # Use the official Python image
-FROM python:3.10
+FROM python:3.13
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -7,17 +7,12 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y netcat-openbsd  # Keep netcat if needed
 
-# Install Pipenv globally
-RUN pip install --no-cache-dir pipenv
+# Upgrade pip
+RUN pip install --upgrade pip
 
-# Copy Pipfile and Pipfile.lock first (to leverage Docker cache)
-COPY Pipfile Pipfile.lock ./
-
-# Ensure system dependencies are installed properly
-RUN pip install --upgrade pip && pipenv install --deploy --system
-
-# Explicitly install Django
-RUN pip install django
+# Copy requirements.txt and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the project files into the container
 COPY . .
@@ -27,3 +22,4 @@ EXPOSE 8000
 
 # Start Django directly
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+

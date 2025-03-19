@@ -10,9 +10,9 @@ psycopg2-binary = "*"  # PostgreSQL dependency
 django-environ = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
+dj-database-url = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.12"
-

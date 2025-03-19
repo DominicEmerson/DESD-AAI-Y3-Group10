@@ -6,10 +6,11 @@ name = "pypi"
 [packages]
 django = "*"
 djangorestframework = "*"
-psycopg2-binary = "*"
+psycopg2-binary = "*"  # PostgreSQL dependency
 django-environ = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
+dj-database-url = "*"
 
 [dev-packages]
 

@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persistent storage for DB
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "user"]
       interval: 10s
@@ -30,5 +32,11 @@ services:
       - DATABASE_USER=user
       - DATABASE_PASSWORD=password
       - DATABASE_HOST=postgres_db  # Updated to PostgreSQL service name
-      - DATABASE_PORT=5432  # pdated to PostgreSQL port
-    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+      - DATABASE_PORT=5432  # Updated to PostgreSQL port
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py loaddata default_users.json || python manage.py create_users || true &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  postgres_data:  # Named volume to persist PostgreSQL data

@@ -71,7 +71,7 @@ Tested retroactive updates and status change from git.
 
 #### How to Start the Project:
 ```sh
-docker-compose up -d
+docker-compose up --build -d
 
 stop without losing data
 docker-compose down

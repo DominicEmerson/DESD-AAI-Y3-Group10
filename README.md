@@ -81,8 +81,3 @@ docker exec -it desd-aai-y3-group10-django_app-1 python manage.py shell
 from claims.models import CustomUser
 print(CustomUser.objects.all())  # Should list all users
 exit()
-
-
-
-
-

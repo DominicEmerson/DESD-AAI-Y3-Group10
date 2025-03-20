@@ -1,4 +1,3 @@
-# views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,6 +10,7 @@ from django.http import JsonResponse
 from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
 from .forms import SignupForm, ClaimSubmissionForm
 
+
 # Role-Based Pages
 @never_cache 
 @login_required
@@ -22,7 +22,6 @@ def engineer_page(request):
     drivers = Driver.objects.all()  # Fetch all drivers
     injuries = Injury.objects.all()  # Fetch all injuries
 
-    # Pass the data to the template
     context = {
         'accidents': accidents,
         'claims': claims,
@@ -30,7 +29,6 @@ def engineer_page(request):
         'drivers': drivers,
         'injuries': injuries,
     }
-
     return render(request, 'role_pages/engineer.html', context)
 
 @never_cache 
@@ -50,14 +48,14 @@ def role_redirect(request):
     if user.is_authenticated:
         if isinstance(user, CustomUser):
             if user.role == 'admin':
-                return redirect('admin_page')  # Redirect admins to the admin page
+                return redirect('admin_page')
             elif user.role == 'engineer':
                 return redirect('engineer_page')
             elif user.role == 'finance':
                 return redirect('finance_page')
             else:
                 return redirect('enduser_page')
-    return redirect('login')  # Redirect to login if not authenticated
+    return redirect('login')
 
 def signup(request):
     if request.method == 'POST':
@@ -69,7 +67,6 @@ def signup(request):
             return redirect('role_redirect')
     else:
         signup_form = SignupForm()
-
     return render(request, 'registration/login.html', {'signup_form': signup_form})
 
 def user_logout(request):
@@ -80,12 +77,11 @@ def user_logout(request):
     response['Expires'] = '0'
     return response
 
-# Check if user is an admin
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
 
 @login_required
-@user_passes_test(is_admin)  # <-- Only admins can access this page
+@user_passes_test(is_admin)
 def admin_page(request):
     return render(request, 'admin_page.html')
 
@@ -97,26 +93,24 @@ class ClaimDashboardView(LoginRequiredMixin, ListView):
     context_object_name = 'claims'
 
     def get_queryset(self):
-        """Filter claims based on user role."""
         if self.request.user.role == 'enduser':
-            # End users only see claims related to accidents they reported
             return Claim.objects.filter(accident__reported_by=self.request.user).select_related('accident')
         elif self.request.user.role in ['admin', 'finance']:
-            # Admin and finance see all claims
             return Claim.objects.all().select_related('accident')
         elif self.request.user.role == 'engineer':
-            # Engineers see all claims for analysis
             return Claim.objects.all().select_related('accident', 'accident__vehicle', 'accident__driver', 'accident__injury')
         return Claim.objects.none()
 
     def get_context_data(self, **kwargs):
-        """Add additional context for the dashboard."""
         context = super().get_context_data(**kwargs)
         context['user_role'] = self.request.user.role
-        if self.request.user.role == 'engineer':
-            # Add extra context for engineers
-            context['total_claims'] = self.get_queryset().count()
-            context['pending_claims'] = self.get_queryset().filter(settlement_value=0).count()
+        qs = self.get_queryset()
+        total_claims = qs.count()
+        pending_claims = qs.filter(settlement_value=0).count()
+        approved_claims = total_claims - pending_claims
+        context['total_claims'] = total_claims
+        context['pending_claims'] = pending_claims
+        context['approved_claims'] = approved_claims
         return context
 
 # Author: Ahmed Mohamed 
@@ -124,52 +118,43 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
     """View for submitting new claims."""
     form_class = ClaimSubmissionForm
     template_name = 'claims/claim_form.html'
-    success_url = reverse_lazy('claim_dashboard')
 
     def get_context_data(self, **kwargs):
-        """Add nested forms to the context."""
         context = super().get_context_data(**kwargs)
-        if self.request.POST:
-            context['accident_form'] = self.object.accident_form
-            context['vehicle_form'] = self.object.vehicle_form
-            context['driver_form'] = self.object.driver_form
-            context['injury_form'] = self.object.injury_form
-        else:
-            context['accident_form'] = self.form_class().accident_form
-            context['vehicle_form'] = self.form_class().vehicle_form
-            context['driver_form'] = self.form_class().driver_form
-            context['injury_form'] = self.form_class().injury_form
+        form = kwargs.get('form') or self.get_form()
+        context['accident_form'] = form.accident_form
+        context['vehicle_form'] = form.vehicle_form
+        context['driver_form'] = form.driver_form
+        context['injury_form'] = form.injury_form
         return context
 
     def form_valid(self, form):
-        """Process the form submission."""
         try:
-            # Save the claim instance without committing so we can modify it
+            # Clear any previous claim_id from the session
+            if 'claim_id' in self.request.session:
+                del self.request.session['claim_id']
+                
             self.object = form.save(commit=False)
-            
-            # If there is an accident instance, set the reported_by field to the current user
             if self.object.accident:
                 self.object.accident.reported_by = self.request.user
                 self.object.accident.save()
-            
-            # Now save the claim instance
             self.object.save()
-
             messages.success(self.request, 'Claim submitted successfully!')
-            
-            # Request prediction from MLaaS (will be implemented when service is ready)
             self.request_prediction(self.object)
             
-            return super().form_valid(form)
+            # Store the claim in the session for the success page
+            self.request.session['claim_id'] = self.object.id
+            # Make sure session is saved
+            self.request.session.modified = True
+            
+            # Redirect to success page instead of dashboard
+            return redirect('claim_submission_success')
         except Exception as e:
             messages.error(self.request, f'Error submitting claim: {str(e)}')
             return self.form_invalid(form)
 
     def request_prediction(self, claim):
-        """
-        Placeholder method for requesting prediction from MLaaS.
-        Will be implemented when MLaaS service is ready.
-        """
+        # Placeholder for future MLaaS integration.
         pass
 
 # Author: Ahmed Mohamed
@@ -178,12 +163,29 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
     model = Claim
     
     def get(self, request, *args, **kwargs):
-        """Get prediction for a specific claim."""
         claim = self.get_object()
-        # Placeholder for MLaaS integration
-        # This will be replaced with an actual API call when MLaaS is ready
         prediction_data = {
             'status': 'pending',
             'message': 'Prediction service not yet available'
         }
         return JsonResponse(prediction_data)
+
+class ClaimSuccessView(LoginRequiredMixin, DetailView):
+    """Display claim submission success page."""
+    model = Claim
+    template_name = 'claims/claim_success.html'
+    context_object_name = 'claim'
+    
+    def get_object(self):
+        claim_id = self.request.session.get('claim_id')
+        if not claim_id:
+            # Don't redirect here - get_object must return an object or None
+            # Return None will trigger Http404 (which is what we want)
+            return None
+        return Claim.objects.select_related('accident').get(id=claim_id)
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Check for claim_id before any processing
+        if not request.session.get('claim_id'):
+            return redirect('claim_dashboard')
+        return super().dispatch(request, *args, **kwargs)

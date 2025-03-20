@@ -15,6 +15,7 @@ urlpatterns = [
     # Author: Ahmed Mohamed
     path('dashboard/', views.ClaimDashboardView.as_view(), name='claim_dashboard'),
     path('claim/new/', views.ClaimSubmissionView.as_view(), name='claim_submission'),
+    path('claim/success/', views.ClaimSuccessView.as_view(), name='claim_submission_success'),
     path('claim/<int:pk>/prediction/', views.ClaimPredictionView.as_view(), name='claim_prediction'),
 
     # Auth URLs

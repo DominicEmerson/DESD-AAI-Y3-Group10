@@ -1,8 +1,10 @@
 # claims/forms.py
+
 from re import A
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from .models import Accident, Claim, Vehicle, Driver, Injury
 
 User = get_user_model()
@@ -36,7 +38,7 @@ class AccidentForm(forms.ModelForm):
     class Meta:
         model = Accident
         fields = ['accident_date', 'accident_type', 'accident_description', 
-                 'police_report_filed', 'witness_present', 'weather_conditions']
+                  'police_report_filed', 'witness_present', 'weather_conditions']
         widgets = {
             'accident_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'accident_type': forms.TextInput(attrs={'class': 'form-control'}),
@@ -46,7 +48,7 @@ class AccidentForm(forms.ModelForm):
 
     def clean_accident_date(self):
         date = self.cleaned_data.get('accident_date')
-        if date and date > forms.DateTimeField().clean(forms.DateTimeField().to_python(None)):
+        if date and date > timezone.now():
             raise ValidationError("Accident date cannot be in the future.")
         return date
 
@@ -99,7 +101,7 @@ class InjuryForm(forms.ModelForm):
     class Meta:
         model = Injury
         fields = ['injury_prognosis', 'injury_description', 'dominant_injury',
-                 'whiplash', 'minor_psychological_injury', 'exceptional_circumstances']
+                  'whiplash', 'minor_psychological_injury', 'exceptional_circumstances']
         widgets = {
             'injury_prognosis': forms.TextInput(attrs={'class': 'form-control'}),
             'injury_description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
@@ -128,12 +130,14 @@ class ClaimSubmissionForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Remove any outer prefix from kwargs to avoid conflicts with nested forms
+        kwargs.pop('prefix', None)
         super().__init__(*args, **kwargs)
-        # Initialize nested forms
-        self.accident_form = AccidentForm(prefix='accident', *args, **kwargs)
-        self.vehicle_form = VehicleForm(prefix='vehicle', *args, **kwargs)
-        self.driver_form = DriverForm(prefix='driver', *args, **kwargs)
-        self.injury_form = InjuryForm(prefix='injury', *args, **kwargs)
+        # Initialize nested forms with explicit prefixes
+        self.accident_form = AccidentForm(*args, prefix='accident', **kwargs)
+        self.vehicle_form = VehicleForm(*args, prefix='vehicle', **kwargs)
+        self.driver_form = DriverForm(*args, prefix='driver', **kwargs)
+        self.injury_form = InjuryForm(*args, prefix='injury', **kwargs)
 
     def is_valid(self):
         """Validate all forms."""

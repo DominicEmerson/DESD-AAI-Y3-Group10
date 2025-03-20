@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Insurance App{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'custom/css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 
@@ -38,5 +39,7 @@
     {% block content %}{% endblock %}
 </main>
 
+<!-- JavaScript code -->
+{% block extra_js %}{% endblock %}
 </body>
 </html>

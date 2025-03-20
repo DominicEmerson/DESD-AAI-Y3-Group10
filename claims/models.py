@@ -1,3 +1,5 @@
+# claims/models.py
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
@@ -40,14 +42,13 @@ class CustomUser(AbstractUser):
 
 # claims models to be moved at a later date
 
-
 class Accident(models.Model):
     reported_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='accidents',
-        null=True, # temporary
-        blank=True # temporary
+        null=True, 
+        blank=True 
     )
     accident_date = models.DateTimeField(default=now)
     accident_type = models.CharField(max_length=255)
@@ -58,8 +59,6 @@ class Accident(models.Model):
 
     def __str__(self):
         return f"Accident {self.id} - {self.accident_type} on {self.accident_date}"
-
-
 
 
 class Claim(models.Model):

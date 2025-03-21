@@ -32,10 +32,23 @@ def engineer_page(request):
 
     return render(request, 'role_pages/engineer.html', context)
 
+# Finance page
 @never_cache 
 @login_required
 def finance_page(request):
-    return render(request, 'role_pages/finance.html')
+    return render(request, 'finance/finance.html')
+
+# Generating and then exporting finance reports
+@login_required
+def generate_report(request):
+    # Render the report generation template
+    return render(request, 'finance/generate_report.html')
+
+# Generating finance invoices
+@login_required
+def generate_invoice(request):
+    # Render the invoice generation template
+    return render(request, 'finance/generate_invoice.html')
 
 @never_cache
 @login_required

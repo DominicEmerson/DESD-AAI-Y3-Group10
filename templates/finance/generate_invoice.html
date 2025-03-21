@@ -5,7 +5,9 @@
 {% block content %}
 <div class="container">
     <h1>Generate Invoice</h1>
-    <p>This is where the invoice generation functionality will be implemented.</p>
-    <button onclick="alert('Invoice exported!')">Export Invoice</button>
+    <p>Your invoice has been generated. You can view it below:</p>
+    <pre>{{ csv_content }}</pre>  <!-- Display CSV content -->
+    <br>
+    <a href="{{ csv_file_path }}" download>Download Invoice</a>
 </div>
 {% endblock %}

@@ -5,7 +5,9 @@
 {% block content %}
 <div class="container">
     <h1>Generate Report</h1>
-    <p>This is where the report generation and export functionality will be implemented.</p>
-    <button onclick="alert('Report exported!')">Export Report</button>
+    <p>Your report has been generated. You can view it below:</p>
+    <iframe src="{{ pdf_file_path }}" width="100%" height="600px"></iframe>
+    <br>
+    <a href="{{ pdf_file_path }}" download>Download Report</a>
 </div>
 {% endblock %}

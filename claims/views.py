@@ -5,10 +5,14 @@ from .forms import SignupForm, CreateUserForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
-
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
+import csv
+import io
 
 # Role-Based Pages
 @never_cache 
@@ -38,17 +42,34 @@ def engineer_page(request):
 def finance_page(request):
     return render(request, 'finance/finance.html')
 
-# Generating and then exporting finance reports
 @login_required
 def generate_report(request):
-    # Render the report generation template
-    return render(request, 'finance/generate_report.html')
+    # Create a PDF in memory
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    p.drawString(100, 750, "This is a placeholder for the report.")
+    p.showPage()
+    p.save()
+    buffer.seek(0)
 
-# Generating finance invoices
+    # Return the PDF response
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="report.pdf"'  # Uses 'inline' to display in the browser
+    return response
+
 @login_required
 def generate_invoice(request):
-    # Render the invoice generation template
-    return render(request, 'finance/generate_invoice.html')
+    # Create a CSV in memory
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(['Item', 'Description', 'Price'])
+    writer.writerow(['Insurance', 'Testing Invoice', '1000.00'])
+    buffer.seek(0)
+
+    # Return the CSV response
+    response = HttpResponse(buffer.getvalue(), content_type='text/csv')
+    response['Content-Disposition'] = 'inline; filename="invoice.csv"'  # Uses 'inline' to display in the browser
+    return response
 
 @never_cache
 @login_required

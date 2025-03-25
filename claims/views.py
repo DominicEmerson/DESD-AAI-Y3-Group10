@@ -189,3 +189,4 @@ class ClaimSuccessView(LoginRequiredMixin, DetailView):
         if not request.session.get('claim_id'):
             return redirect('claim_dashboard')
         return super().dispatch(request, *args, **kwargs)
+## new commit just cos view was being dodgy

@@ -11,6 +11,7 @@ urlpatterns = [
     path('redirect/', views.role_redirect, name='role_redirect'),
     path('admin-page/', views.admin_page, name='admin_page'),
     path('create-user/', views.create_user, name='create_user'),
+    path('user-management/', views.user_management, name='user_management'),
 
     # Claims URLs
     # Author: Ahmed Mohamed

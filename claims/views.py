@@ -8,6 +8,8 @@ from django.views.generic import ListView, CreateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from claims.models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
@@ -17,6 +19,9 @@ from .forms import SignupForm, ClaimSubmissionForm
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
+
+User = get_user_model()
+
 
 # Role-Based Pages
 @never_cache 
@@ -80,6 +85,7 @@ def signup(request):
             return redirect('role_redirect')
     else:
         signup_form = SignupForm()
+
     return render(request, 'registration/login.html', {'signup_form': signup_form})
 
 def user_logout(request):
@@ -90,6 +96,8 @@ def user_logout(request):
     response['Expires'] = '0'
     return response
 
+
+# Check if user is an admin
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
 
@@ -102,7 +110,7 @@ def create_user(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, f'User "{user.username}" created successfully!')
-            form = CreateUserForm()
+            form = CreateUserForm()  
         else:
             messages.error(request, "There was an error creating the user.")
     else:
@@ -110,6 +118,54 @@ def create_user(request):
 
     return render(request, 'admin/create_user.html', {'form': form})
 
+
+@login_required
+@user_passes_test(is_admin)
+def user_management(request):
+    query = request.GET.get('query', '')
+    users = User.objects.all()
+
+    if query:
+        users = users.filter(email__icontains=query)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        user = get_object_or_404(User, id=user_id)
+
+        # Update user role
+        if action == 'update_role':
+            new_role = request.POST.get('role')
+            user.role = new_role
+            if new_role == 'admin':
+                user.is_staff = True
+                user.is_superuser = True
+            elif new_role in ['engineer', 'finance']:
+                user.is_staff = True
+                user.is_superuser = False
+            else:
+                user.is_staff = False
+                user.is_superuser = False
+
+            user.save()
+            messages.success(request, f'Role for "{user.username}" updated to "{new_role}".')
+
+        # Reset password
+        elif action == 'reset_password':
+            new_password = request.POST.get('new_password')
+            if new_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, f'Password for "{user.username}" has been reset.')
+
+        # Delete user
+        elif action == 'delete_user':
+            user.delete()
+            messages.success(request, f'User "{user.username}" deleted successfully.')
+
+        return redirect('user_management')
+
+    return render(request, 'admin/user_management.html', {'users': users, 'query': query})
 
 
 @login_required

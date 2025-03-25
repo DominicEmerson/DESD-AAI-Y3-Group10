@@ -35,7 +35,7 @@ class SignupForm(forms.ModelForm):
         if commit:
             user.save()
         return user
-
+    
 
 class CreateUserForm(UserCreationForm):
     ROLE_CHOICES = [
@@ -60,7 +60,7 @@ class CreateUserForm(UserCreationForm):
 
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Passwords do not match.")
-
+        
         return cleaned_data
 
     def save(self, commit=True):
@@ -228,3 +228,7 @@ class ClaimSubmissionForm(forms.ModelForm):
             claim.save()
 
         return claim
+
+
+class ForgotPasswordForm(forms.Form):
+    email = forms.EmailField(label='Enter your email', max_length=255)

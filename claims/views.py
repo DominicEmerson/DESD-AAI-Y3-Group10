@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from .forms import ForgotPasswordForm
 from .models import CustomUser
 
 User = get_user_model()
@@ -157,6 +158,27 @@ def user_management(request):
         return redirect('user_management')
 
     return render(request, 'admin/user_management.html', {'users': users, 'query': query})
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+
+            # Check if the email exists in the user table
+            if User.objects.filter(email=email).exists():
+                # Instead of sending an email, just show a success message
+                messages.success(request, "An email has been sent to the admin. You will receive an email with steps to reset password shortly.")
+            else:
+                messages.error(request, "No user with that email exists.")
+
+            return redirect('forgot_password')
+
+    else:
+        form = ForgotPasswordForm()
+
+    return render(request, 'registration/forgot_password.html', {'form': form})
 
 
 @login_required

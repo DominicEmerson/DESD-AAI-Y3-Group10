@@ -54,21 +54,27 @@ def generate_report(request):
 
     # Return the PDF response
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="report.pdf"'  # Uses 'inline' to display in the browser
+    response['Content-Disposition'] = 'inline; filename="report.pdf"'
     return response
 
 @login_required
 def generate_invoice(request):
-    # Create a CSV in memory
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow(['Item', 'Description', 'Price'])
-    writer.writerow(['Insurance', 'Testing Invoice', '1000.00'])
+    # Create a PDF in memory
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    # Add content to the PDF
+    p.drawString(100, 750, "Invoice")
+    p.drawString(100, 730, "Item: Insurance")
+    p.drawString(100, 710, "Description: Testing Invoice")
+    p.drawString(100, 690, "Price: £1000.00")
+    # Finalise the PDF
+    p.showPage()
+    p.save()
     buffer.seek(0)
 
-    # Return the CSV response
-    response = HttpResponse(buffer.getvalue(), content_type='text/csv')
-    response['Content-Disposition'] = 'inline; filename="invoice.csv"'  # Uses 'inline' to display in the browser
+    # Return the PDF response
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="invoice.pdf"'
     return response
 
 @never_cache

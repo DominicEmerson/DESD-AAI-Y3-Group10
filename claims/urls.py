@@ -13,10 +13,14 @@ urlpatterns = [
     path('redirect/', views.role_redirect, name='role_redirect'),
     path('admin-page/', views.admin_page, name='admin_page'),
     path('create-user/', views.create_user, name='create_user'),
+    path('user-management/', views.user_management, name='user_management'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
 
     # Auth URLs
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('signup/', views.signup, name='signup'),
     path('logout/', views.user_logout, name='logout'),
+
 ]
+
 

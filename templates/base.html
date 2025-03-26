@@ -23,7 +23,7 @@
                 {% elif user.role == 'finance' %}
                     <li><a href="{% url 'finance_page' %}">Finance Home</a></li>
                 {% else %}
-                    <li><a href="{% url 'enduser_page' %}">User Home</a></li>
+                    <li><a href="{% url 'claim_dashboard' %}">User Home</a></li>
                 {% endif %}
 
                 <li><a href="{% url 'logout' %}">Logout</a></li>

@@ -67,7 +67,7 @@ def role_redirect(request):
         elif user.role == 'finance':
             return redirect('finance_page')
         else:
-            return redirect('enduser_page')
+            return redirect('claim_dashboard')
     return redirect('login')
 
 

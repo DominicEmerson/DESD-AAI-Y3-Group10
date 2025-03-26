@@ -16,9 +16,20 @@ User = get_user_model()
 # ------------------------
 # Role-Based Pages
 # ------------------------
+def is_admin(user):
+    return user.is_authenticated and user.role == 'admin'
+def is_engineer(user):
+    return user.is_authenticated and user.role == 'engineer'
+
+def is_finance(user):
+    return user.is_authenticated and user.role == 'finance'
+
+def is_enduser(user):
+    return user.is_authenticated and user.role == 'enduser'
 
 @never_cache
 @login_required
+@user_passes_test(is_engineer, login_url='role_redirect')
 def engineer_page(request):
     context = {
         'accidents': Accident.objects.all(),
@@ -32,12 +43,14 @@ def engineer_page(request):
 
 @never_cache
 @login_required
+@user_passes_test(is_finance, login_url='role_redirect')
 def finance_page(request):
     return render(request, 'role_pages/finance.html')
 
 
 @never_cache
 @login_required
+@user_passes_test(is_enduser, login_url='role_redirect')
 def enduser_page(request):
     return render(request, 'role_pages/enduser.html')
 
@@ -85,8 +98,6 @@ def user_logout(request):
 # Admin User Management
 # ------------------------
 
-def is_admin(user):
-    return user.is_authenticated and user.role == 'admin'
 
 
 @login_required

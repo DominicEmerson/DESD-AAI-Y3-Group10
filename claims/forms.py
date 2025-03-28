@@ -4,7 +4,7 @@ from re import A
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationErrors
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Accident, Claim, Vehicle, Driver, Injury
 from .models import CustomUser

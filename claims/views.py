@@ -293,17 +293,16 @@ def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPasswordForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-            if User.objects.filter(email=email).exists():
-                messages.success(
-                    request,
-                    "An email has been sent to the admin. You will receive an email with steps to reset password shortly."
-                )
-            else:
-                messages.error(request, "No user with that email exists.")
+            messages.success(
+                request,
+                "An email has been sent to the admin. You will receive an email with steps to reset password shortly."
+            )
             return redirect('forgot_password')
     else:
         form = ForgotPasswordForm()
+
+    return render(request, 'registration/forgot_password.html', {'form': form})
+
 
     return render(request, 'registration/forgot_password.html', {'form': form})
 

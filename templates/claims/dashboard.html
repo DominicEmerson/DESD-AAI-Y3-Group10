@@ -106,23 +106,59 @@
                             <td><strong>#{{ claim.id }}</strong></td>
                             <td>{{ claim.accident.accident_date|date:"d/m/Y H:i" }}</td>
                             <td>{{ claim.accident.accident_type }}</td>
+
+                            <!-- [CHANGED] Dynamic Status -->
                             <td>
                                 {% if claim.settlement_value > 0 %}
-                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Approved</span>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Approved
+                                    </span>
+                                {% elif claim.prediction_result and claim.prediction_result.error %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Prediction Error
+                                    </span>
+                                {% elif claim.prediction_result %}
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-robot me-1"></i>Prediction Received
+                                    </span>
                                 {% else %}
-                                <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half me-1"></i>Pending</span>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-hourglass-half me-1"></i>Pending Prediction
+                                    </span>
                                 {% endif %}
                             </td>
                             {% if user.role in 'admin,finance' %}
                             <td>£{{ claim.settlement_value }}</td>
                             {% endif %}
+
                             {% if user.role in 'admin,finance,engineer' %}
+                            <!-- [CHANGED] Show actual ML predictions if present -->
                             <td>
-                                <span class="badge bg-info">
-                                    <i class="fas fa-robot me-1"></i>Awaiting Prediction
-                                </span>
+                                {% if claim.prediction_result %}
+                                    {% if claim.prediction_result.error %}
+                                        <span class="badge bg-danger" title="{{ claim.prediction_result.error }}">
+                                            <i class="fas fa-times-circle me-1"></i> Error
+                                        </span>
+                                    {% elif claim.prediction_result.prediction %}
+                                        <span class="badge bg-info text-dark">
+                                            <i class="fas fa-brain me-1"></i>
+                                            {% if claim.prediction_result.prediction|length == 1 %}
+                                                {{ claim.prediction_result.prediction.0|floatformat:2 }}
+                                            {% else %}
+                                                {{ claim.prediction_result.prediction }}
+                                            {% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unknown Format</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-light text-muted">
+                                        <i class="fas fa-clock me-1"></i> Awaiting
+                                    </span>
+                                {% endif %}
                             </td>
                             {% endif %}
+
                             <td>
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#claimModal{{ claim.id }}">
                                     <i class="fas fa-eye me-1"></i>View Details
@@ -195,25 +231,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Select all elements with the "counter" class
     const counters = document.querySelectorAll('.counter');
-    console.log("Found counters:", counters);  // Debug: log counters to the console
-
     counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const duration = 1000; // Animation duration in milliseconds
-        const steps = 50; // Number of steps to reach target
-        const stepValue = target / steps;
+        const target = parseInt(counter.getAttribute('data-target')) || 0;
         let current = 0;
-        
-        const updateCounter = () => {
-            current += stepValue;
+        const steps = 30; // number of increments
+        const stepTime = 30; // ms per step
+        const increment = target / steps;
+
+        function updateCounter() {
+            current += increment;
             if (current < target) {
                 counter.textContent = Math.ceil(current);
-                setTimeout(updateCounter, duration / steps);
+                setTimeout(updateCounter, stepTime);
             } else {
                 counter.textContent = target;
             }
-        };
-        
+        }
         updateCounter();
     });
 });

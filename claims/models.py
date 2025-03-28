@@ -1,5 +1,6 @@
 # claims/models.py
 
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
@@ -7,9 +8,16 @@ from django.utils.timezone import now
 
 
 class CustomUserManager(BaseUserManager):
-    """ Custom manager for handling user creation. """
+    """
+    Custom manager for handling user creation.
+    Ensures that email is required and that superusers have
+    the necessary privileges and admin role by default.
+    """
 
     def create_user(self, username, email, password=None, **extra_fields):
+        """
+        Create and save a regular user with the given username, email, and password.
+        """
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
@@ -19,6 +27,9 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
+        """
+        Create and save a superuser with the given username, email, and password.
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('role', 'admin')  # Ensure superusers are always 'admin'
@@ -26,29 +37,39 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
+    """
+    Custom user model extending Django's AbstractUser.
+    Includes a 'role' field to distinguish user roles.
+    """
     ROLE_CHOICES = [
         ('enduser', 'End User'),
         ('engineer', 'AI Engineer'),
         ('admin', 'Administrator'),
         ('finance', 'Finance Team'),
     ]
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='enduser')
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='enduser'
+    )
 
-    objects = CustomUserManager()  # Attach the custom manager
+    objects = CustomUserManager()
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
 
 
-# claims models to be moved at a later date
-
 class Accident(models.Model):
+    """
+    Represents an accident reported by a user, including key details
+    such as date, type, and any police reports or witnesses.
+    """
     reported_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='accidents',
-        null=True, 
-        blank=True 
+        null=True,
+        blank=True
     )
     accident_date = models.DateTimeField(default=now)
     accident_type = models.CharField(max_length=255)
@@ -62,7 +83,17 @@ class Accident(models.Model):
 
 
 class Claim(models.Model):
-    accident = models.ForeignKey(Accident, on_delete=models.CASCADE, null=True, blank=True)
+    """
+    Represents an insurance claim linked to a particular accident.
+    Stores financial details and, optionally, a prediction result
+    from an external MLaaS service.
+    """
+    accident = models.ForeignKey(
+        Accident,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     claim_date = models.DateTimeField(default=now)
     settlement_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     special_health_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -83,23 +114,47 @@ class Claim(models.Model):
     special_journey_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     special_therapy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
+    # Field added to store ML predictions from the external MLaaS service
+    prediction_result = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Stores ML prediction data (e.g. {'predicted_value': 1000.00})."
+    )
+
     def __str__(self):
         return f"Claim {self.id} - Accident {self.accident_id if self.accident else 'N/A'}"
 
 
 class Vehicle(models.Model):
-    accident = models.ForeignKey(Accident, on_delete=models.CASCADE, null=True, blank=True)
-    vehicle_age = models.IntegerField(default=0)  # Default age is 0 if unknown
+    """
+    Represents a vehicle involved in an accident, including its age,
+    type, and the number of passengers onboard.
+    """
+    accident = models.ForeignKey(
+        Accident,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    vehicle_age = models.IntegerField(default=0)
     vehicle_type = models.CharField(max_length=255, blank=True, null=True)
-    number_of_passengers = models.IntegerField(default=0)  # Default to 0 for empty vehicles
+    number_of_passengers = models.IntegerField(default=0)
 
     def __str__(self):
         return f"Vehicle {self.id} - {self.vehicle_type if self.vehicle_type else 'Unknown'}"
 
 
 class Driver(models.Model):
-    accident = models.ForeignKey(Accident, on_delete=models.CASCADE, null=True, blank=True)
-    driver_age = models.IntegerField(default=18)  # Default to 18 assuming minimum age
+    """
+    Represents a driver involved in an accident, storing age and gender.
+    """
+    accident = models.ForeignKey(
+        Accident,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    driver_age = models.IntegerField(default=18)
     gender = models.CharField(
         max_length=10,
         choices=[("Male", "Male"), ("Female", "Female"), ("Other", "Other")],
@@ -112,7 +167,16 @@ class Driver(models.Model):
 
 
 class Injury(models.Model):
-    accident = models.ForeignKey(Accident, on_delete=models.CASCADE, null=True, blank=True)
+    """
+    Represents injuries sustained in an accident. Each Injury entry
+    captures the type, prognosis, and any special conditions.
+    """
+    accident = models.ForeignKey(
+        Accident,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     injury_prognosis = models.CharField(max_length=255, blank=True, null=True)
     injury_description = models.TextField(blank=True, null=True)
     dominant_injury = models.CharField(max_length=255, blank=True, null=True)

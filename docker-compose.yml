@@ -22,6 +22,8 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy  # Wait for PostgreSQL to be ready
+      mlaas-service:
+        condition: service_started  # Wait for MLaaS service to start
     volumes:
       - .:/app  # Ensures the local code is reflected in the container
     ports:
@@ -33,12 +35,35 @@ services:
       - DATABASE_PASSWORD=password
       - DATABASE_HOST=postgres_db  # Updated to PostgreSQL service name
       - DATABASE_PORT=5432  # Updated to PostgreSQL port
+      - MLAAS_SERVICE_URL=http://mlaas-service:8009/api/  # MLaaS service URL
     command: >
       sh -c "python manage.py migrate &&
              python manage.py loaddata default_users.json || python manage.py create_test_users || true &&
              python manage.py runserver 0.0.0.0:8000"
 
-
+  mlaas-service:
+    build: 
+      context: ./MLaaS
+      dockerfile: Dockerfile
+    container_name: desd-aai-y3-group10-mlaas-1
+    restart: always
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    volumes:
+      - mlaas_media:/app/media  # Persistent storage for ML models
+    ports:
+      - "8009:8009"  # Expose MLaaS API port
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=mlaas-service,localhost,127.0.0.1
+      - DATABASE_NAME=insurance_ai
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=postgres_db
+      - DATABASE_PORT=5432
+      - SECRET_KEY=mlaas-secure-key-change-in-production
 
 volumes:
   postgres_data:  # Named volume to persist PostgreSQL data
+  mlaas_media:    # Named volume to persist ML models

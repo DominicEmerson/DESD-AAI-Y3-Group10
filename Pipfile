@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 django = "*"
 djangorestframework = "*"
-psycopg2-binary = "*"  # PostgreSQL dependency
+psycopg2-binary = "*"
 django-environ = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"

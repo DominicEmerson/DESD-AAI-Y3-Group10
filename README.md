@@ -45,6 +45,7 @@ To resume from stop: docker-compose start
 
 *** ***
 
+
 If gou fuck up realy bad and want to get rid of all docker containers and any atifacts: 
 
 

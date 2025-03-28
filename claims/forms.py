@@ -4,7 +4,7 @@ from re import A
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationErrors
 from django.utils import timezone
 from .models import Accident, Claim, Vehicle, Driver, Injury
 from .models import CustomUser
@@ -228,7 +228,6 @@ class ClaimSubmissionForm(forms.ModelForm):
             claim.save()
 
         return claim
-
 
 class ForgotPasswordForm(forms.Form):
     email = forms.EmailField(label='Enter your email', max_length=255)

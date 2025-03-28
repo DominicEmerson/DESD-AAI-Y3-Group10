@@ -6,5 +6,8 @@
 <div class="role-container">
     <h1>Finance Dashboard</h1>
     <p>Welcome, <strong>{{ user.username }}</strong>. Here's your finance dashboard.</p>
+    
+    <button onclick="location.href='{% url 'generate_report' %}'">Generate Report</button>
+    <button onclick="location.href='{% url 'generate_invoice' %}'">Generate Invoice</button>
 </div>
 {% endblock %}

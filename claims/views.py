@@ -304,8 +304,6 @@ def forgot_password(request):
     return render(request, 'registration/forgot_password.html', {'form': form})
 
 
-    return render(request, 'registration/forgot_password.html', {'form': form})
-
 
 @login_required
 @user_passes_test(is_admin)

@@ -16,6 +16,13 @@ urlpatterns = [
     path('user-management/', views.user_management, name='user_management'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
 
+    # Claims URLs
+    # Author: Ahmed Mohamed
+    path('dashboard/', views.ClaimDashboardView.as_view(), name='claim_dashboard'),
+    path('claim/new/', views.ClaimSubmissionView.as_view(), name='claim_submission'),
+    path('claim/success/', views.ClaimSuccessView.as_view(), name='claim_submission_success'),
+    path('claim/<int:pk>/prediction/', views.ClaimPredictionView.as_view(), name='claim_prediction'),
+
     # Auth URLs
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('signup/', views.signup, name='signup'),

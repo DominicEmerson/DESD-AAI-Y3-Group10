@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Insurance App{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'custom/css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 
@@ -22,7 +23,7 @@
                 {% elif user.role == 'finance' %}
                     <li><a href="{% url 'finance_page' %}">Finance Home</a></li>
                 {% else %}
-                    <li><a href="{% url 'enduser_page' %}">User Home</a></li>
+                    <li><a href="{% url 'claim_dashboard' %}">Dashboard</a></li>
                 {% endif %}
 
                 <li><a href="{% url 'logout' %}">Logout</a></li>
@@ -38,5 +39,7 @@
     {% block content %}{% endblock %}
 </main>
 
+<!-- JavaScript code -->
+{% block extra_js %}{% endblock %}
 </body>
 </html>

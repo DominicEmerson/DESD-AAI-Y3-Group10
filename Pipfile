@@ -10,6 +10,7 @@ psycopg2-binary = "*"
 django-environ = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = "*"
+dj-database-url = "*"
 
 [dev-packages]
 

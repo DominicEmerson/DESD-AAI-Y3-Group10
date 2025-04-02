@@ -72,5 +72,9 @@ def preprocess_data(ml_dataset):
     min_max_scaler = MinMaxScaler()
     df[NUMERIC_COLUMNS] = min_max_scaler.fit_transform(df[NUMERIC_COLUMNS])
     print("Number of records remaining: " + str(len(df.index)))
+<<<<<<< HEAD
     return df
 >>>>>>> 569719e (Add files via upload)
+=======
+    return df
+>>>>>>> 88c04c7697374e7ae5113e041a54435cf3150951

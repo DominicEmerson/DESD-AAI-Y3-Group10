@@ -17,10 +17,17 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-import csv
-import io
+
+import requests
+import logging
+from django.conf import settings
+
+from .models import CustomUser, Accident, Claim, Vehicle, Driver, Injury
+from .forms import SignupForm, CreateUserForm, ClaimSubmissionForm, ForgotPasswordForm
+
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # ------------------------
 # Role-Based Pages
@@ -277,7 +284,6 @@ def user_management(request):
             if new_password:
                 user.set_password(new_password)
                 user.save()
-                # FIXED QUOTE HERE:
                 messages.success(request, f'Password for "{user.username}" has been reset.')
 
         elif action == 'delete_user':
@@ -370,15 +376,71 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
             self.request.session['claim_id'] = self.object.id
             self.request.session.modified = True
             messages.success(self.request, 'Claim submitted successfully!')
+
+            #  call the ML service
             self.request_prediction(self.object)
+
             return redirect('claim_submission_success')
         except Exception as e:
             messages.error(self.request, f'Error submitting claim: {str(e)}')
             return self.form_invalid(form)
 
+    # Implement a minimal MLaaS API call
     def request_prediction(self, claim):
-        # ML integration placeholder
-        pass
+        """
+        Sends claim data to the MLaaS API to get a prediction.
+        Updates the claim object's 'prediction_result' field with the response.
+        """
+        # Check if MLaaS URL is configured
+        if not getattr(settings, 'MLAAS_SERVICE_URL', None):
+            logger.warning("MLAAS_SERVICE_URL not configured. Skipping prediction.")
+            claim.prediction_result = {'error': 'MLaaS not configured'}
+            claim.save(update_fields=['prediction_result'])
+            return
+
+        # For a simple 3-feature regressor, let's pick any 3 fields from the claim:
+        try:
+            # fetch related data (accident, vehicle, etc.) if needed
+            accident = claim.accident
+            driver = Driver.objects.filter(accident=accident).first()
+
+            # If your model expects exactly 3 numeric inputs, just pick 3:
+            input_features = [
+                float(claim.special_health_expenses or 0),
+                float(claim.special_earnings_loss or 0),
+                float(driver.driver_age if driver else 0)
+            ]
+
+            # The MLaaS expects a JSON payload like this:
+            payload = {
+                "input_data": [input_features],  # a list of lists
+                "algorithm_name": "3feature_regression_model"  # or whatever your ML service expects
+            }
+
+            # Construct endpoint URL 
+            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 1)
+            predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
+
+            logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url}")
+
+            response = requests.post(predict_url, json=payload, timeout=10)
+            response.raise_for_status()  # Raise an HTTPError if status >= 400
+
+            result_json = response.json()
+            claim.prediction_result = result_json
+            claim.save(update_fields=['prediction_result'])
+
+            logger.info(f"Claim {claim.id} prediction stored: {result_json}")
+
+        except requests.exceptions.RequestException as ex:
+            logger.error(f"ML prediction request failed for Claim {claim.id}: {ex}")
+            claim.prediction_result = {'error': str(ex)}
+            claim.save(update_fields=['prediction_result'])
+
+        except Exception as ex:
+            logger.exception(f"Unexpected error during ML prediction for Claim {claim.id}: {ex}")
+            claim.prediction_result = {'error': f'Unexpected: {ex}'}
+            claim.save(update_fields=['prediction_result'])
 
 
 class ClaimPredictionView(LoginRequiredMixin, DetailView):

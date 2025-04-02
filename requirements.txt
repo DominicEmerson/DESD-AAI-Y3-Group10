@@ -12,6 +12,12 @@ tzdata==2025.1; python_version >= '2'
 dj-database-url==1.2.0  # Latest stable version
 reportlab==4.3.1 
 
+dj-database-url==1.2.0  # Latest stable 
+reportlab==4.3.1
+
+# added to make http calls
+requests==2.31.0
+
 
 #added to make http calls
 requests==2.31.0

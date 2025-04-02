@@ -1,0 +1,63 @@
+services:
+  postgres_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: insurance_ai
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistent storage for DB
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  django_app:
+    build: . # Build the Django app from the Dockerfile
+    container_name: desd-aai-y3-group10-django_app-1
+    depends_on:
+      postgres_db:
+        condition: service_healthy # Wait for PostgreSQL to be ready
+    volumes:
+      - .:/app # Ensures the local code is reflected in the container
+    ports:
+      - "8000:8000" # Ensure Django is accessible
+    env_file:
+      - .env # Load environment variables from .env file
+    environment:
+      - DJANGO_SETTINGS_MODULE=insurance_ai.settings
+      - DATABASE_NAME=insurance_ai
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=postgres_db # Updated to PostgreSQL service name
+      - DATABASE_PORT=5432 # Updated to PostgreSQL port
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py loaddata default_users.json || python manage.py create_test_users || true &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  mlaas_api:
+    build: ./MLaaS # Build the MLaaS API from the Dockerfile
+    container_name: desd-aai-y3-group10-mlaas_api-1
+    ports:
+      - "8009:8009" # Ensure MLaaS API is accessible
+    env_file:
+      - .env # Load environment variables from .env file
+    environment:
+      - DJANGO_SETTINGS_MODULE=MLaaS.settings
+      # DJANGO_SETTINGS_MODULE=insurance_ai.settings
+      - DATABASE_NAME=insurance_ai
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_HOST=postgres_db # Updated to PostgreSQL service name
+      - DATABASE_PORT=5432 # Updated to PostgreSQL port
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8009"
+    ##sh -c "gunicorn", "--bind", "0.0.0.0:8009", "wsgi.py"
+
+volumes:
+  postgres_data: # Named volume to persist PostgreSQL data

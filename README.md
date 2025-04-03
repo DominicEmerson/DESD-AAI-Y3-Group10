@@ -19,6 +19,26 @@ Once complete and all three showing green in docker
 
 ****
 
+Update 03/04/25 - Dom
+
+Commands in terminal if you want to check Ahmed's container/API is working on your machine:
+
+docker-compose exec mlaas-service python manage.py makemigrations ml_api
+
+
+docker-compose exec mlaas-service python manage.py migrate
+
+docker-compose exec mlaas-service ls
+
+docker-compose exec mlaas-service python manage.py register_models
+
+curl -Method POST `
+     -Uri "http://localhost:8009/api/algorithms/1/predict/" `
+     -ContentType "application/json" `
+     -Body '{"input_data": [[0.5, 1.2, 3000]], "algorithm_name": "3-Feature Regression Model"}'
+
+****
+
 Update 19/03/2025 - Dom
 
 The docker-compose.yml and relevant files have been updated so that postgre now mounts a persistent database that should save changes (provided you don't completely rebuild the containers).

@@ -95,7 +95,7 @@ docker-compose up --build -d
 stop without losing data
 docker-compose down
 
-Check if a user exists
+Check if a user exists.
 
 docker exec -it desd-aai-y3-group10-django_app-1 python manage.py shell
 

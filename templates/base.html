@@ -40,6 +40,25 @@
 </main>
 
 <!-- JavaScript code -->
-{% block extra_js %}{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch("{% url 'session_info' %}")
+        .then(res => res.json())
+        .then(data => {
+          const expiryTime = new Date(data.session_expiry).getTime();
+          const warningTime = expiryTime - 10 * 60 * 1000; // 10 mins before expiry
+          const now = new Date().getTime();
+          const delay = warningTime - now;
+    
+          if (delay > 0) {
+            setTimeout(() => {
+              alert("Your session will expire in 10 minutes!");
+            }, delay);
+          }
+        });
+    });
+    </script>
+{% endblock %}
 </body>
 </html>

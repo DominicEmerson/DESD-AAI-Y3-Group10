@@ -71,6 +71,7 @@
     </style>
 </head>
 <body>
+
         <div class="container">
             <!-- LOGIN FORM -->
             <div class="form-container">
@@ -78,6 +79,13 @@
         
                 {% if form.errors %}
                     <p class="error">Invalid username or password. Please try again.</p>
+                {% endif %}
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
         
                 <form method="post" action="{% url 'login' %}">

@@ -17,6 +17,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.utils.timezone import localtime
 
 import requests
 import logging
@@ -136,9 +137,13 @@ def signup(request):
 
     return render(request, 'registration/login.html', {'signup_form': signup_form})
 
-
 def user_logout(request):
     logout(request)
+    if request.GET.get('timeout') == '1':
+        messages.info(request, "You have been logged out due to inactivity.")
+    else:
+        messages.success(request, "You have been logged out.")
+    
     response = redirect('login')
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response['Pragma'] = 'no-cache'
@@ -168,7 +173,10 @@ def create_user(request):
 
     return render(request, 'admin/create_user.html', {'form': form})
 
-
+def custom_login(request):
+    if request.method == 'GET' and 'next' in request.GET:
+        messages.info(request, "You have been logged out due to inactivity.")
+    return render(request, 'login.html')
 
 @login_required
 @user_passes_test(is_admin)
@@ -469,3 +477,13 @@ class ClaimSuccessView(LoginRequiredMixin, DetailView):
         if not request.session.get('claim_id'):
             return redirect('claim_dashboard')
         return super().dispatch(request, *args, **kwargs)
+    
+
+
+# ------------------------ 
+# Session Management
+# ------------------------
+def session_info(request):
+    expiry = request.session.get_expiry_date()
+    return JsonResponse({'session_expiry': localtime(expiry).isoformat()})
+

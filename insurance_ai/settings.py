@@ -36,8 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'claims.apps.ClaimsConfig',
     'rest_framework',
-    'claims',
+
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'claims.middleware.InactivityLogoutMiddleware',
 ]
 
 ROOT_URLCONF = 'insurance_ai.urls'
@@ -122,4 +126,4 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'role_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 36000  # 10 hours
+SESSION_COOKIE_AGE = 660  # 10 hours

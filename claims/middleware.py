@@ -1,16 +1,27 @@
 from django.shortcuts import redirect
+from django.conf import settings
+from django.urls import resolve
+
+EXEMPT_URLS = [
+    '/login/',
+    '/signup/',
+    '/forgot-password/',
+]
 
 class InactivityLogoutMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
-            # Session is active and user is logged in
+        # Skip logout logic for exempt URLs
+        if any(request.path.startswith(url) for url in EXEMPT_URLS):
             return self.get_response(request)
 
-        # If session expired and this was a logged-in page, redirect with timeout message
-        if request.path != '/logout/' and request.path != '/accounts/login/':
-            return redirect('/logout/?timeout=1')
+        # Proceed with session timeout check
+        if request.user.is_authenticated:
+            if request.session.get_expiry_age() <= 0:
+                from django.contrib.auth import logout
+                logout(request)
+                return redirect('/login/?timeout=1')
 
         return self.get_response(request)

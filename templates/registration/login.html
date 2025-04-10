@@ -129,6 +129,11 @@
             </div>
         </div>
         
-    
+        <script>
+            if (window.location.search.includes('timeout=1') || window.location.search.includes('logged_out=1')) {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          </script>
+          
 </body>
 </html>

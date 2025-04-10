@@ -139,16 +139,14 @@ def signup(request):
 
 def user_logout(request):
     logout(request)
+
     if request.GET.get('timeout') == '1':
         messages.info(request, "You have been logged out due to inactivity.")
+        return redirect('/login/?timeout=1')
     else:
         messages.success(request, "You have been logged out.")
-    
-    response = redirect('login')
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    return response
+        return redirect('/login/?logged_out=1')
+
 
 
 # ------------------------
@@ -174,9 +172,13 @@ def create_user(request):
     return render(request, 'admin/create_user.html', {'form': form})
 
 def custom_login(request):
-    if request.method == 'GET' and 'next' in request.GET:
+    if request.GET.get('timeout') == '1':
         messages.info(request, "You have been logged out due to inactivity.")
+    elif request.GET.get('logged_out') == '1':
+        messages.success(request, "You have been logged out.")
+
     return render(request, 'login.html')
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -244,25 +246,6 @@ def user_management(request):
     return render(request, 'admin/user_management.html', {'users': users, 'query': query})
 
 
-def forgot_password(request):
-    if request.method == 'POST':
-        form = ForgotPasswordForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-
-            # Check if the email exists in the user table
-            if User.objects.filter(email=email).exists():
-                # Instead of sending an email, just show a success message
-                messages.success(request, "An email has been sent to the admin. You will receive an email with steps to reset password shortly.")
-            else:
-                messages.error(request, "No user with that email exists.")
-
-            return redirect('forgot_password')
-
-    else:
-        form = ForgotPasswordForm()
-
-    return render(request, 'registration/forgot_password.html', {'form': form})
 
 
 @login_required

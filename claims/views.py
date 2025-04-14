@@ -145,7 +145,7 @@ def user_logout(request):
         return redirect('/login/?timeout=1')
     else:
         messages.success(request, "You have been logged out.")
-        return redirect('/accounts/login/?timeout=1')
+        return redirect('/accounts/login/?logged_out=1')
 
 
 

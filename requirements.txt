@@ -11,7 +11,7 @@ sqlparse==0.5.3; python_version >= '3.8'
 tzdata==2025.1; python_version >= '2'
 dj-database-url==1.2.0  # Latest stable version
 reportlab==4.3.1 
-
+docker>=6.0.0; python_version >= '3.8'
 dj-database-url==1.2.0  # Latest stable 
 reportlab==4.3.1
 

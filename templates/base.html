@@ -10,31 +10,31 @@
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="navbar-container">
-        <h2 class="logo">Insurance App</h2>
-        <ul class="nav-links">
+    <nav class="navbar">
+        <div class="navbar-container">
+          <h2 class="logo">Insurance App</h2>
+          <ul class="nav-links">
             {% if user.is_authenticated %}
-            {% if user.role == 'admin' %}
-            <li><a href="{% url 'admin_page' %}">Admin</a></li>
-             {% endif %}
-                {% if user.role == 'engineer' %}
-                    <li><a href="{% url 'engineer_page' %}">Engineer Home</a></li>
-                {% elif user.role == 'finance' %}
-                    <li><a href="{% url 'finance_page' %}">Finance Home</a></li>
-                {% else %}
-                    <li><a href="{% url 'claim_dashboard' %}">Dashboard</a></li>
-                {% endif %}
-
-                <li><a href="{% url 'logout' %}">Logout</a></li>
+              {% if user.role == 'admin' %}
+                <li><a href="{% url 'admin_page' %}">Admin</a></li>
+                <li><a href="{% url 'container_status_page' %}">System Health</a></li>
+              {% endif %}
+              {% if user.role == 'engineer' %}
+                <li><a href="{% url 'engineer_page' %}">Engineer Home</a></li>
+              {% elif user.role == 'finance' %}
+                <li><a href="{% url 'finance_page' %}">Finance Home</a></li>
+              {% else %}
+                <li><a href="{% url 'claim_dashboard' %}">Dashboard</a></li>
+              {% endif %}
+      
+              <li><a href="{% url 'logout' %}">Logout</a></li>
             {% else %}
-                <li><a href="{% url 'login' %}">Login</a></li>
+              <li><a href="{% url 'login' %}">Login</a></li>
             {% endif %}
-
-        </ul>
-    </div>
-</nav>
-
+          </ul>
+        </div>
+      </nav>
+      
 <main class="main-container">
     {% block content %}{% endblock %}
 </main>

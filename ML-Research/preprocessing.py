@@ -1,19 +1,28 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, RobustScaler
 
+# Columns identified for removal
 DROP_COLUMNS = ['SpecialReduction','SpecialRehabilitation','SpecialMedications','Driver Age',
-                'Gender','Accident Date','Claim Date']
+                'Gender','Accident Date','Claim Date', 'Accident Description', 'Injury Description']
+
+# columns to convert to binary
 BINARY_COLUMNS = ['Exceptional_Circumstances','Minor_Psychological_Injury','Whiplash',
                   'Police Report Filed','Witness Present']
-CATEGORY_COLUMNS = ['Dominant injury','Vehicle Type','Weather Conditions','Injury Description',
-                    'Accident Description']
+
+# categorical columns for one-hot encoding
+CATEGORY_COLUMNS = ['Dominant injury','Vehicle Type','Weather Conditions','AccidentType']
+
+# numerica data columns
 NUMERIC_COLUMNS = ['SpecialHealthExpenses','SpecialOverage','GeneralRest',
                     'SpecialAdditionalInjury','SpecialEarningsLoss','SpecialUsageLoss',
                     'SpecialAssetDamage','SpecialFixes','GeneralFixed','GeneralUplift',
                     'SpecialLoanerVehicle','SpecialTripCosts','SpecialJourneyExpenses','SpecialTherapy']
-SPECIAL_COLUMN = ['Injury_Prognosis','Number of Passengers']
-TARGET_COLUMN = 'SettlementValue'
 
+# columns that require special handling
+SPECIAL_COLUMN = ['Injury_Prognosis','Number of Passengers']
+
+# target value
+TARGET_COLUMN = 'SettlementValue'
 
 def extract_int_from_string(df, col):
     df[col] = (
@@ -49,6 +58,7 @@ def zero_fill_num_columns(df):
         df[column] = df[column].fillna(0)
     return df
 
+# inserts string 'unknown' into category columns
 def fill_category_columns(df):
     for column in df.select_dtypes(include='object'):
         df[column] = df[column].fillna('Unknown')
@@ -69,7 +79,7 @@ def preprocess_data(ml_dataset):
     df = binary_encode(df,BINARY_COLUMNS,'Yes')
     df = one_hot_encode(df,CATEGORY_COLUMNS)
     df = float_columns_to_int(df)
-    min_max_scaler = MinMaxScaler()
-    df[NUMERIC_COLUMNS] = min_max_scaler.fit_transform(df[NUMERIC_COLUMNS])
+    scaler = RobustScaler()
+    df[NUMERIC_COLUMNS] = scaler.fit_transform(df[NUMERIC_COLUMNS])
     print("Number of records remaining: " + str(len(df.index)))
     return df

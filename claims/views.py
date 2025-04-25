@@ -18,7 +18,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.utils.timezone import localtime
-
+import docker
 import requests
 import logging
 from django.conf import settings
@@ -145,7 +145,8 @@ def user_logout(request):
         return redirect('/login/?timeout=1')
     else:
         messages.success(request, "You have been logged out.")
-        return redirect('/login/?logged_out=1')
+        return redirect('/accounts/login/?logged_out=1')
+
 
 
 
@@ -247,6 +248,39 @@ def user_management(request):
 
 
 
+@login_required
+@user_passes_test(is_admin)
+def container_status_api(request):
+    try:
+        client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+        containers = client.containers.list(all=True)
+        data = []
+        for c in containers:
+            info   = c.attrs
+            state  = info['State']['Status']
+            health = info['State'].get('Health', {}).get('Status')
+            data.append({
+                'name':   c.name,
+                'state':  state,
+                'health': health
+            })
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse(
+            {'error': 'Cannot connect to Docker', 'detail': str(e)},
+            status=500
+        )
+@login_required
+@user_passes_test(is_admin)
+def container_status_page(request):
+    # this must match the path under your templates/ directory:
+    return render(request, 'admin/system_health.html')
+
+
+@login_required
+@user_passes_test(is_admin)
+def container_status_page(request):
+    return render(request, 'admin/system_health.html')
 
 @login_required
 @user_passes_test(is_admin)

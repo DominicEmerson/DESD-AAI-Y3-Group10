@@ -26,6 +26,7 @@ services:
         condition: service_started  # Wait for MLaaS service to start
     volumes:
       - .:/app  # Ensures the local code is reflected in the container
+      - /var/run/docker.sock:/var/run/docker.sock  
     ports:
       - "8000:8000"  # Ensure Django is accessible
     environment:

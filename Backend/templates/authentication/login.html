@@ -1,0 +1,139 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b3b3b3; /* Grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #c2c2c2; /* Slightly darker grey */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 600px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-container {
+            width: 45%;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            background: #d3d3d3;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .login-btn {
+            background: #8bc34a; /* Green */
+            color: black;
+        }
+        .signup-btn {
+            background: #64b5f6; /* Blue */
+            color: black;
+        }
+        .forgot-password {
+            color: blue;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+        <div class="container">
+            <!-- LOGIN FORM -->
+            <div class="form-container">
+                <h2>Login</h2>
+        
+                {% if form.errors %}
+                    <p class="error">Invalid username or password. Please try again.</p>
+                {% endif %}
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+        
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button class="login-btn" type="submit">Login</button>
+                </form>
+                    <!-- Forgotten Password Link -->
+                <div class="forgot-password-link">
+                    <a href="{% url 'forgot_password' %}">Forgotten Password?</a>
+                </div>
+            </div>
+        
+            <!-- SIGNUP FORM -->
+            <div class="form-container">
+                <h2>Sign Up</h2>
+        
+                {% if signup_form.errors %}
+                    <div class="error">
+                        {% for field in signup_form %}
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in signup_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+        
+                <form method="post" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="password_confirm" placeholder="Confirm Password" required>
+
+                    <button class="signup-btn" type="submit">Sign Up</button>
+                </form>
+            </div>
+        </div>
+        
+        <script>
+            if (window.location.search.includes('timeout=1') || window.location.search.includes('logged_out=1')) {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          </script>
+          
+</body>
+</html>

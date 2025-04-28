@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Welcome, {{ user.username }} (Admin)</h1>
+    <p>You have full admin privileges.</p>
+
+    <div class="admin-section">
+        <h2>User Management</h2>
+        <ul>
+            <li><a href="{% url 'sysadmin:create_user' %}">Create User</a></li>
+            <li><a href="{% url 'sysadmin:user_management' %}">Manage Users</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

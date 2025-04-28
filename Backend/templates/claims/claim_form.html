@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit New Claim{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background-color: #f9fbfe;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #2c73d2, #0c4ea0);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 25px 30px;
+    }
+    
+    .form-title {
+        margin: 0;
+        font-weight: 600;
+        font-size: 28px;
+    }
+    
+    .form-body {
+        padding: 30px;
+    }
+    
+    .section-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .section-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    }
+    
+    .section-header {
+        padding: 18px 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eaeaea;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.3s;
+    }
+    
+    .section-header:hover {
+        background-color: #f0f2f5;
+    }
+    
+    .section-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #3d4852;
+    }
+    
+    .section-header i {
+        margin-right: 10px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .section-body {
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #455a64;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border: 2px solid #e3e8ef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #90caf9;
+        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+    }
+    
+    .form-select {
+        border: 2px solid #e3e8ef;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .form-select:focus {
+        border-color: #90caf9;
+        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+    }
+    
+    .form-text {
+        color: #7e8c9a;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #1976d2, #1565c0);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        padding: 14px 28px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(25, 118, 210, 0.25);
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(25, 118, 210, 0.35);
+    }
+    
+    .cancel-btn {
+        background-color: #f3f4f6;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        color: #4b5563;
+        font-weight: 600;
+        padding: 12px 24px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .cancel-btn:hover {
+        background-color: #e5e7eb;
+        color: #1f2937;
+    }
+    
+    .form-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .required-field::after {
+        content: "*";
+        color: #dc3545;
+        margin-left: 4px;
+    }
+    
+    .alert-validation {
+        background-color: #fff3f3;
+        border-left: 4px solid #dc3545;
+        border-radius: 6px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+    }
+    
+    .alert-validation h5 {
+        color: #dc3545;
+        margin-top: 0;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .alert-validation h5 i {
+        margin-right: 8px;
+    }
+    
+    .alert-validation ul {
+        margin-bottom: 0;
+        padding-left: 25px;
+    }
+    
+    .alert-validation li {
+        margin-bottom: 5px;
+        color: #6b1a1a;
+    }
+    
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 5px;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .is-valid {
+        border-color: #198754 !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .form-header {
+            padding: 20px;
+        }
+        
+        .form-title {
+            font-size: 22px;
+        }
+        
+        .form-body {
+            padding: 20px 15px;
+        }
+        
+        .submit-btn, .cancel-btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .form-buttons {
+            flex-direction: column-reverse;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="form-container">
+        <div class="form-header">
+            <h2 class="form-title"><i class="fas fa-file-medical me-3"></i>Submit New Insurance Claim</h2>
+        </div>
+        
+        <div class="form-body">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div id="validationErrors" class="alert-validation" style="display: none;">
+                <h5><i class="fas fa-exclamation-triangle"></i>Please fix the following errors:</h5>
+                <ul id="errorList"></ul>
+            </div>
+            
+            <form method="post" action="{% url 'claims:claim_submission' %}" class="needs-validation" id="claimForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Accident Details Section -->
+                <div class="section-card" id="accidentSection">
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#accidentCollapse" aria-expanded="true">
+                        <i class="fas fa-car-crash"></i>
+                        <h3>Accident Details</h3>
+                    </div>
+                    <div id="accidentCollapse" class="collapse show">
+                        <div class="section-body">
+                            <div class="row">
+                                {% for field in accident_form %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                        <small class="form-text">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vehicle Information Section -->
+                <div class="section-card" id="vehicleSection">
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#vehicleCollapse">
+                        <i class="fas fa-car"></i>
+                        <h3>Vehicle Information</h3>
+                    </div>
+                    <div id="vehicleCollapse" class="collapse">
+                        <div class="section-body">
+                            <div class="row">
+                                {% for field in vehicle_form %}
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                        <small class="form-text">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Driver Information Section -->
+                <div class="section-card" id="driverSection">
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#driverCollapse">
+                        <i class="fas fa-id-card"></i>
+                        <h3>Driver Information</h3>
+                    </div>
+                    <div id="driverCollapse" class="collapse">
+                        <div class="section-body">
+                            <div class="row">
+                                {% for field in driver_form %}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                        <small class="form-text">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Injury Details Section -->
+                <div class="section-card" id="injurySection">
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#injuryCollapse">
+                        <i class="fas fa-first-aid"></i>
+                        <h3>Injury Details</h3>
+                    </div>
+                    <div id="injuryCollapse" class="collapse">
+                        <div class="section-body">
+                            <div class="row">
+                                {% for field in injury_form %}
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}col-md-4{% else %}col-md-6{% endif %}">
+                                    <div class="form-group">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                        <small class="form-text">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Claim Details Section -->
+                <div class="section-card" id="claimSection">
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#claimCollapse">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h3>Claim Details</h3>
+                    </div>
+                    <div id="claimCollapse" class="collapse">
+                        <div class="section-body">
+                            <div class="row">
+                                {% for field in form %}
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                            {{ field.label }}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors.0 }}
+                                        </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                        <small class="form-text">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <a href="{% url 'claims:claim_dashboard' %}" class="cancel-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation script
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the form element
+        const form = document.getElementById('claimForm');
+        const errorContainer = document.getElementById('validationErrors');
+        const errorList = document.getElementById('errorList');
+        
+        // Form validation
+        form.addEventListener('submit', function(event) {
+            // Clear previous error messages
+            errorList.innerHTML = '';
+            errorContainer.style.display = 'none';
+            
+            let hasErrors = false;
+            let errorMessages = [];
+            
+            // Validate each required field
+            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+            requiredFields.forEach(field => {
+                const fieldLabel = field.previousElementSibling ? field.previousElementSibling.textContent.trim() : field.name;
+                
+                if (!field.value.trim()) {
+                    hasErrors = true;
+                    field.classList.add('is-invalid');
+                    
+                    // Find the section this field belongs to
+                    const section = field.closest('.collapse');
+                    if (section) {
+                        const sectionHeader = section.previousElementSibling;
+                        if (sectionHeader) {
+                            const sectionName = sectionHeader.textContent.trim();
+                            
+                            // Check if this section is already in our error messages
+                            if (!errorMessages.some(msg => msg.includes(sectionName))) {
+                                errorMessages.push(`Fill in all required fields in the "${sectionName}" section`);
+                            }
+                        }
+                    }
+                } else {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                }
+            });
+            
+            // If there are errors, prevent form submission and show error messages
+            if (hasErrors) {
+                event.preventDefault();
+                
+                // Add each error message to the error list
+                errorMessages.forEach(message => {
+                    const li = document.createElement('li');
+                    li.textContent = message;
+                    errorList.appendChild(li);
+                });
+                
+                // Show the error container
+                errorContainer.style.display = 'block';
+                
+                // Open the first section with errors
+                const firstInvalidField = form.querySelector('.is-invalid');
+                if (firstInvalidField) {
+                    const section = firstInvalidField.closest('.collapse');
+                    if (section && !section.classList.contains('show')) {
+                        const sectionId = section.id;
+                        const button = document.querySelector(`[data-bs-target="#${sectionId}"]`);
+                        if (button) {
+                            // Use Bootstrap's API to show the collapse
+                            new bootstrap.Collapse(section).show();
+                        }
+                    }
+                    
+                    // Scroll to the error container
+                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                // Show loading state on button but DON'T prevent the default submission
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                submitBtn.disabled = true;
+                
+                // Let the form submit normally - do not prevent default!
+                // Django will handle the redirect to success page
+            }
+        });
+        
+        // Clear validation state when field value changes
+        const formFields = form.querySelectorAll('input, select, textarea');
+        formFields.forEach(field => {
+            field.addEventListener('input', function() {
+                if (field.value.trim()) {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                } else if (field.hasAttribute('required')) {
+                    field.classList.add('is-invalid');
+                    field.classList.remove('is-valid');
+                }
+            });
+        });
+        
+        // Add bootstrap class to form elements
+        document.querySelectorAll('.form-control, .form-select').forEach(el => {
+            el.classList.add('shadow-sm');
+        });
+    });
+</script>
+{% endblock %}

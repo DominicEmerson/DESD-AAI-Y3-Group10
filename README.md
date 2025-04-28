@@ -1,3 +1,34 @@
+================================
+MAJOR UPDATE: 28/04/2025
+Bradley Booth
+Complete reorg of project root
+Separation of Docker components into distinct subfolders
+Implementation of frontend container for web server proxy
+Postgres DB now persistent in isolated Database container
+Main Django project (name: insurance_ai) isolated into backend container
+Backend refactored into distinct apps following MVT:
+  Authentication - login, security etc
+  Claims - Enduser/Claims handler functionality (create, edit, view claims)
+  Engineer - ML Engineer functionality (upload + retrain models, #TODO model performance view? Add models to database)
+  Finance - Finance functionality (reports, invoices)
+  Sysadmin - Admin functionality (user administration, health status)
+
+Although user related models have been moved to the authentication app, these database tables continue to use the original name 'claims'
+Preserving the original table name is controlled with the following declaration:
+    class Meta:
+        db_table = 'claims_customuser'  
+
+If you make changes to the models structure in any apps you may need to drop the database and repopulate with dummy script data again!
+
+Frontend webport is now 8080 (#TODO - change to 443 using SSL)
+Other containers no longer expose ports outside of the Docker network
+If you need to test anything direct to other containers you will need to edit the docker-compose and dockerfile to re-enable the ports.
+
+I've tested as much as possible, but there may be some issues, please check any functionality that you previously implemented!
+
+=================================
+
+
 Instructions to run and build in VSCode:
 
 Have Docker installed and running

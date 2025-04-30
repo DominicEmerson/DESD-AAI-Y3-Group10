@@ -1,3 +1,25 @@
+DB Fix and dump system update:-
+
+30/04/2025 - Dom
+
+Fixed container issues. Added Sql dump mechamnism. Easy way to test it worked is that you should be able to log on as one of the temp users without running any script.
+So try logging in as any of these after build:
+      users_data = [
+            {"username": "Dominic", "email": "dominic@example.com", "password": "2your3t3rnity", "role": "admin", "is_staff": True, "is_superuser": True},
+            {"username": "admin_user", "email": "admin@example.com", "password": "adminpass", "role": "admin", "is_staff": True, "is_superuser": True},
+            {"username": "engineer_user", "email": "engineer@example.com", "password": "engineerpass", "role": "engineer"},
+            {"username": "finance_user", "email": "finance@example.com", "password": "financepass", "role": "finance"},
+            {"username": "enduser", "email": "enduser@example.com", "password": "enduserpass", "role": "enduser"},
+        ]
+
+If you can login it works.
+
+There's a new script for producing a database dump if you add anything important:
+
+shut_down_with_dump.py
+
+Run it before you wind down any containers. It will create a new record, Postgress should always load from the latest. Consider pruning old ones when you know it works so we don't jam up the git.
+
 ================================
 
 MAJOR UPDATE: 28/04/2025

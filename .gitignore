@@ -16,3 +16,5 @@ __pycache__/
 media/
 node_modules/
 venv/
+# Django build output
+staticfiles/

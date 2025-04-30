@@ -1,3 +1,4 @@
+# ml_api/ apps.py
 from django.apps import AppConfig
 
 class MLApiConfig(AppConfig):

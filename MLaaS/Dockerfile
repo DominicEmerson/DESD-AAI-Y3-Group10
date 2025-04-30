@@ -17,11 +17,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all your project files
 COPY . .
 
-# # Create the /app/media/ml_models directory inside the container
-# RUN mkdir -p /app/media/ml_models
+# Create the /app/media/ml_models directory inside the container
+RUN mkdir -p /app/media/ml_models
 
-# # Copy the local "ml_models/3feature_regression_model.pkl" file into /app/media/ml_models/
-# COPY media/ml_models/3feature_regression_model.pkl /app/media/ml_models/
+# Copy the local "ml_models/3feature_regression_model.pkl" file into /app/media/ml_models/
+COPY ml_models/3feature_regression_model.pkl /app/media/ml_models/
 
 EXPOSE 8009
 

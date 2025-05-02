@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler, RobustScaler
+import numpy as np
 
 # Columns identified for removal
 DROP_COLUMNS = ['SpecialReduction','SpecialRehabilitation','SpecialMedications','Driver Age',
@@ -63,6 +63,16 @@ def fill_category_columns(df):
     for column in df.select_dtypes(include='object'):
         df[column] = df[column].fillna('Unknown')
     return df
+
+# create bins for injury prognosis based on the whiplash tariff scale
+def create_prognosis_bins(df):    
+    bin_edges = [0, 3, 6, 9, 12, 15, 18, 24, np.inf]
+    df = df.bin_numeric(from_column_name='injuryprognosis',
+                        to_column_name='prognosisgroup',
+                        bins=bin_edges,
+                        right=True)
+    return df
+
 
 def preprocess_data(ml_dataset):
     df = ml_dataset.copy()

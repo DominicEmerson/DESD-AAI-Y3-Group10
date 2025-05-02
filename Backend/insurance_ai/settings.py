@@ -40,7 +40,10 @@ INSTALLED_APPS = [
 
     'authentication.apps.AuthenticationConfig',   # CustomUser lives here
     'claims.apps.ClaimsConfig',
-
+    'health_check',           
+    'health_check.db',        
+    'health_check.cache', 
+    'health_check.storage',
     'engineer.apps.EngineerConfig',
     'finance.apps.FinanceConfig',
     'sysadmin.apps.SysadminConfig',

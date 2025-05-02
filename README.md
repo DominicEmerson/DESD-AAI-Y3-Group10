@@ -1,3 +1,14 @@
+============================
+02/05/2025 - Bradley
+Uploaded new data cleaning notebook and new cleaned dataset csv file in ML-Research. 
+Got the import_claims_data script working so the claims are now persistent in the database.
+DB snapshot taken and restored successfully so this should be permanent now.
+
+-- Additional Dom 11:52 - First off this all works on my machine too. Second, since this has come up a couple of times now - If you do any major code update that involves refactoring or model changes - you will need to delete the old migrations and then redo them. Otherwise this will not work on any machine other than your own. Testing on another manchine should standard practice, and everyone should be helping with that (not to mention pulling from main frequently). 
+
+Really good work though :)
+
+=============================
 DB Fix and dump system update:-
 
 30/04/2025 - Dom
@@ -20,7 +31,9 @@ There's a new script for producing a database dump if you add anything important
 
 shut_down_with_dump.py
 
-Run it before you wind down any containers. It will create a new record, Postgress should always load from the latest. Consider pruning old ones when you know it works so we don't jam up the git.
+Run it on your local machine (not inside the containers) before you shutdown any containers. 
+It will create a new record, Postgress should always load from the latest. Consider pruning old ones when you know it works so we don't jam up the git.
+The insurance_ai_dump.sql file will be updated in the init folder in the root of the project.
 
 ================================
 

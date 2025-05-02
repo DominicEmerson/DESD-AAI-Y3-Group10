@@ -7,8 +7,8 @@ services:
       POSTGRES_DB: insurance_ai
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password         # ← move to .env in future
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data        # Docker-managed
       - ./init:/docker-entrypoint-initdb.d            # auto-import SQL

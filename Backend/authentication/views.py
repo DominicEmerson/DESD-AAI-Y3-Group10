@@ -78,3 +78,7 @@ def forgot_password(request):
 def session_info(request):
     expiry = request.session.get_expiry_date()
     return JsonResponse({'session_expiry': localtime(expiry).isoformat()})
+
+
+def gdpr(request):
+    return render(request, 'authentication/gdpr.html')

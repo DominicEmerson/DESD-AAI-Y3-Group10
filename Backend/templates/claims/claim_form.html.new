@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+  
+  <!-- Accident Section -->
+  <div class="section">
+    <h2>Accident Details</h2>
+    <div class="form-group">
+      <label>Accident Type:</label>
+      {{ form.accident_type }}
+    </div>
+    <div class="form-group">
+      <label>Weather Conditions:</label>
+      {{ form.weather_conditions }}
+    </div>
+    <!-- Add other accident fields -->
+  </div>
+
+  <!-- Vehicle Section -->
+  <div class="section">
+    <h2>Vehicle Details</h2>
+    <div class="form-group">
+      <label>Vehicle Type:</label>
+      {{ form.vehicletype }}
+    </div>
+    <div class="form-group">
+      <label>Vehicle Age (0-100):</label>
+      {{ form.vehicleage }}
+    </div>
+  </div>
+
+  <!-- Injury Section -->
+  <div class="section">
+    <h2>Injury Details</h2>
+    <div class="form-group">
+      <label>Injury Description:</label>
+      {% for choice in form.injurydescription %}
+        {{ choice.tag }}
+        <label>{{ choice.choice_label }}</label>
+      {% endfor %}
+    </div>
+    <div class="form-group">
+      <label>Whiplash Injury:</label>
+      {% for choice in form.whiplash %}
+        {{ choice.tag }}
+        <label>{{ choice.choice_label }}</label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <button type="submit" class="submit-btn">Submit Claim</button>
+</form>
+{% endblock %}

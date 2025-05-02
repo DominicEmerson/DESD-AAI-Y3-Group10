@@ -1,0 +1,35 @@
+from django.forms import ModelForm, RadioSelect
+from django.core.exceptions import ValidationError
+
+class ClaimSubmissionForm(ModelForm):
+    class Meta:
+        model = Claim
+        fields = '__all__'
+        widgets = {
+            'whiplash': RadioSelect(choices=[(True, 'Yes'), (False, 'No')]),
+            'minorpsychologicalinjury': RadioSelect(choices=[(True, 'Yes'), (False, 'No')]),
+            'exceptionalcircumstances': RadioSelect(choices=[(True, 'Yes'), (False, 'No')]),
+            'police_report_filed': RadioSelect(choices=[(True, 'Yes'), (False, 'No')]),
+            'witness_present': RadioSelect(choices=[(True, 'Yes'), (False, 'No')])
+        }
+
+    def clean_settlementvalue(self):
+        data = self.cleaned_data['settlementvalue']
+        if data > 100000000:
+            raise ValidationError("Settlement value cannot exceed 100,000,000")
+        return data
+
+    def clean_injuryprognosis(self):
+        data = self.cleaned_data['injuryprognosis']
+        if data < 0 or data > 60:
+            raise ValidationError("Prognosis must be between 0-60 days")
+        return data
+
+# Update the CreateView to use the new form
+class ClaimSubmissionView(LoginRequiredMixin, CreateView):
+    form_class = ClaimSubmissionForm
+    template_name = 'claims/claim_form.html'
+    
+    def form_valid(self, form):
+        form.instance.accident.reported_by = self.request.user
+        return super().form_valid(form)

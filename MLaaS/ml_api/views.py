@@ -1,68 +1,459 @@
-from rest_framework import viewsets, status
+# ml_api/views.py
+
+import logging
+import os
+import time
+import traceback
+
+import joblib
+import numpy as np
+from django.conf import settings  
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from claims.models import Endpoint, MLAlgorithm, MLRequest
+
+# Import logic and CUSTOM exceptions from the retraining module
+from .retraining_logic import ( 
+    RetrainingError,
+    get_retrainer,
+)
+from .models import Endpoint, MLAlgorithm, MLRequest
 from .serializers import (
+    AlgorithmPredictInputSerializer,
     EndpointSerializer,
     MLAlgorithmSerializer,
     MLRequestSerializer,
-    PredictionSerializer
 )
-import joblib
-import numpy as np
-from datetime import datetime
-import time
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
 
 class EndpointViewSet(viewsets.ModelViewSet):
-    queryset = Endpoint.objects.all()
+    """
+    API endpoint for managing logical ML Endpoints.
+
+    Provides standard CRUD operations (Create, Retrieve, Update, Destroy)
+    for Endpoint resources. Requires authentication (currently set to AllowAny).
+    """
+
+    queryset = Endpoint.objects.all().order_by("name")
     serializer_class = EndpointSerializer
+    # Keep AllowAny for debugging, remember to switch back later
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
 
 class MLAlgorithmViewSet(viewsets.ModelViewSet):
-    queryset = MLAlgorithm.objects.all()
-    serializer_class = MLAlgorithmSerializer
+    """
+    API endpoint for managing ML Algorithms.
 
-    @action(detail=True, methods=['post'])
-    def predict(self, request, pk=None):
-        algorithm = self.get_object()
-        serializer = PredictionSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            try:
-                # Load the model
-                model = joblib.load(algorithm.model_file.path)
-                
-                # Record start time
-                start_time = time.time()
-                
-                # Make prediction
-                input_data = np.array(serializer.validated_data['input_data'])
-                prediction = model.predict(input_data)
-                
-                # Calculate response time
-                response_time = time.time() - start_time
-                
-                # Create ML request record
-                ml_request = MLRequest.objects.create(
-                    input_data=serializer.validated_data['input_data'],
-                    prediction=prediction.tolist(),
-                    algorithm=algorithm,
-                    response_time=response_time
-                )
-                
-                return Response(
-                    {'prediction': prediction.tolist(), 'request_id': ml_request.id},
-                    status=status.HTTP_200_OK
-                )
-            except Exception as e:
-                return Response(
-                    {'error': str(e)},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
+    Provides CRUD operations for MLAlgorithm resources. Also includes custom
+    actions for making predictions (`/predict/`) and triggering model
+    retraining (`/retrain/`). Requires authentication (currently set to AllowAny).
+    """
+
+    queryset = MLAlgorithm.objects.all().order_by(
+        "-created_at"
+    )  # Show newest first
+    serializer_class = MLAlgorithmSerializer
+    # Keep AllowAny for debugging, remember to switch back later 
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    # --- Standard ViewSet Methods ---
+
+    def perform_create(self, serializer):
+        """Customize behavior after creating an MLAlgorithm instance."""
+        instance = serializer.save()
+        logger.info(
+            "ML Algorithm '%s' (ID: %d, Version: %s) created via API.",
+            instance.name,
+            instance.id,
+            instance.version,
         )
 
-class MLRequestViewSet(viewsets.ModelViewSet):
-    queryset = MLRequest.objects.all()
+    def perform_update(self, serializer):
+        """Customize behavior after updating an MLAlgorithm instance."""
+        instance = serializer.save()
+        logger.info(
+            "ML Algorithm '%s' (ID: %d, Version: %s) updated via API.",
+            instance.name,
+            instance.id,
+            instance.version,
+        )
+
+    def perform_destroy(self, instance):
+        """
+        Customize behavior when deleting an MLAlgorithm instance.
+
+        Logs the deletion and attempts to delete the model file relative to BASE_DIR.
+        """
+        algorithm_id = instance.id
+        algorithm_name = instance.name
+        model_file_rel_path = None
+        model_file_abs_path = None
+
+        # Get the relative path stored in the DB
+        if instance.model_file and hasattr(instance.model_file, "name"):
+            model_file_rel_path = instance.model_file.name
+
+        # Try to construct the absolute path for deletion check
+        if model_file_rel_path:
+            try:
+                model_file_abs_path = os.path.join(settings.BASE_DIR, model_file_rel_path)
+            except Exception as e:
+                logger.warning(
+                    "Could not construct absolute path for Algorithm ID %d: %s",
+                    algorithm_id, e
+                )
+
+        # Delete DB record first
+        try:
+            instance.delete()
+            logger.info(
+                "ML Algorithm '%s' (ID: %d) deleted from DB.",
+                algorithm_name, algorithm_id
+            )
+        except Exception as db_error:
+            logger.error(
+                "Error deleting ML Algorithm '%s' (ID: %d) from DB: %s",
+                algorithm_name, algorithm_id, db_error
+            )
+            
+
+        # Attempt to delete the physical file using the absolute path
+        if model_file_abs_path and os.path.exists(model_file_abs_path):
+            try:
+                os.remove(model_file_abs_path)
+                logger.info(
+                    "Associated model file deleted: %s", model_file_abs_path
+                )
+            except OSError as e:
+                logger.warning(
+                    "Error deleting model file %s for Algorithm ID %d: %s",
+                    model_file_abs_path, algorithm_id, e
+                )
+        elif model_file_rel_path and (not model_file_abs_path or not os.path.exists(model_file_abs_path)):
+            # Log if path was expected but not found or couldn't be constructed
+             logger.warning(
+                "Model file path '%s' was associated with Algorithm ID %d, "
+                "but file was not found at calculated absolute path '%s' for deletion.",
+                 model_file_rel_path, algorithm_id, model_file_abs_path
+            )
+
+    # --- Custom Actions ---
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="predict",
+        serializer_class=AlgorithmPredictInputSerializer,
+    )
+    def predict(self, request, pk=None):
+        """
+        Perform prediction using a specific ML algorithm version.
+
+        Loads model file based on relative path stored in DB joined with BASE_DIR.
+        """
+        try:
+            algorithm = MLAlgorithm.objects.select_related("parent_endpoint").get(
+                pk=pk
+            )
+        except MLAlgorithm.DoesNotExist: # Use specific exception from model
+            logger.warning("Prediction failed: Algorithm with ID %s not found.", pk)
+            return Response(
+                {"error": f"Algorithm with ID {pk} not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            logger.warning(
+                "Prediction failed for Algorithm ID %s: Invalid input data. Errors: %s",
+                pk, serializer.errors
+            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # --- Get relative path from DB ---
+        model_file_rel_path = None
+        if algorithm.model_file and hasattr(algorithm.model_file, 'name'):
+            model_file_rel_path = algorithm.model_file.name
+
+        if not model_file_rel_path:
+            logger.error("Prediction failed: No model file path registered in DB for Algorithm ID %s.", pk)
+            return Response(
+                {"error": f"No model file path found in database for algorithm ID {pk}."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR, # Indicate internal config issue
+            )
+
+        # --- Construct absolute path and check existence ---
+        try:
+        
+            model_file_abs_path = os.path.join(settings.BASE_DIR, model_file_rel_path)
+
+            if not os.path.exists(model_file_abs_path):
+                logger.error(
+                    "Prediction failed: Model file for Algorithm ID %s not found "
+                    "at expected absolute path: %s", pk, model_file_abs_path
+                )
+                return Response(
+                    {
+                        "error": f"Model file not found or inaccessible at calculated path "
+                                 f"'{model_file_abs_path}' for algorithm ID {pk}. Cannot predict."
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE, # Service unavailable as model file missing
+                )
+        except Exception as path_error:
+            logger.error(
+                "Prediction failed: Error constructing/checking model file path for Algorithm ID %s. Rel path: '%s'. Error: %s",
+                 pk, model_file_rel_path, path_error, exc_info=True
+            )
+            return Response(
+                 {"error": f"Server error determining model file location for algorithm ID {pk}."},
+                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+        # --- Load model using absolute path ---
+        try:
+            load_start = time.time()
+            model = joblib.load(model_file_abs_path) # abs path
+            load_time = time.time() - load_start
+            logger.info(
+                "Loaded model for Algorithm ID %s from '%s' in %.4fs",
+                pk, model_file_abs_path, load_time
+            )
+
+            # --- Prediction logic  ---
+            input_data = np.array(serializer.validated_data["input_data"])
+
+            expected_features = getattr(model, "n_features_in_", None)
+            if expected_features is not None and input_data.shape[1] != expected_features:
+                error_msg = (
+                    f"Input data shape mismatch: received {input_data.shape[1]} features, "
+                    f"but model expects {expected_features}."
+                )
+                logger.warning(
+                    "Prediction failed for Algorithm ID %s: %s", pk, error_msg
+                )
+                return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+            predict_start = time.time()
+            prediction = model.predict(input_data)
+            predict_time = time.time() - predict_start
+
+            prediction_list = (
+                prediction.tolist()
+                if isinstance(prediction, np.ndarray)
+                else prediction
+            )
+            response_time_secs = load_time + predict_time
+
+            # --- Logging request  ---
+            ml_request = None
+            try:
+                ml_request = MLRequest.objects.create(
+                    input_data=serializer.validated_data["input_data"],
+                    prediction=prediction_list,
+                    algorithm=algorithm,
+                    response_time=response_time_secs,
+                )
+                response_data = {
+                    "prediction": prediction_list,
+                    "request_id": ml_request.id,
+                    "algorithm_version": algorithm.version,
+                    "processing_time_ms": round(response_time_secs * 1000, 2),
+                }
+                logger.info(
+                    "Prediction successful for Algorithm ID %s. Request ID: %d. Time: %.4fs",
+                    pk, ml_request.id, response_time_secs
+                )
+                return Response(response_data, status=status.HTTP_200_OK)
+            except Exception as db_error:
+                logger.critical(
+                    "Error saving MLRequest log for algorithm %s (ID: %s): %s",
+                    algorithm.name, pk, db_error, exc_info=True
+                )
+                response_data = {
+                    "prediction": prediction_list,
+                    "warning": "Prediction successful, but failed to log request details.",
+                    "algorithm_version": algorithm.version,
+                    "processing_time_ms": round(response_time_secs * 1000, 2),
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+
+        # --- Specific Error Handling for Prediction Process ---
+        except FileNotFoundError: # Should be caught by os.path.exists check, but handle defensively
+            logger.error(
+                "Prediction failed: Model file disappeared between check and load: %s",
+                model_file_abs_path, exc_info=True # Log absolute path
+            )
+            return Response(
+                {
+                    "error": f"Model file became inaccessible during prediction process: "
+                             f"{model_file_abs_path}." # Report absolute path
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except ValueError as ve: # Input data format/shape errors
+            logger.error(
+                "Prediction ValueError for Algorithm ID %s: %s", pk, ve, exc_info=True
+            )
+            return Response(
+                {
+                    "error": f"Prediction failed due to invalid input data format or "
+                             f"shape for the loaded model: {str(ve)}"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except (AttributeError, TypeError) as te: # Model incompatibility
+            logger.error(
+                "Prediction TypeError/AttributeError for Algorithm ID %s: %s", pk, te, exc_info=True
+            )
+            return Response(
+                {
+                    "error": f"Prediction failed due to model incompatibility or "
+                             f"internal error: {str(te)}"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as e: # Other unexpected errors
+            logger.error(
+                "Unexpected prediction error for Algorithm ID %s: %s", pk, e, exc_info=True
+            )
+            return Response(
+                {
+                    "error": "An unexpected server error occurred during prediction."
+                             f" Details: {str(e)}"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    # --- Retrain method remains the same ---
+    @action(detail=True, methods=["post"], url_path="retrain")
+    def retrain(self, request, pk=None):
+       
+        try:
+            algorithm_to_retrain = self.get_object()
+        except ObjectDoesNotExist:
+            logger.warning("Retraining trigger failed: Algorithm with ID %s not found.", pk)
+            return Response(
+                {"error": f"Algorithm with ID {pk} not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        logger.info(
+            "Received request to retrain Algorithm ID: %s (Type: %s, Version: %s)",
+            pk,
+            algorithm_to_retrain.get_model_type_display(),
+            algorithm_to_retrain.version,
+        )
+
+        try:
+            retrainer = get_retrainer(algorithm_to_retrain)
+            new_algorithm_instance, results = retrainer.retrain()
+
+            if results.get("status") == "no_data":
+                logger.info(
+                    "Retraining for Algorithm ID %s resulted in no action: %s",
+                    pk, results.get('message')
+                )
+                return Response(results, status=status.HTTP_200_OK)
+
+            new_serializer = self.get_serializer(new_algorithm_instance)
+            response_data = {
+                "message": results.get(
+                    "message", "Retraining process completed successfully."
+                ),
+                "new_algorithm": new_serializer.data,
+                "metrics": {
+                    k: v
+                    for k, v in results.items()
+                    if k.endswith("_seconds") or k.startswith("data_points")
+                },
+            }
+            logger.info(
+                "Retraining successful for Algorithm ID %s. New version created: %s (ID: %d)",
+                pk, new_algorithm_instance.version, new_algorithm_instance.id
+            )
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except FileNotFoundError as e:
+            logger.error(
+                "Retraining failed for Algorithm ID %s. Error: %s: %s",
+                pk, type(e).__name__, e, exc_info=True
+            )
+            return Response(
+                {"error": f"Retraining failed: Required file not found - {str(e)}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except NotImplementedError as e:
+            logger.error(
+                "Retraining failed for Algorithm ID %s. Error: %s: %s",
+                pk, type(e).__name__, e, exc_info=True
+            )
+            return Response(
+                {"error": f"Retraining failed: Not implemented for this algorithm type - {str(e)}"},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
+            )
+        except EnvironmentError as e:
+            logger.error(
+                "Retraining failed for Algorithm ID %s. Error: %s: %s",
+                pk, type(e).__name__, e, exc_info=True
+            )
+            return Response(
+                {"error": f"Retraining failed: Environment error (e.g., DB access) - {str(e)}"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except RetrainingError as e:
+            logger.error(
+                "Retraining failed for Algorithm ID %s. Error: %s: %s",
+                pk, type(e).__name__, e, exc_info=True
+            )
+            return Response(
+                {"error": f"Retraining failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as e:
+            logger.error(
+                "Unexpected error during retraining trigger for Algorithm ID %s: %s",
+                pk, e, exc_info=True
+            )
+            return Response(
+                {
+                    "error": "An unexpected server error occurred during the "
+                             f"retraining request: {str(e)}"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+
+class MLRequestViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for viewing ML prediction request logs.
+
+    Provides read-only access (List, Retrieve) to MLRequest resources.
+    Supports filtering based on related algorithm and endpoint fields.
+    Requires authentication (currently set to AllowAny).
+    """
+
+    queryset = MLRequest.objects.all().select_related(
+        'algorithm', 'algorithm__parent_endpoint'
+    ).order_by("-created_at")
     serializer_class = MLRequestSerializer
+    # Keep AllowAny for debugging, remember to switch back kr anyone can access the api
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] 
+
+    filterset_fields = [
+        "algorithm__id",
+        "algorithm__name",
+        "algorithm__version",
+        "algorithm__model_type",
+        "algorithm__parent_endpoint__id",
+        "algorithm__parent_endpoint__name",
+    ]
+    search_fields = ["input_data", "prediction"]

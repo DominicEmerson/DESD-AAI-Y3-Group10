@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['*', 'mlaas', '172.18.0.3']  # Allow all hosts for development
+ALLOWED_HOSTS = ['*', 'mlaas-service', '172.18.0.3']  # Allow all hosts for development
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -120,4 +120,4 @@ REST_FRAMEWORK = {
 # -------------------------------------------------------------------------
 # MLaaS settings for calling MLaaS from this main app
 # -------------------------------------------------------------------------
-MLAAS_SERVICE_URL = os.environ.get('MLAAS_SERVICE_URL', 'http://mlaas:8009/api/')
+MLAAS_SERVICE_URL = os.environ.get('MLAAS_SERVICE_URL', 'http://mlaas-service:8009/api/')

@@ -4,6 +4,10 @@ Uploaded new data cleaning notebook and new cleaned dataset csv file in ML-Resea
 Got the import_claims_data script working so the claims are now persistent in the database.
 DB snapshot taken and restored successfully so this should be permanent now.
 
+-- Additional Dom 11:52 - First off this all works on my machine too. Second, since this has come up a couple of times now - If you do any major code update that involves refactoring or model changes - you will need to delete the old migrations and then redo them. Otherwise this will not work on any machine other than your own. Testing on another manchine should standard practice, and everyone should be helping with that (not to mention pulling from main frequently). 
+
+Really good work though :)
+
 =============================
 DB Fix and dump system update:-
 

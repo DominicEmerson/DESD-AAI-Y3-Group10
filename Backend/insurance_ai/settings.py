@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # Ensure BASE_DIR is defined 
 SECRET_KEY = 'django-insecure-6tqf65q(u2=35tx_+x214$ug$bdqt08i#+yvi$+jt*+3c($p-j'
 # SECRET_KEY = 'django-insecure-!5v-o$66xryd1g$&2a84-x4()*6sbn8=(0rjp*cm3j9pf9fv+t'
 
-# SECURITY WARNING: don’t run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'backend', 'frontend', '127.0.0.1']
@@ -148,3 +148,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8080",
     "https://insurance_ai.domain",  # Production URL (certificate + domain needed)
 ]
+
+# ------------------------------------------------------------------
+# MLaaS Configuration
+# ------------------------------------------------------------------
+MLAAS_SERVICE_URL = os.getenv('MLAAS_SERVICE_URL', 'http://mlaas:8009/api')
+DEFAULT_ML_ALGORITHM_ID = int(os.getenv('DEFAULT_ML_ALGORITHM_ID', '1'))

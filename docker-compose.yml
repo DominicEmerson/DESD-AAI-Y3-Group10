@@ -26,9 +26,7 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
-    volumes:
-      - ./MLaaS:/app
-      - mlaas_media:/app/media
+   
     environment:
       - DEBUG=True
       - ALLOWED_HOSTS=mlaas,localhost,127.0.0.1
@@ -38,6 +36,8 @@ services:
       - DATABASE_HOST=postgres_db
       - DATABASE_PORT=5432
       - SECRET_KEY=mlaas-secure-key-change-in-production
+    ports:
+      - "8009:8009"
 
   backend:
     build:
@@ -85,12 +85,6 @@ services:
 volumes:
   postgres_data: {}        # Docker-managed Postgres data
 
-  mlaas_media:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./MLaaS/media
 
   static_volume:
     driver: local

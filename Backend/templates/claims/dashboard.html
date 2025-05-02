@@ -119,7 +119,7 @@
                                     </span>
                                 {% elif claim.prediction_result %}
                                     <span class="badge bg-info text-dark">
-                                        <i class="fas fa-robot me-1"></i>Prediction Received
+                                        <i class="fas fa-robot me-1"></i>Prediction Available
                                     </span>
                                 {% else %}
                                     <span class="badge bg-warning text-dark">
@@ -132,7 +132,7 @@
                             {% endif %}
 
                             {% if user.role in 'admin,finance,engineer' %}
-                            <!-- [CHANGED] Show actual ML predictions if present -->
+                            <!-- Prediction Section: Only show status badge, not value -->
                             <td>
                                 {% if claim.prediction_result %}
                                     {% if claim.prediction_result.error %}
@@ -141,73 +141,25 @@
                                         </span>
                                     {% elif claim.prediction_result.prediction %}
                                         <span class="badge bg-info text-dark">
-                                            <i class="fas fa-brain me-1"></i>
-                                            {% if claim.prediction_result.prediction|length == 1 %}
-                                                {{ claim.prediction_result.prediction.0|floatformat:2 }}
-                                            {% else %}
-                                                {{ claim.prediction_result.prediction }}
-                                            {% endif %}
+                                            <i class="fas fa-robot me-1"></i>Prediction Available
                                         </span>
                                     {% else %}
                                         <span class="badge bg-secondary">Unknown Format</span>
                                     {% endif %}
                                 {% else %}
-                                    <span class="badge bg-light text-muted">
-                                        <i class="fas fa-clock me-1"></i> Awaiting
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-hourglass-half me-1"></i>Pending Prediction
                                     </span>
                                 {% endif %}
                             </td>
                             {% endif %}
 
                             <td>
-                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#claimModal{{ claim.id }}">
+                                <a href="{% url 'claims:claim_detail' claim.id %}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-eye me-1"></i>View Details
-                                </button>
+                                </a>
                             </td>
                         </tr>
-
-                        <!-- Claim Details Modal -->
-                        <div class="modal fade" id="claimModal{{ claim.id }}" tabindex="-1" aria-labelledby="claimModalLabel{{ claim.id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content shadow">
-                                    <div class="modal-header bg-primary text-white">
-                                        <h5 class="modal-title" id="claimModalLabel{{ claim.id }}">
-                                            <i class="fas fa-file-alt me-2"></i>Claim Details #{{ claim.id }}
-                                        </h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Accident Details -->
-                                        <div class="card mb-3 shadow-sm">
-                                            <div class="card-header bg-primary text-white">
-                                                <h5 class="mb-0"><i class="fas fa-car-crash me-2"></i>Accident Information</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <p><strong><i class="fas fa-calendar me-2"></i>Date:</strong> {{ claim.accident.accident_date|date:"d/m/Y H:i" }}</p>
-                                                        <p><strong><i class="fas fa-tag me-2"></i>Type:</strong> {{ claim.accident.accident_type }}</p>
-                                                        <p><strong><i class="fas fa-align-left me-2"></i>Description:</strong> {{ claim.accident.accident_description }}</p>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <p><strong><i class="fas fa-file-alt me-2"></i>Police Report:</strong> {% if claim.accident.police_report_filed %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</p>
-                                                        <p><strong><i class="fas fa-user-friends me-2"></i>Witnesses:</strong> {% if claim.accident.witness_present %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</p>
-                                                        <p><strong><i class="fas fa-cloud-sun me-2"></i>Weather:</strong> {{ claim.accident.weather_conditions }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Additional sections for Vehicle, Driver, Injury, Financial Details would follow here -->
-                                        <!-- ... -->
-                                        
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -243,6 +195,7 @@
             </div>
         </div>
     </div>
+
     {% else %}
     <div class="alert alert-info shadow-sm">
         {% if user.role == 'enduser' %}
@@ -277,6 +230,68 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         updateCounter();
+    });
+
+    // Remove old prediction modal and JS, update JS to handle prediction in details modal
+    document.querySelectorAll('.view-prediction-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const claimId = this.getAttribute('data-claim-id');
+            // No need to fetch prediction here, handled by Get Prediction button in modal
+        });
+    });
+    document.querySelectorAll('.get-prediction-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const claimId = this.getAttribute('data-claim-id');
+            const section = document.getElementById(`prediction-section-${claimId}`);
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Getting Prediction...';
+            try {
+                const response = await fetch(`/claims/${claimId}/prediction/`);
+                const data = await response.json();
+                if (data.prediction) {
+                    section.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-brain me-2"></i>
+                            Predicted Settlement Value: <strong>£${Array.isArray(data.prediction) ? data.prediction[0].toFixed(2) : data.prediction.toFixed(2)}</strong>
+                        </div>
+                        <div class="card bg-light mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-bar me-2"></i>Key Factors
+                                </h5>
+                                <p class="card-text text-muted">
+                                    Feature importance and explanation details will be shown here in future updates.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                } else if (data.error) {
+                    section.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> ${data.error}
+                        </div>
+                        <div class="card bg-light mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-bar me-2"></i>Key Factors
+                                </h5>
+                                <p class="card-text text-muted">
+                                    Feature importance and explanation details will be shown here in future updates.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                section.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> Failed to get prediction. Please try again.
+                    </div>
+                `;
+            }
+        });
     });
 });
 </script>

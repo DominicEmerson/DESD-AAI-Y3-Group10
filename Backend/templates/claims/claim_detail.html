@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Claim Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Claim Details #{{ claim.id }}</h4>
+        </div>
+        <div class="card-body">
+            <h5>Accident Information</h5>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><strong>Date:</strong> {{ claim.accident.accident_date|date:"d/m/Y H:i" }}</li>
+                <li class="list-group-item"><strong>Type:</strong> {{ claim.accident.accident_type }}</li>
+                <li class="list-group-item"><strong>Description:</strong> {{ claim.accident.accident_description }}</li>
+                <li class="list-group-item"><strong>Police Report:</strong> {% if claim.accident.police_report_filed %}Yes{% else %}No{% endif %}</li>
+                <li class="list-group-item"><strong>Witnesses:</strong> {% if claim.accident.witness_present %}Yes{% else %}No{% endif %}</li>
+                <li class="list-group-item"><strong>Weather:</strong> {{ claim.accident.weather_conditions }}</li>
+            </ul>
+            <!-- Add more claim fields as needed -->
+
+            <h5>Financial Details</h5>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><strong>Settlement Value:</strong> £{{ claim.settlement_value }}</li>
+                <li class="list-group-item"><strong>Special Health Expenses:</strong> £{{ claim.special_health_expenses }}</li>
+                <li class="list-group-item"><strong>Special Earnings Loss:</strong> £{{ claim.special_earnings_loss }}</li>
+                <!-- Add more fields as needed -->
+            </ul>
+
+            <h5>Prediction</h5>
+            {% if error %}
+                <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
+            {% endif %}
+            {% if prediction %}
+                <div class="alert alert-info">
+                    <i class="fas fa-brain me-2"></i>
+                    Predicted Settlement Value:
+                    <strong>
+                        {% if prediction|length == 1 %}
+                            £{{ prediction.0|floatformat:2 }}
+                        {% else %}
+                            {{ prediction }}
+                        {% endif %}
+                    </strong>
+                </div>
+            {% else %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="get_prediction" class="btn btn-info">
+                        <i class="fas fa-robot me-1"></i>Get Prediction
+                    </button>
+                </form>
+            {% endif %}
+
+            <div class="card bg-light mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar me-2"></i>Key Factors
+                    </h5>
+                    <p class="card-text text-muted">
+                        Feature importance and explanation details will be shown here in future updates.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'claims:claim_dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a>
+</div>
+{% endblock %} 

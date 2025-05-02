@@ -676,7 +676,7 @@ COPY public.authentication_customuser (id, password, last_login, is_superuser, u
 4	pbkdf2_sha256$870000$KiSGwktaZrOtOzBlyZVibM$jnTZwBMo0d/FOMQyb4sByNxHQoo9XcsoZ8cwAQ1es0I=	\N	f	finance_user			finance@example.com	f	t	2025-04-30 16:40:55.814788+00	finance
 2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-02 14:36:46.514968+00	t	admin_user			admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
 3	pbkdf2_sha256$870000$qhjxPvRLTeU1126VZpAu2G$KOoXKu/+9sy4ZVcYmb4fPbQ9h/rAkbDtha++6+/hIS4=	2025-05-02 14:37:46.459505+00	f	engineer_user			engineer@example.com	f	t	2025-04-30 16:40:55.347296+00	engineer
-5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-02 20:06:07.305819+00	f	enduser			enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
+5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-02 21:13:07.088183+00	f	enduser			enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
 \.
 
 
@@ -4486,6 +4486,7 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 8666	2023-07-28 07:59:00+00	Other side changed lanes and collided with clt's vehicle	Swerved to avoid another vehicle.	t	f	Rainy	\N
 8667	2020-12-17 22:19:00+00	Rear end	Rear-ended at a stoplight.	t	f	Snowy	\N
 8668	2021-06-26 14:10:00+00	Rear end	Hit a deer on the highway.	t	t	Snowy	\N
+9760	2025-04-10 21:13:09+00	Rear end	HIT BUS	t	t	Rainy	5
 8669	2023-02-24 17:02:00+00	Other side pulled out of side road	Lost control on a snowy road.	f	f	Rainy	\N
 8670	2020-06-21 00:32:00+00	Rear end - Clt pushed into next vehicle	Side collision at an intersection.	t	t	Sunny	\N
 8671	2023-06-17 10:40:00+00	Rear end	Swerved to avoid another vehicle.	f	t	Rainy	\N
@@ -10461,6 +10462,7 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4875	2023-10-18 05:32:00+00	781.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9757
 4876	2020-06-05 00:11:00+00	1390.00	0.00	0.00	0.00	2300.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1390.00	0.00	0.00	0.00	0.00	0.00	\N	9758
 4877	2025-05-02 20:07:55.387415+00	0.00	0.03	0.05	0.05	0.05	0.04	0.09	0.08	0.07	0.07	0.06	0.06	0.06	0.07	0.06	0.08	0.13	0.17	{"prediction": [166.7830616840425], "request_id": 2, "algorithm_version": "1.0.0", "processing_time_ms": 238.81}	9759
+4878	2025-05-02 21:14:26.634244+00	0.00	0.06	0.00	0.00	0.00	0.00	0.00	0.00	0.06	0.00	0.00	0.00	0.06	0.00	0.00	10000.00	0.00	0.00	{"prediction": [166.72007768403893], "request_id": 3, "algorithm_version": "1.0.0", "processing_time_ms": 253.4}	9760
 \.
 
 
@@ -25222,6 +25224,7 @@ COPY public.ml_api_mlalgorithm (id, name, description, version, code, model_file
 COPY public.ml_api_mlrequest (id, input_data, prediction, created_at, response_time, algorithm_id) FROM stdin;
 1	[[1.1, 2.2, 3.3]]	[172.25093448198544]	2025-05-02 14:40:26.034783+00	0.14876842498779297	1
 2	[[0.03, 0.09, 0.0]]	[166.7830616840425]	2025-05-02 20:07:58.444284+00	0.23881053924560547	1
+3	[[0.06, 0.0, 0.0]]	[166.72007768403893]	2025-05-02 21:14:29.526006+00	0.25339674949645996	1
 \.
 
 
@@ -25271,14 +25274,14 @@ SELECT pg_catalog.setval('public.authentication_customuser_user_permissions_id_s
 -- Name: claims_accident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_accident_id_seq', 9759, true);
+SELECT pg_catalog.setval('public.claims_accident_id_seq', 9760, true);
 
 
 --
 -- Name: claims_claim_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_claim_id_seq', 4877, true);
+SELECT pg_catalog.setval('public.claims_claim_id_seq', 4878, true);
 
 
 --
@@ -25348,7 +25351,7 @@ SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 3, true);
 -- Name: ml_api_mlrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 2, true);
+SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 3, true);
 
 
 --

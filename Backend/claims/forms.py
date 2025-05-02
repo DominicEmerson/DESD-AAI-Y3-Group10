@@ -42,29 +42,30 @@ class VehicleForm(forms.ModelForm):
         model = Vehicle
         fields = ['vehicle_age', 'vehicle_type', 'number_of_passengers']
         widgets = {
-            'vehicle_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '1'}),
+            'vehicle_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'max': '100000', 'step': '1'}),
             'vehicle_type': forms.Select(choices=Vehicle._meta.get_field('vehicle_type').choices, attrs={'class': 'form-control'}),
-            'number_of_passengers': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'step': '1'}),
+            'number_of_passengers': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '100000', 'step': '1'}),
         }
 
     def clean_vehicle_age(self):
         age = self.cleaned_data.get('vehicle_age')
         if age is None or age < 0:
             raise ValidationError("Vehicle age cannot be negative.")
+        if age > 100000:
+            raise ValidationError("Vehicle age cannot exceed 100,000.")
         return age
 
     def clean_number_of_passengers(self):
         passengers = self.cleaned_data.get('number_of_passengers')
         if passengers is None or passengers < 1:
             raise ValidationError("Number of passengers must be at least 1.")
+        if passengers > 100000:
+            raise ValidationError("Number of passengers cannot exceed 100,000.")
         return passengers
 
     def clean(self):
         cleaned = super().clean()
-        # Only allow 'Car' for vehicle_type
-        if cleaned.get('vehicle_type') != 'Car':
-            self.add_error('vehicle_type', "Vehicle type must be 'Car'.")
-        # Prevent zero passengers
+        # No longer enforce vehicle_type == 'Car'
         if cleaned.get('number_of_passengers') in [None, 0]:
             self.add_error('number_of_passengers', "Number of passengers must be at least 1.")
         return cleaned
@@ -139,6 +140,7 @@ class ClaimSubmissionForm(forms.ModelForm):
                 'class': 'form-control',
                 'step': '0.01',
                 'min': '0',
+                'max': '100000',
                 'pattern': '^\\d+(\\.\\d{1,2})?$',
                 'inputmode': 'decimal',
                 'required': 'required',
@@ -160,13 +162,15 @@ class ClaimSubmissionForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        # Enforce all numeric fields are >0 and max 2 decimal places
+        # Enforce all numeric fields are >=0, <=100000, and max 2 decimal places
         for field_name, field in self.fields.items():
             val = cleaned.get(field_name)
             if val is None:
                 self.add_error(field_name, "This field is required.")
-            elif val <= 0:
-                self.add_error(field_name, "Value must be greater than zero.")
+            elif val < 0:
+                self.add_error(field_name, "Value cannot be negative.")
+            elif val > 100000:
+                self.add_error(field_name, "Value cannot exceed 100,000.")
             elif hasattr(val, 'as_tuple'):
                 # Decimal: check decimal places
                 if abs(val.as_tuple().exponent) > 2:

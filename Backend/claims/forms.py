@@ -13,9 +13,11 @@ class AccidentForm(forms.ModelForm):
                   'police_report_filed', 'witness_present', 'weather_conditions']
         widgets = {
             'accident_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-            'accident_type': forms.TextInput(attrs={'class': 'form-control'}),
+            'accident_type': forms.Select(choices=Accident._meta.get_field('accident_type').choices, attrs={'class': 'form-control'}),
             'accident_description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'weather_conditions': forms.TextInput(attrs={'class': 'form-control'}),
+            'weather_conditions': forms.Select(choices=Accident._meta.get_field('weather_conditions').choices, attrs={'class': 'form-control'}),
+            'police_report_filed': forms.Select(choices=[(True, 'Yes'), (False, 'No')], attrs={'class': 'form-control'}),
+            'witness_present': forms.Select(choices=[(True, 'Yes'), (False, 'No')], attrs={'class': 'form-control'}),
         }
 
     def clean_accident_date(self):
@@ -24,6 +26,15 @@ class AccidentForm(forms.ModelForm):
             raise ValidationError("Accident date cannot be in the future.")
         return date
 
+    def clean(self):
+        cleaned = super().clean()
+        # Prevent 'Unknown' for categorical fields
+        if cleaned.get('accident_type') == 'Unknown':
+            self.add_error('accident_type', "Please select a valid accident type.")
+        if cleaned.get('weather_conditions') == 'Unknown':
+            self.add_error('weather_conditions', "Please select valid weather conditions.")
+        return cleaned
+
 # Author: Ahmed Mohamed
 class VehicleForm(forms.ModelForm):
     """Form for vehicle details in a claim."""
@@ -31,22 +42,32 @@ class VehicleForm(forms.ModelForm):
         model = Vehicle
         fields = ['vehicle_age', 'vehicle_type', 'number_of_passengers']
         widgets = {
-            'vehicle_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'vehicle_type': forms.TextInput(attrs={'class': 'form-control'}),
-            'number_of_passengers': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'vehicle_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '1'}),
+            'vehicle_type': forms.Select(choices=Vehicle._meta.get_field('vehicle_type').choices, attrs={'class': 'form-control'}),
+            'number_of_passengers': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'step': '1'}),
         }
 
     def clean_vehicle_age(self):
         age = self.cleaned_data.get('vehicle_age')
-        if age and age < 0:
+        if age is None or age < 0:
             raise ValidationError("Vehicle age cannot be negative.")
         return age
 
     def clean_number_of_passengers(self):
         passengers = self.cleaned_data.get('number_of_passengers')
-        if passengers and passengers < 0:
-            raise ValidationError("Number of passengers cannot be negative.")
+        if passengers is None or passengers < 1:
+            raise ValidationError("Number of passengers must be at least 1.")
         return passengers
+
+    def clean(self):
+        cleaned = super().clean()
+        # Only allow 'Car' for vehicle_type
+        if cleaned.get('vehicle_type') != 'Car':
+            self.add_error('vehicle_type', "Vehicle type must be 'Car'.")
+        # Prevent zero passengers
+        if cleaned.get('number_of_passengers') in [None, 0]:
+            self.add_error('number_of_passengers', "Number of passengers must be at least 1.")
+        return cleaned
 
 # Author: Ahmed Mohamed
 class DriverForm(forms.ModelForm):
@@ -55,16 +76,14 @@ class DriverForm(forms.ModelForm):
         model = Driver
         fields = ['driver_age', 'gender']
         widgets = {
-            'driver_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '16'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
+            'driver_age': forms.NumberInput(attrs={'class': 'form-control', 'min': '16', 'max': '100', 'step': '1'}),
+            'gender': forms.Select(choices=Driver._meta.get_field('gender').choices, attrs={'class': 'form-control'}),
         }
 
     def clean_driver_age(self):
         age = self.cleaned_data.get('driver_age')
-        if age and age < 16:
-            raise ValidationError("Driver must be at least 16 years old.")
-        elif age and age > 100:
-            raise ValidationError("Please verify the driver's age.")
+        if age is None or age < 16 or age > 100:
+            raise ValidationError("Driver age must be between 16 and 100.")
         return age
 
 # Author: Ahmed Mohamed
@@ -75,10 +94,32 @@ class InjuryForm(forms.ModelForm):
         fields = ['injury_prognosis', 'injury_description', 'dominant_injury',
                   'whiplash', 'minor_psychological_injury', 'exceptional_circumstances']
         widgets = {
-            'injury_prognosis': forms.TextInput(attrs={'class': 'form-control'}),
-            'injury_description': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            'dominant_injury': forms.TextInput(attrs={'class': 'form-control'}),
+            'injury_prognosis': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'max': '60', 'step': '1'}),
+            'injury_description': forms.Select(choices=Injury._meta.get_field('injury_description').choices, attrs={'class': 'form-control'}),
+            'dominant_injury': forms.Select(choices=Injury._meta.get_field('dominant_injury').choices, attrs={'class': 'form-control'}),
+            'whiplash': forms.Select(choices=[(True, 'Yes'), (False, 'No')], attrs={'class': 'form-control'}),
+            'minor_psychological_injury': forms.Select(choices=[(True, 'Yes'), (False, 'No')], attrs={'class': 'form-control'}),
+            'exceptional_circumstances': forms.Select(choices=[(True, 'Yes'), (False, 'No')], attrs={'class': 'form-control'}),
         }
+
+    def clean_injury_prognosis(self):
+        val = self.cleaned_data.get('injury_prognosis')
+        if val is None or not isinstance(val, int) or val < 1 or val > 60:
+            raise ValidationError("Prognosis must be a whole number of months between 1 and 60.")
+        return val
+
+    def clean(self):
+        cleaned = super().clean()
+        # Prevent 'Unknown' for categorical fields
+        if cleaned.get('injury_description') == 'Unknown':
+            self.add_error('injury_description', "Please select a valid injury description.")
+        if cleaned.get('dominant_injury') == 'Unknown':
+            self.add_error('dominant_injury', "Please select a valid dominant injury.")
+        # Prevent zero or missing prognosis
+        prognosis = cleaned.get('injury_prognosis')
+        if prognosis in [None, 0]:
+            self.add_error('injury_prognosis', "Prognosis must be at least 1 month.")
+        return cleaned
 
 # Author: Ahmed Mohamed
 class ClaimSubmissionForm(forms.ModelForm):
@@ -97,7 +138,10 @@ class ClaimSubmissionForm(forms.ModelForm):
             field: forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+                'min': '0',
+                'pattern': '^\\d+(\\.\\d{1,2})?$',
+                'inputmode': 'decimal',
+                'required': 'required',
             }) for field in fields
         }
 
@@ -110,6 +154,24 @@ class ClaimSubmissionForm(forms.ModelForm):
         self.vehicle_form = VehicleForm(*args, prefix='vehicle', **kwargs)
         self.driver_form = DriverForm(*args, prefix='driver', **kwargs)
         self.injury_form = InjuryForm(*args, prefix='injury', **kwargs)
+        # Make all fields required
+        for field in self.fields.values():
+            field.required = True
+
+    def clean(self):
+        cleaned = super().clean()
+        # Enforce all numeric fields are >0 and max 2 decimal places
+        for field_name, field in self.fields.items():
+            val = cleaned.get(field_name)
+            if val is None:
+                self.add_error(field_name, "This field is required.")
+            elif val <= 0:
+                self.add_error(field_name, "Value must be greater than zero.")
+            elif hasattr(val, 'as_tuple'):
+                # Decimal: check decimal places
+                if abs(val.as_tuple().exponent) > 2:
+                    self.add_error(field_name, "Max 2 decimal places allowed.")
+        return cleaned
 
     def is_valid(self):
         """Validate all forms."""

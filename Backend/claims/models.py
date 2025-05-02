@@ -2,7 +2,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Add choices constants (from models.py.new)
 ACCIDENT_TYPE_CHOICES = [
@@ -91,24 +91,24 @@ class Claim(models.Model):
         blank=True
     )
     claim_date = models.DateTimeField(default=now)
-    settlement_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_health_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_reduction = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_overage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    general_rest = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_additional_injury = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_earnings_loss = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_usage_loss = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_medications = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_asset_damage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_rehabilitation = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_fixes = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    general_fixed = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    general_uplift = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_loaner_vehicle = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_trip_costs = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_journey_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    special_therapy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    settlement_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_health_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_reduction = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_overage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    general_rest = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_additional_injury = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_earnings_loss = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_usage_loss = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_medications = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_asset_damage = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_rehabilitation = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_fixes = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    general_fixed = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    general_uplift = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_loaner_vehicle = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_trip_costs = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_journey_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
+    special_therapy = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=False, null=False, validators=[MinValueValidator(0), MaxValueValidator(100000)])
 
     # Field added to store ML predictions from the external MLaaS service
     prediction_result = models.JSONField(
@@ -132,9 +132,9 @@ class Vehicle(models.Model):
         null=True,
         blank=True
     )
-    vehicle_age = models.IntegerField(default=0)
+    vehicle_age = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100000)])
     vehicle_type = models.CharField(max_length=255, choices=VEHICLE_TYPE_CHOICES, blank=False, null=False, default='Unknown')
-    number_of_passengers = models.IntegerField(default=1, blank=False, null=False, validators=[MinValueValidator(1)], help_text="Number of passengers must be at least 1")
+    number_of_passengers = models.IntegerField(default=1, blank=False, null=False, validators=[MinValueValidator(1), MaxValueValidator(100000)])
 
     def __str__(self):
         return f"Vehicle {self.id} - {self.vehicle_type if self.vehicle_type else 'Unknown'}"

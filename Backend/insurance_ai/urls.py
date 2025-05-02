@@ -27,4 +27,6 @@ urlpatterns = [
     path('engineer/', include('engineer.urls')),
     path('finance/', include('finance.urls')),
     path('sysadmin/', include('sysadmin.urls')),
+    path('health/', include('health_check.urls')),
+    
 ]

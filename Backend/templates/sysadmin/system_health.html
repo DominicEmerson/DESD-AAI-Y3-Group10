@@ -5,14 +5,17 @@
 <style>
   .lights-container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-around;
-    align-items: center;
+    align-items: flex-start;
+    gap: 2rem;
     padding: 2rem;
   }
   .light-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 120px;
   }
   .light-dot {
     width: 80px;
@@ -26,16 +29,13 @@
     background: #28a745;
     box-shadow: 0 0 20px rgba(40,167,69,0.7);
   }
-  .light-dot.yellow {
-    background: #ffc107;
-    box-shadow: 0 0 20px rgba(255,193,7,0.7);
-  }
   .light-dot.red {
     background: #dc3545;
     box-shadow: 0 0 20px rgba(220,53,69,0.7);
   }
   .container-name {
     font-weight: bold;
+    text-align: center;
     margin-bottom: 0.3rem;
   }
   .container-status {
@@ -53,59 +53,78 @@
 
 {% block content %}
   <h1>System Health</h1>
-  <div id="error" hidden>Unable to fetch container status.</div>
+  <div id="error" hidden>Unable to fetch health checks.</div>
   <div id="list" class="lights-container">
-    {# JS will inject .light-item blocks here #}
+    {# JS will inject the check lights here #}
   </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const NAME_MAP = {
-  'desd-aai-y3-group10-postgres_db-1': 'Database',
-  'desd-aai-y3-group10-django_app-1':  'Webapp',
-  'desd-aai-y3-group10-mlaas-1':       'Prediction System',
-};
+
+  const HEALTH_URL = 'api/?format=json';
+
+  // Map raw check titles to friendly names:
+  const DISPLAY_MAP = {
+    'Cache backend: default':    'Cache',
+    'DatabaseBackend':           'Database',
+    'DefaultFileStorageHealthCheck': 'File Storage'
+  };
 
   async function fetchStatus() {
     try {
-      const res = await fetch("{% url 'sysadmin:container_status_api' %}");
-      if (!res.ok) throw new Error();
+      const res = await fetch(HEALTH_URL, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('Non-200 status ' + res.status);
+
       document.getElementById('error').hidden = true;
       const data = await res.json();
-      renderLights(data);
+
+      // Normalize into an array of { title, ok }:
+      let checksArr;
+      if (Array.isArray(data.checks)) {
+        checksArr = data.checks.map(c => ({
+          title: c.title || c.id,
+          ok: !!c.ok
+        }));
+      } else {
+        checksArr = Object.entries(data).map(([key, status]) => ({
+          title: key,
+          ok: status === true || status === 'working' || status === 'OK'
+        }));
+      }
+
+      renderLights(checksArr);
     } catch (err) {
       document.getElementById('error').hidden = false;
-      console.error(err);
+      console.error('Health-check fetch failed:', err);
     }
   }
 
-  function renderLights(containers) {
+  function renderLights(items) {
     const list = document.getElementById('list');
     list.innerHTML = '';
 
-    containers.forEach(c => {
-      // Determine display name
-      let display = NAME_MAP[c.name] || c.name;
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="light-item">
+          <div class="light-dot red"></div>
+          <div class="container-name">No Checks</div>
+          <div class="container-status">down</div>
+        </div>`;
+      return;
+    }
 
-      // Status logic
-      let cls = 'red', statusText = 'down';
-      if (c.state === 'running') {
-        if (c.health === 'unhealthy') {
-          cls = 'yellow';
-          statusText = 'unhealthy';
-        } else {
-          cls = 'green';
-          statusText = 'healthy';
-        }
-      }
+    items.forEach(c => {
+      const cls = c.ok ? 'green' : 'red';
+      const statusText = c.ok ? 'Healthy' : 'Down';
+      // apply friendly name, or fall back to raw title
+      const displayName = DISPLAY_MAP[c.title] || c.title;
 
-      // Build the element
       const item = document.createElement('div');
       item.className = 'light-item';
       item.innerHTML = `
         <div class="light-dot ${cls}"></div>
-        <div class="container-name">${display}</div>
+        <div class="container-name">${displayName}</div>
         <div class="container-status">${statusText}</div>
       `;
       list.appendChild(item);

@@ -32,17 +32,18 @@ class ClaimDashboardView(LoginRequiredMixin, ListView):
     model = Claim
     template_name = 'claims/dashboard.html'
     context_object_name = 'claims'
+    paginate_by = 10  # This will show only 10 records per page
 
     def get_queryset(self):
         user = self.request.user
         if user.role == 'enduser':
             return Claim.objects.filter(accident__reported_by=user).select_related('accident')
         elif user.role in ['admin', 'finance']:
-            return Claim.objects.all().select_related('accident')
+            return Claim.objects.all().select_related('accident').order_by('-id')  # Order by newest first
         elif user.role == 'engineer':
             return Claim.objects.all().select_related(
                 'accident', 'accident__vehicle', 'accident__driver', 'accident__injury'
-            )
+            ).order_by('-id')  # Order by newest first
         return Claim.objects.none()
 
     def get_context_data(self, **kwargs):

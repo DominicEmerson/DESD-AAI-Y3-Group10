@@ -3,7 +3,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from . import views
-
+from django.views.generic import TemplateView
 urlpatterns = [
     path('', views.role_redirect, name='home'),
     path('redirect/', views.role_redirect, name='role_redirect'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('session-info/', views.session_info, name='session_info'),
     path('gdpr/', views.gdpr, name='gdpr'),
+    path('privacy-policy/', TemplateView.as_view(template_name='authentication/privacy_policy.html'), name='privacy_policy'),
 ]

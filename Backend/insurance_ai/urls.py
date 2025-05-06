@@ -14,23 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-# from claims.views import container_status_page, container_status_api
+from django.contrib import admin  # Import Django admin
+from django.urls import path, include  # Import path and include for URL routing
+from django.conf import settings  # Import settings for configuration
+from django.conf.urls.static import static  # Import static for serving static files
 
 urlpatterns = [
     # path('admin/containers/',     container_status_page, name='container_status_page'),
     # path('admin/api/containers/', container_status_api,  name='container_status_api'),
-    path('admin/', admin.site.urls),
-    path('', include('authentication.urls')),
-    path('claims/', include('claims.urls')),
-    path('engineer/', include('engineer.urls')),
-    path('finance/', include('finance.urls')),
-    path('sysadmin/', include('sysadmin.urls')),
-    path('health/', include('health_check.urls')),
+    path('admin/', admin.site.urls),  # Admin site URL
+    path('', include('authentication.urls')),  # Include URLs from the authentication app
+    path('claims/', include('claims.urls')),  # Include URLs from the claims app
+    path('engineer/', include('engineer.urls')),  # Include URLs from the engineer app
+    path('finance/', include('finance.urls')),  # Include URLs from the finance app
+    path('sysadmin/', include('sysadmin.urls')),  # Include URLs from the sysadmin app
+    path('health/', include('health_check.urls')),  # Include health check URLs
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])  # Serve static files in development

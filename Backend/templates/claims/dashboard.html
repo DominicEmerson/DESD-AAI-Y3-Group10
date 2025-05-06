@@ -4,13 +4,13 @@
 {% block title %}Claims Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <h2 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Claims Dashboard</h2>
+<div class="container mt-4"> <!-- Main container for the claims dashboard -->
+    <div class="card border-0 shadow-sm mb-4"> <!-- Card for the dashboard header -->
+        <div class="card-body d-flex justify-content-between align-items-center"> <!-- Card body for header content -->
+            <h2 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Claims Dashboard</h2> <!-- Main title for the dashboard -->
             <div>
                 {% if user.role == 'enduser' %}
-                <a href="{% url 'claims:claim_submission' %}" class="btn btn-primary me-2">
+                <a href="{% url 'claims:claim_submission' %}" class="btn btn-primary me-2"> <!-- Button to submit new claim -->
                     <i class="fas fa-plus"></i> Submit New Claim
                 </a>
                 {% endif %}
@@ -19,56 +19,56 @@
     </div>
 
     {% if messages %}
-    <div class="messages mb-4">
+    <div class="messages mb-4"> <!-- Container for messages -->
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} shadow-sm">
-            {{ message }}
+        <div class="alert alert-{{ message.tags }} shadow-sm"> <!-- Alert for messages -->
+            {{ message }} <!-- Display message -->
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+    <div class="row mb-4"> <!-- Row for statistics cards -->
+        <div class="col-md-4"> <!-- Column for total claims card -->
+            <div class="card bg-primary text-white shadow-sm h-100"> <!-- Card for total claims -->
+                <div class="card-body"> <!-- Card body for total claims -->
+                    <div class="d-flex justify-content-between align-items-center"> <!-- Flexbox layout for content -->
                         <div>
-                            <h6 class="text-uppercase">Total Claims</h6>
-                            <h2 class="mb-0 counter" data-target="{{ total_claims }}">0</h2>
+                            <h6 class="text-uppercase">Total Claims</h6> <!-- Heading for total claims -->
+                            <h2 class="mb-0 counter" data-target="{{ total_claims }}">0</h2> <!-- Counter for total claims -->
                         </div>
-                        <div class="stat-icon">
+                        <div class="stat-icon"> <!-- Icon for total claims -->
                             <i class="fas fa-clipboard-list fa-3x opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-warning shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+        <div class="col-md-4"> <!-- Column for pending claims card -->
+            <div class="card bg-warning shadow-sm h-100"> <!-- Card for pending claims -->
+                <div class="card-body"> <!-- Card body for pending claims -->
+                    <div class="d-flex justify-content-between align-items-center"> <!-- Flexbox layout for content -->
                         <div>
-                            <h6 class="text-uppercase">Pending Claims</h6>
-                            <h2 class="mb-0 counter" data-target="{{ pending_claims }}">0</h2>
+                            <h6 class="text-uppercase">Pending Claims</h6> <!-- Heading for pending claims -->
+                            <h2 class="mb-0 counter" data-target="{{ pending_claims }}">0</h2> <!-- Counter for pending claims -->
                         </div>
-                        <div class="stat-icon">
+                        <div class="stat-icon"> <!-- Icon for pending claims -->
                             <i class="fas fa-hourglass-half fa-3x opacity-50"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-success text-white shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+        <div class="col-md-4"> <!-- Column for approved claims card -->
+            <div class="card bg-success text-white shadow-sm h-100"> <!-- Card for approved claims -->
+                <div class="card-body"> <!-- Card body for approved claims -->
+                    <div class="d-flex justify-content-between align-items-center"> <!-- Flexbox layout for content -->
                         <div>
-                            <h6 class="text-uppercase">Approved Claims</h6>
-                            <h2 class="mb-0 counter" data-target="{{ approved_claims }}">0</h2>
+                            <h6 class="text-uppercase">Approved Claims</h6> <!-- Heading for approved claims -->
+                            <h2 class="mb-0 counter" data-target="{{ approved_claims }}">0</h2> <!-- Counter for approved claims -->
                         </div>
-                        <div class="stat-icon">
+                        <div class="stat-icon"> <!-- Icon for approved claims -->
                             <i class="fas fa-check-circle fa-3x opacity-50"></i>
                         </div>
                     </div>
@@ -78,57 +78,57 @@
     </div>
 
     {% if claims %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Your Claims</h5>
+    <div class="card shadow-sm mb-4"> <!-- Card for displaying user claims -->
+        <div class="card-header bg-dark text-white"> <!-- Card header for claims -->
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Your Claims</h5> <!-- Heading for user claims -->
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+        <div class="card-body p-0"> <!-- Card body for claims table -->
+            <div class="table-responsive"> <!-- Responsive table for claims -->
+                <table class="table table-hover mb-0"> <!-- Table for displaying claims -->
+                    <thead class="table-light"> <!-- Table header -->
                         <tr>
-                            <th>Claim ID</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Status</th>
+                            <th>Claim ID</th> <!-- Column for claim ID -->
+                            <th>Date</th> <!-- Column for claim date -->
+                            <th>Type</th> <!-- Column for claim type -->
+                            <th>Status</th> <!-- Column for claim status -->
                             {% if user.role in 'admin,finance' %}
-                            <th>Settlement Value</th>
+                            <th>Settlement Value</th> <!-- Column for settlement value -->
                             {% endif %}
                             {% if user.role in 'admin,finance,engineer' %}
-                            <th>Prediction</th>
+                            <th>Prediction</th> <!-- Column for prediction status -->
                             {% endif %}
-                            <th>Actions</th>
+                            <th>Actions</th> <!-- Column for action buttons -->
                         </tr>
                     </thead>
                     <tbody>
                         {% for claim in claims %}
                         <tr>
-                            <td><strong>#{{ claim.id }}</strong></td>
-                            <td>{{ claim.accident.accident_date|date:"d/m/Y H:i" }}</td>
-                            <td>{{ claim.accident.accident_type }}</td>
+                            <td><strong>#{{ claim.id }}</strong></td> <!-- Display claim ID -->
+                            <td>{{ claim.accident.accident_date|date:"d/m/Y H:i" }}</td> <!-- Display accident date -->
+                            <td>{{ claim.accident.accident_type }}</td> <!-- Display accident type -->
 
                             <!-- [CHANGED] Dynamic Status -->
                             <td>
                                 {% if claim.settlement_value > 0 %}
                                     <span class="badge bg-success">
                                         <i class="fas fa-check-circle me-1"></i>Approved
-                                    </span>
+                                    </span> <!-- Display approved status -->
                                 {% elif claim.prediction_result and claim.prediction_result.error %}
                                     <span class="badge bg-danger">
                                         <i class="fas fa-exclamation-triangle me-1"></i>Prediction Error
-                                    </span>
+                                    </span> <!-- Display prediction error status -->
                                 {% elif claim.prediction_result %}
                                     <span class="badge bg-info text-dark">
                                         <i class="fas fa-robot me-1"></i>Prediction Available
-                                    </span>
+                                    </span> <!-- Display prediction available status -->
                                 {% else %}
                                     <span class="badge bg-warning text-dark">
                                         <i class="fas fa-hourglass-half me-1"></i>Pending Prediction
-                                    </span>
+                                    </span> <!-- Display pending prediction status -->
                                 {% endif %}
                             </td>
                             {% if user.role in 'admin,finance' %}
-                            <td>£{{ claim.settlement_value }}</td>
+                            <td>£{{ claim.settlement_value }}</td> <!-- Display settlement value -->
                             {% endif %}
 
                             {% if user.role in 'admin,finance,engineer' %}
@@ -138,24 +138,24 @@
                                     {% if claim.prediction_result.error %}
                                         <span class="badge bg-danger" title="{{ claim.prediction_result.error }}">
                                             <i class="fas fa-times-circle me-1"></i> Error
-                                        </span>
+                                        </span> <!-- Display error badge for prediction -->
                                     {% elif claim.prediction_result.prediction %}
                                         <span class="badge bg-info text-dark">
                                             <i class="fas fa-robot me-1"></i>Prediction Available
-                                        </span>
+                                        </span> <!-- Display prediction available badge -->
                                     {% else %}
-                                        <span class="badge bg-secondary">Unknown Format</span>
+                                        <span class="badge bg-secondary">Unknown Format</span> <!-- Display unknown format badge -->
                                     {% endif %}
                                 {% else %}
                                     <span class="badge bg-warning text-dark">
                                         <i class="fas fa-hourglass-half me-1"></i>Pending Prediction
-                                    </span>
+                                    </span> <!-- Display pending prediction badge -->
                                 {% endif %}
                             </td>
                             {% endif %}
 
                             <td>
-                                <a href="{% url 'claims:claim_detail' claim.id %}" class="btn btn-primary btn-sm">
+                                <a href="{% url 'claims:claim_detail' claim.id %}" class="btn btn-primary btn-sm"> <!-- Button to view claim details -->
                                     <i class="fas fa-eye me-1"></i>View Details
                                 </a>
                             </td>
@@ -164,28 +164,28 @@
                     </tbody>
                 </table>
                 {% if is_paginated %}
-                <nav aria-label="Claims pagination" class="p-3">
-                    <ul class="pagination justify-content-center mb-0">
+                <nav aria-label="Claims pagination" class="p-3"> <!-- Pagination controls -->
+                    <ul class="pagination justify-content-center mb-0"> <!-- Pagination list -->
                         {% if page_obj.has_previous %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
+                                <span aria-hidden="true">&laquo;</span> <!-- Previous page link -->
                             </a>
                         </li>
                         {% endif %}
                         
                         {% for num in page_obj.paginator.page_range %}
                             {% if page_obj.number == num %}
-                                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li> <!-- Active page link -->
                             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li> <!-- Page link -->
                             {% endif %}
                         {% endfor %}
 
                         {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
+                                <span aria-hidden="true">&raquo;</span> <!-- Next page link -->
                             </a>
                         </li>
                         {% endif %}
@@ -197,11 +197,11 @@
     </div>
 
     {% else %}
-    <div class="alert alert-info shadow-sm">
+    <div class="alert alert-info shadow-sm"> <!-- Alert for no claims found -->
         {% if user.role == 'enduser' %}
-        <i class="fas fa-info-circle me-2"></i>No claims found. Click "Submit New Claim" to create your first claim.
+        <i class="fas fa-info-circle me-2"></i>No claims found. Click "Submit New Claim" to create your first claim. <!-- Message for end users -->
         {% else %}
-        <i class="fas fa-info-circle me-2"></i>No claims available for review.
+        <i class="fas fa-info-circle me-2"></i>No claims available for review. <!-- Message for other roles -->
         {% endif %}
     </div>
     {% endif %}
@@ -212,42 +212,42 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Select all elements with the "counter" class
-    const counters = document.querySelectorAll('.counter');
+    const counters = document.querySelectorAll('.counter'); // Get all counters
     counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target')) || 0;
-        let current = 0;
-        const steps = 30; // number of increments
-        const stepTime = 30; // ms per step
-        const increment = target / steps;
+        const target = parseInt(counter.getAttribute('data-target')) || 0; // Get target value from data attribute
+        let current = 0; // Current count
+        const steps = 30; // Number of increments
+        const stepTime = 30; // Milliseconds per step
+        const increment = target / steps; // Calculate increment value
 
         function updateCounter() {
-            current += increment;
+            current += increment; // Increment current count
             if (current < target) {
-                counter.textContent = Math.ceil(current);
-                setTimeout(updateCounter, stepTime);
+                counter.textContent = Math.ceil(current); // Update counter display
+                setTimeout(updateCounter, stepTime); // Continue updating
             } else {
-                counter.textContent = target;
+                counter.textContent = target; // Set counter to target value
             }
         }
-        updateCounter();
+        updateCounter(); // Start updating counter
     });
 
     // Remove old prediction modal and JS, update JS to handle prediction in details modal
     document.querySelectorAll('.view-prediction-btn').forEach(button => {
         button.addEventListener('click', function() {
-            const claimId = this.getAttribute('data-claim-id');
+            const claimId = this.getAttribute('data-claim-id'); // Get claim ID from button
             // No need to fetch prediction here, handled by Get Prediction button in modal
         });
     });
     document.querySelectorAll('.get-prediction-btn').forEach(button => {
         button.addEventListener('click', async function() {
-            const claimId = this.getAttribute('data-claim-id');
-            const section = document.getElementById(`prediction-section-${claimId}`);
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Getting Prediction...';
+            const claimId = this.getAttribute('data-claim-id'); // Get claim ID from button
+            const section = document.getElementById(`prediction-section-${claimId}`); // Get prediction section
+            button.disabled = true; // Disable button while fetching
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Getting Prediction...'; // Change button text to loading
             try {
-                const response = await fetch(`/claims/${claimId}/prediction/`);
-                const data = await response.json();
+                const response = await fetch(`/claims/${claimId}/prediction/`); // Fetch prediction data
+                const data = await response.json(); // Parse response as JSON
                 if (data.prediction) {
                     section.innerHTML = `
                         <div class="alert alert-info">
@@ -295,34 +295,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .card {
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }
-    
-    .stat-icon {
-        opacity: 0.7;
-    }
-    
-    .table th, .table td {
-        padding: 1rem;
-    }
-    
-    .table thead th {
-        border-bottom: 2px solid #dee2e6;
-        font-weight: 600;
-    }
-    
-    .badge {
-        padding: 0.5em 0.8em;
-    }
-</style>
 {% endblock %}

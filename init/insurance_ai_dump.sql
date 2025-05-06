@@ -672,11 +672,13 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 --
 
 COPY public.authentication_customuser (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, role) FROM stdin;
-1	pbkdf2_sha256$870000$Ho4epz2BOkooKRuASY2rZz$Rx5srHBSnvWe9yV/KnbIZD6m18AF0rm9jeSP65ObKQU=	\N	t	Dominic			dominic@example.com	t	t	2025-04-30 16:40:54.51949+00	admin
-4	pbkdf2_sha256$870000$KiSGwktaZrOtOzBlyZVibM$jnTZwBMo0d/FOMQyb4sByNxHQoo9XcsoZ8cwAQ1es0I=	\N	f	finance_user			finance@example.com	f	t	2025-04-30 16:40:55.814788+00	finance
-2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-02 14:36:46.514968+00	t	admin_user			admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
-3	pbkdf2_sha256$870000$qhjxPvRLTeU1126VZpAu2G$KOoXKu/+9sy4ZVcYmb4fPbQ9h/rAkbDtha++6+/hIS4=	2025-05-02 14:37:46.459505+00	f	engineer_user			engineer@example.com	f	t	2025-04-30 16:40:55.347296+00	engineer
-5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-02 21:13:07.088183+00	f	enduser			enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
+9	pbkdf2_sha256$870000$9ClPapIKBdBN8VwWWnwJeu$Mn4zfELb8pRR9QkbM1cggqJKYezF0blws15X9lupeU4=	2025-05-06 15:07:54.027565+00	f	EHobbs	Edmond	Hobbs	edmond.hobbs@darknet.com	t	t	2025-05-06 15:07:53.622895+00	engineer
+2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-06 15:08:04.18667+00	t	admin_user	admin	user	admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
+5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-06 14:38:27.572646+00	f	enduser	end	user	enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
+6	pbkdf2_sha256$870000$DF2ooaMGhIcvbOXQOiKwqh$NsKeHn6KPqDTHzXMiP7ZWCBk+o61hQpVkndyuEZkpWo=	2025-05-06 14:17:43.675797+00	f	testie	test	user	Test@engineer.com	f	t	2025-05-06 14:17:43.134472+00	enduser
+3	pbkdf2_sha256$870000$qhjxPvRLTeU1126VZpAu2G$KOoXKu/+9sy4ZVcYmb4fPbQ9h/rAkbDtha++6+/hIS4=	2025-05-02 14:37:46.459505+00	f	engineer_user	engineer	user	engineer@example.com	t	t	2025-04-30 16:40:55.347296+00	engineer
+4	pbkdf2_sha256$870000$KiSGwktaZrOtOzBlyZVibM$jnTZwBMo0d/FOMQyb4sByNxHQoo9XcsoZ8cwAQ1es0I=	\N	f	finance_user	finance	user	finance@example.com	t	t	2025-04-30 16:40:55.814788+00	finance
+1	pbkdf2_sha256$870000$Ho4epz2BOkooKRuASY2rZz$Rx5srHBSnvWe9yV/KnbIZD6m18AF0rm9jeSP65ObKQU=	\N	t	Dominic	Dom	inic	dominic@example.com	t	t	2025-04-30 16:40:54.51949+00	admin
 \.
 
 
@@ -4940,6 +4942,7 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 9119	2021-04-28 22:34:00+00	Rear end - 3 car - Clt at front	Swerved to avoid another vehicle.	t	t	Rainy	\N
 9120	2023-08-30 01:02:00+00	Other side pulled on to roundabout	Hit a deer on the highway.	t	f	Rainy	\N
 9121	2023-07-17 05:37:00+00	Rear end	Lost control on a snowy road.	t	f	Snowy	\N
+9761	2025-05-02 14:24:19+00	Rear end	Unknown	f	f	Snowy	5
 9122	2021-01-01 19:48:00+00	Other side drove on wrong side of the road	Lost control on a snowy road.	t	f	Rainy	\N
 9123	2023-02-27 15:08:00+00	Rear end - Clt pushed into next vehicle	Side collision at an intersection.	f	f	Snowy	\N
 9124	2020-10-30 10:46:00+00	Rear end	Hit a deer on the highway.	t	f	Rainy	\N
@@ -10441,7 +10444,6 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4854	2021-12-06 10:50:00+00	895.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	\N	9736
 4855	2022-03-20 03:22:00+00	565.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	495.00	0.00	0.00	0.00	0.00	0.00	\N	9737
 4856	2021-12-28 03:59:00+00	520.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9738
-4857	2022-08-15 10:48:00+00	1613.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	\N	9739
 4858	2022-08-27 23:54:00+00	998.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	50.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9740
 4859	2022-04-25 07:19:00+00	881.00	0.00	0.00	0.00	380.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	240.00	0.00	0.00	0.00	0.00	0.00	\N	9741
 4860	2022-11-19 00:35:00+00	260.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	0.00	\N	9742
@@ -10454,15 +10456,17 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4867	2020-12-24 14:31:00+00	1390.00	0.00	0.00	1000.00	523.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	240.00	0.00	0.00	0.00	0.00	0.00	\N	9749
 4868	2023-08-17 08:09:00+00	1695.00	0.00	0.00	0.00	900.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9750
 4869	2023-04-30 19:26:00+00	495.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	495.00	0.00	0.00	0.00	0.00	0.00	\N	9751
-4870	2023-01-26 08:35:00+00	3325.00	0.00	0.00	475.00	1950.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9752
 4871	2023-08-14 10:47:00+00	725.00	0.00	0.00	0.00	524.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9753
-4872	2022-06-30 19:24:00+00	275.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	60.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	0.00	\N	9754
-4873	2023-06-13 15:05:00+00	1074.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	\N	9755
-4874	2023-08-05 13:27:00+00	2020.00	0.00	0.00	0.00	2020.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9756
-4875	2023-10-18 05:32:00+00	781.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	\N	9757
-4876	2020-06-05 00:11:00+00	1390.00	0.00	0.00	0.00	2300.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1390.00	0.00	0.00	0.00	0.00	0.00	\N	9758
+4873	2023-06-13 15:05:00+00	1074.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [230.5490233658866], "request_id": 6, "algorithm_version": "1.0.0", "processing_time_ms": 34.83}	9755
+4872	2022-06-30 19:24:00+00	275.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	60.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [183.1085883619608], "request_id": 8, "algorithm_version": "1.0.0", "processing_time_ms": 40.89}	9754
+4874	2023-08-05 13:27:00+00	2020.00	0.00	0.00	0.00	2020.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [205.91648980615588], "request_id": 10, "algorithm_version": "1.0.0", "processing_time_ms": 5.16}	9756
 4877	2025-05-02 20:07:55.387415+00	0.00	0.03	0.05	0.05	0.05	0.04	0.09	0.08	0.07	0.07	0.06	0.06	0.06	0.07	0.06	0.08	0.13	0.17	{"prediction": [166.7830616840425], "request_id": 2, "algorithm_version": "1.0.0", "processing_time_ms": 238.81}	9759
 4878	2025-05-02 21:14:26.634244+00	0.00	0.06	0.00	0.00	0.00	0.00	0.00	0.00	0.06	0.00	0.00	0.00	0.06	0.00	0.00	10000.00	0.00	0.00	{"prediction": [166.72007768403893], "request_id": 3, "algorithm_version": "1.0.0", "processing_time_ms": 253.4}	9760
+4857	2022-08-15 10:48:00+00	1613.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [214.12733432606612], "request_id": 4, "algorithm_version": "1.0.0", "processing_time_ms": 56.89}	9739
+4870	2023-01-26 08:35:00+00	3325.00	0.00	0.00	475.00	1950.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [211.39038615276272], "request_id": 5, "algorithm_version": "1.0.0", "processing_time_ms": 1.03}	9752
+4876	2020-06-05 00:11:00+00	1390.00	0.00	0.00	0.00	2300.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1390.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [225.98744307704757], "request_id": 7, "algorithm_version": "1.0.0", "processing_time_ms": 1.29}	9758
+4875	2023-10-18 05:32:00+00	781.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [229.6367073081188], "request_id": 9, "algorithm_version": "1.0.0", "processing_time_ms": 125.07}	9757
+4879	2025-05-06 14:25:10.077605+00	0.00	11.99	12.00	12.00	21.00	21.00	31.00	321.00	42.00	41.00	89.00	8.00	7.00	8.00	1.00	1.00	111.00	11.00	{"prediction": [200.72558208086875], "request_id": 11, "algorithm_version": "1.0.0", "processing_time_ms": 43.95}	9761
 \.
 
 
@@ -25186,6 +25190,14 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
 3e1082alsuz7zj94n45f1cbzky18x6jc	.eJxVjEEOwiAQRe_C2pBpC1Po0r1nIMCMFjVgSptojHc3JF3o9r_331s4v62z2yovLpGYhBaH3y34eOPcAF19vhQZS16XFGRT5E6rPBXi-3F3_wKzr3N7s4-2I4PU93hmMAMiKj1Y23uCUbEhGwg7NYKOiMYYa4OO1hNHAlAtWrnWVLLj5yMtLzEhwOcL_YU_Ow:1uAbC0:7zSwTTOqsOODf7JhjSyXhPx0p3DSKdDM-63b3tk_Qq8	2025-05-01 21:21:40.343647+00
 qlti5r20de6pixjv71e764w3l40cu4mv	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uAdsk:ro1iJn-PL_4o8o3I2eDhavLJ19trh7HYuDsd7Y8o5Ig	2025-05-02 00:14:58.827859+00
+5yop3wgaxq2ktnpe7qtjo5vahu1eygw5	.eJxVjEEOwiAQRe_C2pBpC1Po0r1nIMCMFjVgSptojHc3JF3o9r_331s4v62z2yovLpGYhBaH3y34eOPcAF19vhQZS16XFGRT5E6rPBXi-3F3_wKzr3N7s4-2I4PU93hmMAMiKj1Y23uCUbEhGwg7NYKOiMYYa4OO1hNHAlAtWrnWVLLj5yMtLzEhwOcL_YU_Ow:1uBzbL:Y4iytS5WC0vm68lMQhOo4ccXQKFe4E4BTJkB8SEH8pc	2025-05-05 17:37:35.724914+00
+k50c88py8mvy4zsj3np5g9fonzhzrjor	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uC0K9:cDf-XeZcWakZ_iZQL3jVabXKjPqaMGXaZ-CqxHZACEo	2025-05-05 18:24:53.409657+00
+8bmd05m2bv43ci5qohy5gp7cqk3t1jbu	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCFHV:eT5pbMK32W9AD7_5koZ1zRQDGrM5nlWMx59xuu2dIwE	2025-05-06 10:23:09.504016+00
+gmpez0ztzpnj00r74ht2tqzenvhozsnw	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCFXD:8VtDdB2wY8RepStbGF7i2WzTTVBoaikIWGKb-gCj0To	2025-05-06 10:39:23.95349+00
+9tasaw9v6o66d5mcwzjj4gco3gfi80vt	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCIsv:IW7_J2y1tcmnIlqPnUaWNzvw8CfqVo4pTX6U_chBrW8	2025-05-06 14:14:01.281757+00
+nqamlvq0mcglr5baiz5lolvg53xl5s5p	.eJxVjkEOwiAURO_CuiG0hV_o0r1nIMD_WrSCKW2iMd7dYLrQ7byZl3kx67Z1sluhxUZkI1Os-c28C1dKFeDFpXPmIad1iZ7XCt9p4ceMNB_27p9gcmWqa3LBtKgBuw5OJHQPAFL1xnQOxSBJo_EIrRyECgBaa2O8CsYhBRRCVmmhUmJOlh73uDzZCEI0LMwu3r7XpR7M-wMYxUPz:1uCJEM:FUOZnJfIJmw5icAZp0R_XG-_rtpnYoC8tWfE2gmv57c	2025-05-06 14:35:10.654806+00
+hifeut45qhqnfi8yzm9k1j8c9nmtzp2r	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCJWc:Cga6igpd7kXvfrq133Y5PvCKVSw7xjIdrnHo5axVSXM	2025-05-06 14:55:02.978233+00
+wwo8gkvl5lqgdxkr67mcoq0esyvosrde	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCJts:Ya1CnGJKwzAaUZx9U4SjZQ1hDTdWAbLRi_Kd9xnz33s	2025-05-06 15:19:04.194053+00
 \.
 
 
@@ -25225,6 +25237,14 @@ COPY public.ml_api_mlrequest (id, input_data, prediction, created_at, response_t
 1	[[1.1, 2.2, 3.3]]	[172.25093448198544]	2025-05-02 14:40:26.034783+00	0.14876842498779297	1
 2	[[0.03, 0.09, 0.0]]	[166.7830616840425]	2025-05-02 20:07:58.444284+00	0.23881053924560547	1
 3	[[0.06, 0.0, 0.0]]	[166.72007768403893]	2025-05-02 21:14:29.526006+00	0.25339674949645996	1
+4	[[0.0, 0.0, 52.0]]	[214.12733432606612]	2025-05-06 10:12:33.825342+00	0.056893348693847656	1
+5	[[0.0, 0.0, 49.0]]	[211.39038615276272]	2025-05-06 10:12:47.172819+00	0.001026153564453125	1
+6	[[0.0, 0.0, 70.0]]	[230.5490233658866]	2025-05-06 10:18:57.477076+00	0.03483176231384277	1
+7	[[0.0, 0.0, 65.0]]	[225.98744307704757]	2025-05-06 10:19:03.941618+00	0.0012853145599365234	1
+8	[[0.0, 0.0, 18.0]]	[183.1085883619608]	2025-05-06 10:28:32.571813+00	0.0408930778503418	1
+9	[[0.0, 0.0, 69.0]]	[229.6367073081188]	2025-05-06 14:03:08.457363+00	0.12506818771362305	1
+10	[[0.0, 0.0, 43.0]]	[205.91648980615588]	2025-05-06 14:04:41.303315+00	0.005156278610229492	1
+11	[[11.99, 31.0, 0.0]]	[200.72558208086875]	2025-05-06 14:25:10.608795+00	0.04394721984863281	1
 \.
 
 
@@ -25260,7 +25280,7 @@ SELECT pg_catalog.setval('public.authentication_customuser_groups_id_seq', 1, fa
 -- Name: authentication_customuser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.authentication_customuser_id_seq', 5, true);
+SELECT pg_catalog.setval('public.authentication_customuser_id_seq', 9, true);
 
 
 --
@@ -25274,14 +25294,14 @@ SELECT pg_catalog.setval('public.authentication_customuser_user_permissions_id_s
 -- Name: claims_accident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_accident_id_seq', 9760, true);
+SELECT pg_catalog.setval('public.claims_accident_id_seq', 9761, true);
 
 
 --
 -- Name: claims_claim_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_claim_id_seq', 4878, true);
+SELECT pg_catalog.setval('public.claims_claim_id_seq', 4879, true);
 
 
 --
@@ -25330,7 +25350,7 @@ SELECT pg_catalog.setval('public.django_migrations_id_seq', 24, true);
 -- Name: health_check_db_testmodel_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.health_check_db_testmodel_id_seq', 1, true);
+SELECT pg_catalog.setval('public.health_check_db_testmodel_id_seq', 6, true);
 
 
 --
@@ -25351,7 +25371,7 @@ SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 3, true);
 -- Name: ml_api_mlrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 3, true);
+SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 11, true);
 
 
 --

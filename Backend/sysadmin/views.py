@@ -50,27 +50,36 @@ def user_management(request):
         users = users.filter(email__icontains=query)
 
     if request.method == 'POST':
-        action = request.POST.get('action')
+        action  = request.POST.get('action')
         user_id = request.POST.get('user_id')
-        user = get_object_or_404(User, id=user_id)
+        user    = get_object_or_404(User, id=user_id)
 
         if action == 'update_role':
-            new_role = request.POST.get('role')
-            user.role = new_role
+
+            first_name = request.POST.get('first_name', '').strip()
+            last_name  = request.POST.get('last_name',  '').strip()
+            new_role   = request.POST.get('role')
+
+            user.first_name = first_name
+            user.last_name  = last_name
+            user.role       = new_role
             if new_role == 'admin':
-                user.is_staff = True
+                user.is_staff     = True
                 user.is_superuser = True
             elif new_role in ['engineer', 'finance']:
-                user.is_staff = True
+                user.is_staff     = True
                 user.is_superuser = False
             else:
-                user.is_staff = False
+                user.is_staff     = False
                 user.is_superuser = False
+
 
             user.save()
             messages.success(
                 request,
-                f'Role for "{user.username}" updated to "{new_role}".'
+                f'Updated "{user.username}": '
+                f'name set to {first_name} {last_name}, '
+                f'role set to {new_role}.'
             )
 
         elif action == 'reset_password':
@@ -97,7 +106,6 @@ def user_management(request):
         'sysadmin/user_management.html',
         {'users': users, 'query': query}
     )
-
 
 @login_required
 @user_passes_test(utils.is_admin)

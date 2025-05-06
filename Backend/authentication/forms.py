@@ -8,27 +8,37 @@ from django.utils import timezone
 User = get_user_model()
 
 class SignupForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    password_confirm = forms.CharField(widget=forms.PasswordInput, label='Confirm Password')
+    first_name      = forms.CharField(max_length=30, required=True)
+    last_name       = forms.CharField(max_length=30, required=True)
+    password        = forms.CharField(widget=forms.PasswordInput)
+    password_confirm= forms.CharField(widget=forms.PasswordInput, label='Confirm Password')
 
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password', 'password_confirm']
+        model  = User
+        fields = [
+            'username',
+            'email',
+            'first_name',     
+            'last_name',       
+            'password',
+            'password_confirm',
+        ]
 
     def clean_password_confirm(self):
-        password = self.cleaned_data.get('password')
-        password_confirm = self.cleaned_data.get('password_confirm')
-        if password and password_confirm and password != password_confirm:
+        pw  = self.cleaned_data.get('password')
+        pwc = self.cleaned_data.get('password_confirm')
+        if pw and pwc and pw != pwc:
             raise ValidationError("Passwords do not match.")
-        return password_confirm
+        return pwc
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         user.role = 'enduser'
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name  = self.cleaned_data['last_name']
         if commit:
             user.save()
         return user
-    
 class ForgotPasswordForm(forms.Form):
     email = forms.EmailField(label='Enter your email', max_length=255)

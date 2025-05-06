@@ -1,187 +1,61 @@
-============================
-02/05/2025 - Bradley
-Uploaded new data cleaning notebook and new cleaned dataset csv file in ML-Research. 
-Got the import_claims_data script working so the claims are now persistent in the database.
-DB snapshot taken and restored successfully so this should be permanent now.
+# Machine Learning-Based Insurance Claim Prediction Application
 
--- Additional Dom 11:52 - First off this all works on my machine too. Second, since this has come up a couple of times now - If you do any major code update that involves refactoring or model changes - you will need to delete the old migrations and then redo them. Otherwise this will not work on any machine other than your own. Testing on another manchine should standard practice, and everyone should be helping with that (not to mention pulling from main frequently). 
+This repository contains a web application that predicts insurance settlement amounts based on user input. The predictive model is integrated into a Django framework.
 
-Really good work though :)
+## Dataset
 
-=============================
-DB Fix and dump system update:-
+- **Synthetic_Data_For_Students.csv**: Synthetic data generated and provided for training purposes. It includes various features relevant to insurance claims.
+- **clean_df.csv**: A cleaned version of the dataset that is used to train the AI models. Missing values are handled and categorical variables are appropriately encoded.
 
-30/04/2025 - Dom
+## Model Training
 
-Fixed container issues. Added Sql dump mechamnism. Easy way to test it worked is that you should be able to log on as one of the temp users without running any script.
-So try logging in as any of these after build:
+The model is trained on the cleaned version of the given insurance dataset and saved using pickle. For details on the model training process, please refer to the original project code.
 
+## User Roles and Dashboards
 
-      users_data = [
-            {"username": "Dominic", "email": "dominic@example.com", "password": "2your3t3rnity", "role": "admin", "is_staff": True, "is_superuser": True},
-            {"username": "admin_user", "email": "admin@example.com", "password": "adminpass", "role": "admin", "is_staff": True, "is_superuser": True},
-            {"username": "engineer_user", "email": "engineer@example.com", "password": "engineerpass", "role": "engineer"},
-            {"username": "finance_user", "email": "finance@example.com", "password": "financepass", "role": "finance"},
-            {"username": "enduser", "email": "enduser@example.com", "password": "enduserpass", "role": "enduser"},
-        ]
+### 1. Admin
+- Has full access to the system's functionalities. Can create, update, and delete user accounts, and check the health status of various system components.
 
-If you can login it works.
+### 2. Engineer
+- Can manage machine learning models, upload new models, trigger retraining of existing models based on new data, and access logs of prediction requests made to the ML algorithms.
 
-There's a new script for producing a database dump if you add anything important:
+### 3. Finance
+- Can view and manage the financial aspects of claims, filtering claims based on various criteria like dates, values, and whether there was a case of whiplash. Thwy can then generate financial reports and/or invoices for selected claims.
 
-shut_down_with_dump.py
+### 4. End User
+- End users can submit new claims and view the status of their existing claims.
 
-Run it on your local machine (not inside the containers) before you shutdown any containers. 
-It will create a new record, Postgress should always load from the latest. Consider pruning old ones when you know it works so we don't jam up the git.
-The insurance_ai_dump.sql file will be updated in the init folder in the root of the project.
+## Usage
 
-================================
+### Clone the Repository
 
-MAJOR UPDATE: 28/04/2025
+To get started, clone the repository using the following command:
 
-Bradley Booth
-
-Complete reorg of project root
-
-Separation of Docker components into distinct subfolders
-
-Implementation of frontend container for web server proxy
-
-Postgres DB now persistent in isolated Database container
-
-Main Django project (name: insurance_ai) isolated into backend container
-
-Backend refactored into distinct apps following MVT:
-
-  Authentication - login, security etc
-  
-  Claims - Enduser/Claims handler functionality (create, edit, view claims)
-  
-  Engineer - ML Engineer functionality (upload + retrain models, #TODO model performance view? Add models to database)
-  
-  Finance - Finance functionality (reports, invoices)
-  
-  Sysadmin - Admin functionality (user administration, health status)
-
-
-Although user related models have been moved to the authentication app, these database tables continue to use the original name 'claims'
-
-Preserving the original table name is controlled with the following declaration:
-    
-    class Meta:
-        db_table = 'claims_customuser'  
-
-If you make changes to the models structure in any apps you may need to drop the database and repopulate with dummy script data again!
-
-Frontend webport is now 8080 (#TODO - change to 443 using SSL)
-
-Other containers no longer expose ports outside of the Docker network
-
-If you need to test anything direct to other containers you will need to edit the docker-compose and dockerfile to re-enable the ports.
-
-
-I've tested as much as possible, but there may be some issues, please check any functionality that you previously implemented!
-
-=================================
-
-
-Instructions to run and build in VSCode:
-
-Have Docker installed and running
-
-Have MySQl installed.
-
-New version runs py 3.12 rather than 3.10
-
-No longer need powershell commands to stop windows changing lf to clrf as .sh no longer required.
-
-In VSCode terminal:
-
-'cd DESD-AAI-Y3-Group10'
-
-docker-compose up --build -d
-
-Once complete and all three showing green in docker
-
----
-
-Update 03/04/25 - Dom
-
-Commands in terminal if you want to check Ahmed's container/API is working on your machine:
-
-docker-compose exec mlaas python manage.py makemigrations ml_api
-
-docker-compose exec mlaas python manage.py migrate
-
-docker-compose exec mlaas ls
-
-docker-compose exec mlaas python manage.py register_models
-
-curl -Method POST `     -Uri "http://localhost:8009/api/algorithms/1/predict/"`
--ContentType "application/json" `
--Body '{"input_data": [[0.5, 1.2, 3000]], "algorithm_name": "3-Feature Regression Model"}'
-
----
-
-Update 19/03/2025 - Dom
-
-The docker-compose.yml and relevant files have been updated so that postgre now mounts a persistent database that should save changes (provided you don't completely rebuild the containers).
-The first time you run docker-compose --build -d it should automatically make migrations now, and create a set of default users.
-
-When exiting a session you should use docker-compose down.
-
-When starting a new session docker-compose up.
-
-In these cases database updates will be persistent.
-
-Also fixed broken jira updater.
-
----
-
-If you try some front end work you will need to restart the django app with: docker restart insurance_ai-django_app-1
-
-If you do any back end table addition or the like you will need to rebuild : docker-compose up --build -d (if you do this any changes you made to the db will not persist as you have rebuilt it).
-
-If you want to stop docker with all containers left as they are between uses: docker-compose stop
-
-To resume from stop: docker-compose start
-
----
-
-If gou fuck up realy bad and want to get rid of all docker containers and any atifacts:
-
-docker-compose down -v --rmi all --remove-orphans
-
-docker system prune -a --volumes
-
-\*\*\*Further:
-
-GitHub is now linked. I'm going to see if I can link some old issues. But anytime you address a jira issue in your GitHub commit you should tag the issue like this
-
-git commit -m "Fix bug in authentication SCRUM-456"
-git push origin main
-
-Tested retroactive updates and status change from git.
-
-### User Persistence & Automated Setup
-
-- **Users now persist across restarts** – Any new users added via Django Admin, API, or shell will be saved in the PostgreSQL database.
-- **User creation is automated** – On a fresh setup, default test users will be created automatically.
-- **Updated `docker-compose.yml`** – The startup process now runs migrations and ensures users exist before launching the app.
-
-#### How to Start the Project:
-
-```sh
-docker-compose up --build -d
-
-stop without losing data
-docker-compose down
-
-Check if a user exists.
-
-docker exec -it desd-aai-y3-group10-django_app-1 python manage.py shell
-
-from claims.models import CustomUser
-print(CustomUser.objects.all())  # Should list all users
-exit()
+```bash
+git clone https://github.com/YourUsername/DESD-AAI-Y3-Group10.git
+cd DESD-AAI-Y3-Group10
 ```
+
+### Install Dependencies
+
+Install dependencies by running:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run the Application
+
+To start the application, execute the following command:
+
+```bash
+docker-compose up --build -d
+```
+
+### Access the Application
+
+Open your web browser and visit the following URLs to access the application interfaces:
+
+- **Django Admin Interface**: `http://localhost:8000/admin`
+- **MLaaS API**: `http://localhost:8009/api/`
+- **Frontend Application**: `http://localhost:8080`

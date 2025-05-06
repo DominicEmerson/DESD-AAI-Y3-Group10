@@ -4,14 +4,22 @@ import logging
 import os
 import time
 import traceback
-
 import joblib
 import numpy as np
+import matplotlib.pyplot as plt
+import shap
+import io
+import pandas as pd
+import base64
 from django.conf import settings  
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from shap import LinearExplainer, KernelExplainer
+
+from sklearn.linear_model import LinearRegression, LogisticRegression
+
 
 # Import logic and CUSTOM exceptions from the retraining module
 from .retraining_logic import ( 
@@ -143,7 +151,7 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
                  model_file_rel_path, algorithm_id, model_file_abs_path
             )
 
-    # --- Custom Actions ---
+       # --- Custom Actions ---
 
     @action(
         detail=True,
@@ -190,9 +198,8 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
 
         # --- Construct absolute path and check existence ---
         try:
-        
+                
             model_file_abs_path = os.path.join(settings.BASE_DIR, model_file_rel_path)
-
             if not os.path.exists(model_file_abs_path):
                 logger.error(
                     "Prediction failed: Model file for Algorithm ID %s not found "
@@ -330,7 +337,6 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
     # --- Retrain method remains the same ---
     @action(detail=True, methods=["post"], url_path="retrain")
     def retrain(self, request, pk=None):
@@ -457,3 +463,63 @@ class MLRequestViewSet(viewsets.ReadOnlyModelViewSet):
         "algorithm__parent_endpoint__name",
     ]
     search_fields = ["input_data", "prediction"]
+
+
+    @action(detail=True, methods=['get'], url_path='explain')
+    def explain(self, request, pk=None):
+        ml_req = self.get_object()
+        df     = pd.DataFrame(ml_req.input_data)
+
+        # build path under your MODEL_ROOT
+        filename = os.path.basename(ml_req.algorithm.model_file.name)
+        model_fp = os.path.join(settings.MODEL_ROOT, filename)
+        if not os.path.exists(model_fp):
+            return Response(
+                {"error": f"Model file not found at {model_fp}."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        model = joblib.load(model_fp)
+
+        try:
+            explainer = shap.Explainer(model, df)
+            shap_out  = explainer(df)
+            plt.figure()
+            shap.plots.bar(shap_out, show=False)
+            # for top-features:
+            importances = np.abs(shap_out.values).mean(axis=0)
+        except Exception:
+            # fallback to coef_ or feature_importances_
+            if hasattr(model, "coef_"):
+                importances = np.abs(model.coef_).ravel()
+            elif hasattr(model, "feature_importances_"):
+                importances = model.feature_importances_
+            else:
+                return Response(
+                    {"error": "Could not compute SHAP or fallback importances."},
+                    status=status.HTTP_501_NOT_IMPLEMENTED
+                )
+            plt.figure()
+            plt.bar(df.columns.astype(str), importances)
+            plt.xticks(rotation=45, ha="right")
+            plt.ylabel("importance")
+
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format="png")
+        plt.close()
+        buf.seek(0)
+        img_b64 = base64.b64encode(buf.read()).decode("utf-8")
+
+        top5 = sorted(
+            zip(importances, df.columns),
+            key=lambda x: x[0], reverse=True
+        )[:5]
+        top_feats = [{"feature": str(col), "importance": float(val)} for val, col in top5]
+
+        return Response({
+            "request_id":   ml_req.pk,
+            "algorithm":    ml_req.algorithm.name,
+            "prediction":   ml_req.prediction, 
+            "shap_image":   img_b64,
+            "top_features": top_feats,
+        })

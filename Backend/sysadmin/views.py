@@ -40,7 +40,6 @@ def create_user(request):
 
     return render(request, 'sysadmin/create_user.html', {'form': form})
 
-
 @login_required
 @user_passes_test(utils.is_admin)
 def user_management(request):
@@ -55,18 +54,6 @@ def user_management(request):
         user_id = request.POST.get('user_id')
         user = get_object_or_404(User, id=user_id)
 
-
-#TODO #Old code for role update please confirm if needed??
-        # if action == 'update_role':
-        #     new_role = request.POST.get('role')
-        #     user.role = new_role
-        #     user.is_staff = new_role in ['admin', 'engineer', 'finance']
-        #     user.is_superuser = (new_role == 'admin')
-        #     user.save()
-        #     messages.success(request, f'Role for "{user.username}" updated to "{new_role}".')
-
-
-        # Update user role
         if action == 'update_role':
             new_role = request.POST.get('role')
             user.role = new_role
@@ -80,22 +67,36 @@ def user_management(request):
                 user.is_staff = False
                 user.is_superuser = False
 
+            user.save()
+            messages.success(
+                request,
+                f'Role for "{user.username}" updated to "{new_role}".'
+            )
 
         elif action == 'reset_password':
             new_password = request.POST.get('new_password')
             if new_password:
                 user.set_password(new_password)
                 user.save()
-                messages.success(request, f'Password for "{user.username}" has been reset.')
+                messages.success(
+                    request,
+                    f'Password for "{user.username}" has been reset.'
+                )
 
         elif action == 'delete_user':
             user.delete()
-            messages.success(request, f'User "{user.username}" deleted successfully.')
+            messages.success(
+                request,
+                f'User "{user.username}" deleted successfully.'
+            )
 
-        print("Redirect URL:", reverse('sysadmin:user_management'))
         return redirect('sysadmin:user_management')
 
-    return render(request, 'sysadmin/user_management.html', {'users': users, 'query': query})
+    return render(
+        request,
+        'sysadmin/user_management.html',
+        {'users': users, 'query': query}
+    )
 
 
 @login_required

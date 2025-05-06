@@ -1,9 +1,8 @@
 # ml_api/urls.py
-
+app_name = 'ml_api'
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import EndpointViewSet, MLAlgorithmViewSet, MLRequestViewSet
-
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 router.register(r'endpoints', EndpointViewSet, basename='endpoint')

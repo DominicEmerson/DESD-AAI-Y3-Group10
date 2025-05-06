@@ -17,7 +17,7 @@ class EndpointSerializer(serializers.ModelSerializer):
     algorithms = serializers.HyperlinkedRelatedField(
         many=True,
         read_only=True,
-        view_name='mlalgorithm-detail' # Matches the basename used in urls.py router
+        view_name='ml_api:mlalgorithm-detail'# Matches the basename used in urls.py router
     )
 
     class Meta:

@@ -1,14 +1,148 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'finance/css/finance.css' %}">
+    <style>
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        .claims-table tbody tr.hidden {
+            display: none;
+        }
+        .table-pagination {
+            text-align: center;
+            margin: 1rem 0;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
-<div class="role-container">
+<div class="container">
     <h1>Finance Dashboard</h1>
-    <p>Welcome, <strong>{{ user.username }}</strong>. Here's your finance dashboard.</p>
     
-    <button onclick=location.href="{% url 'finance:generate_report' %}">Generate Report</button>
-    <button onclick=location.href="{% url 'finance:generate_invoice' %}">Generate Invoice</button>
-
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h2>Filter Claims</h2>
+        <form id="filterForm" class="filter-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="whiplash">Whiplash</label>
+                    <select id="whiplash" name="whiplash">
+                        <option value="">All</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" name="end_date">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="minSettlement">Min Settlement</label>
+                    <input type="number" id="minSettlement" name="min_settlement" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="maxSettlement">Max Settlement</label>
+                    <input type="number" id="maxSettlement" name="max_settlement" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="claimId">Claim ID</label>
+                    <input type="number" id="claimId" name="claim_id" min="1" step="1" placeholder="Enter claim ID">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Results Section -->
+    <div id="resultsSection" class="results-section">
+        <h2>Claims</h2>
+        <div class="table-actions">
+            <button type="button" class="btn btn-secondary" onclick="selectAllClaims()">Select All</button>
+        </div>
+        <div class="table-container">
+            <table class="claims-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Claim ID</th>
+                        <th>Accident Date</th>
+                        <th>Settlement</th>
+                        <th>Whiplash</th>
+                        <th>Health Expenses</th>
+                        <th>Reductions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="claim-checkbox" value="{{ claim.id }}" onchange="toggleClaimSelection({{ claim.id }})">
+                        </td>
+                        <td>{{ claim.id }}</td>
+                        <td>{{ claim.accident.accident_date|date:"Y-m-d" }}</td>
+                        <td>£{{ claim.settlement_value }}</td>
+                        <td>{{ claim.accident.injury.whiplash|yesno:"Yes,No" }}</td>
+                        <td>£{{ claim.special_health_expenses }}</td>
+                        <td>£{{ claim.special_reduction }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Selected Claims Section -->
+    <div id="selectedSection" class="selected-section" style="display: none;">
+        <h2>Selected Claims</h2>
+        <div id="selectedClaims" class="selected-claims"></div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+            <button class="btn btn-primary" onclick="openInvoiceModal()">Generate Invoice</button>
+        </div>
+    </div>
 </div>
+
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeInvoiceModal()">&times;</span>
+        <h2>Generate Invoice</h2>
+        <form id="invoiceForm">
+            <div class="form-group">
+                <label for="invoiceNumber">Invoice Number</label>
+                <input type="text" id="invoiceNumber" name="invoice_number" required>
+            </div>
+            <div class="form-group">
+                <label for="clientReference">Client Reference</label>
+                <input type="text" id="clientReference" name="client_reference">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="include_expense_breakdown" checked>
+                    Include Expense Breakdown
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Invoice</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'finance/js/finance.js' %}"></script>
 {% endblock %}

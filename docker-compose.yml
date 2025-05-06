@@ -50,8 +50,8 @@ services:
       mlaas:
         condition: service_started
     volumes:
-      - ./Backend:/app                           # ← NEW: mount source code
-      - static_volume:/app/staticfiles
+      - ./Backend:/app                           # Mount source code
+      - ./staticfiles:/app/staticfiles           # Mount static files directly
     environment:
       - ALLOWED_HOSTS=frontend,mlaas,localhost,127.0.0.1
       - DJANGO_SETTINGS_MODULE=insurance_ai.settings
@@ -80,15 +80,7 @@ services:
       backend:
         condition: service_healthy
     volumes:
-      - static_volume:/app/staticfiles
+      - ./staticfiles:/app/staticfiles           # Mount static files directly
 
 volumes:
   postgres_data: {}        # Docker-managed Postgres data
-
-
-  static_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./staticfiles

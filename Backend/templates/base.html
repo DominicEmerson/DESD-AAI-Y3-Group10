@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'custom/css/styles.css' %}">
     {% block extra_css %}{% endblock %}
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
+    <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_PUBLIC_KEY }}"></script>
 </head>
 <body>
 

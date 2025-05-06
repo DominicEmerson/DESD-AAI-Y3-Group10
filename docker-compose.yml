@@ -61,6 +61,8 @@ services:
       - DATABASE_HOST=postgres_db
       - DATABASE_PORT=5432
       - MLAAS_SERVICE_URL=http://mlaas:8009/api/
+      - RECAPTCHA_PUBLIC_KEY=6Lc_GzArAAAAAD9W2wGVKivRcqxUEnhGYtyRqRkb
+      - RECAPTCHA_PRIVATE_KEY=6Lc_GzArAAAAAJcLdFmRrlXaoQNJ1xM92cETcqNu
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&

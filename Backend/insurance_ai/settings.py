@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'finance.apps.FinanceConfig',
     'sysadmin.apps.SysadminConfig',
     'rest_framework',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -155,3 +156,11 @@ CSRF_TRUSTED_ORIGINS = [
 # ------------------------------------------------------------------
 MLAAS_SERVICE_URL = os.getenv('MLAAS_SERVICE_URL', 'http://mlaas:8009/api')
 DEFAULT_ML_ALGORITHM_ID = int(os.getenv('DEFAULT_ML_ALGORITHM_ID', '1'))
+
+# ------------------------------------------------------------------
+# reCAPTCHA Configuration
+# ------------------------------------------------------------------
+RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY', 'your-public-key')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY', 'your-private-key')
+RECAPTCHA_DEFAULT_ACTION = 'generic'
+RECAPTCHA_SCORE_THRESHOLD = 0.5

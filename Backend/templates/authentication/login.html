@@ -125,14 +125,14 @@
                     </div>
                 {% endif %}
         
-                <form method="post" action="{% url 'signup' %}"> <!-- Form for signup -->
+                <form method="post" action="{% url 'signup' %}" novalidate> <!-- Form for signup -->
                     {% csrf_token %} <!-- CSRF token for security -->
                     <div class="input-row">
                         <input type="text" name="first_name" placeholder="First Name" required> <!-- First name input -->
                         <input type="text" name="last_name" placeholder="Last Name" required> <!-- Last name input -->
                     </div>
                     <input type="text" name="username" placeholder="Username" required> <!-- Username input -->
-                    <input type="email" name="email" placeholder="Email" required> <!-- Email input -->
+                    <input type="text" name="email" placeholder="Email" required> <!-- Email input -->
                     <input type="password" name="password" placeholder="Password" required> <!-- Password input -->
                     <input type="password" name="password_confirm" placeholder="Confirm Password" required> <!-- Confirm password input -->
 

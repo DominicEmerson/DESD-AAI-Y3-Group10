@@ -672,13 +672,22 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 --
 
 COPY public.authentication_customuser (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, role) FROM stdin;
-9	pbkdf2_sha256$870000$9ClPapIKBdBN8VwWWnwJeu$Mn4zfELb8pRR9QkbM1cggqJKYezF0blws15X9lupeU4=	2025-05-06 15:07:54.027565+00	f	EHobbs	Edmond	Hobbs	edmond.hobbs@darknet.com	t	t	2025-05-06 15:07:53.622895+00	engineer
-2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-06 15:08:04.18667+00	t	admin_user	admin	user	admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
-5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-06 14:38:27.572646+00	f	enduser	end	user	enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
-6	pbkdf2_sha256$870000$DF2ooaMGhIcvbOXQOiKwqh$NsKeHn6KPqDTHzXMiP7ZWCBk+o61hQpVkndyuEZkpWo=	2025-05-06 14:17:43.675797+00	f	testie	test	user	Test@engineer.com	f	t	2025-05-06 14:17:43.134472+00	enduser
 3	pbkdf2_sha256$870000$qhjxPvRLTeU1126VZpAu2G$KOoXKu/+9sy4ZVcYmb4fPbQ9h/rAkbDtha++6+/hIS4=	2025-05-02 14:37:46.459505+00	f	engineer_user	engineer	user	engineer@example.com	t	t	2025-04-30 16:40:55.347296+00	engineer
 4	pbkdf2_sha256$870000$KiSGwktaZrOtOzBlyZVibM$jnTZwBMo0d/FOMQyb4sByNxHQoo9XcsoZ8cwAQ1es0I=	\N	f	finance_user	finance	user	finance@example.com	t	t	2025-04-30 16:40:55.814788+00	finance
 1	pbkdf2_sha256$870000$Ho4epz2BOkooKRuASY2rZz$Rx5srHBSnvWe9yV/KnbIZD6m18AF0rm9jeSP65ObKQU=	\N	t	Dominic	Dom	inic	dominic@example.com	t	t	2025-04-30 16:40:54.51949+00	admin
+12	pbkdf2_sha256$870000$Jgq3OZWXvkwEHGuTaBJ1MQ$czpMSY+q9a74ZAL3bqftxDqJ0JW3P394QgV0M4o8m3g=	2025-05-07 14:40:01.497266+00	f	RSmith	Rob	Smith	RobSmith@example.com	f	t	2025-05-07 14:40:01.061551+00	enduser
+13	pbkdf2_sha256$870000$syc6G6vZmslFIZHbcYKiqZ$brEgQQbCUKNwo8LRfWVfwxLSVCHR7l+tsToI9pAtabw=	2025-05-07 14:40:59.183567+00	f	LBrown	Liz	Brown	LBrown@test.com	f	t	2025-05-07 14:40:58.774634+00	enduser
+14	pbkdf2_sha256$870000$bSywt3ynJBfIcxXlzL4ZlX$/ebqAkqRp6jyRVioNx18792gNgPfPH7a90lZrQ3avX8=	2025-05-07 14:41:38.919489+00	f	MHesitant	Mr	Hesitant	mHesitant@test.com	f	t	2025-05-07 14:41:38.536437+00	enduser
+15	pbkdf2_sha256$870000$AtnIh4zZUdI0OlqjU37mTj$h93LtLiGIjMnKhiW+oMfwmiRKv0dpE891fYrCPnG6sg=	2025-05-07 14:42:04.395262+00	f	BTrinket	Bob	Trinket	BTrinket@test.com	f	t	2025-05-07 14:42:03.967352+00	enduser
+10	pbkdf2_sha256$870000$2p8i40P9Iww7QgKM7oD61I$EiZLNPOpszE9SRuGFox9DgBRBvYaXzShvVUsUbF8Po8=	2025-05-07 14:36:22.903373+00	f	First	Dr	First	First@ufcfur_15_3.com	t	t	2025-05-07 14:36:22.471004+00	engineer
+11	pbkdf2_sha256$870000$QlShMtAQjV8GMfMBJD50OH$fCxuZRF/uUCVe/+Z01WtcmyzpOq0+TOJ3KuA67ngbFM=	2025-05-07 14:39:20.986222+00	t	anAdmin	A.N.	Admin	AnAdmin@utcfur_15_3.com	t	t	2025-05-07 14:39:20.414176+00	admin
+16	pbkdf2_sha256$870000$KJGH4Fj0Hlt2dgWgafzOdE$WN3Wgofi8l2hs9TGKlo2JnHJ5eyUjl7p6nqu2KQj8Oo=	2025-05-07 14:44:33.867034+00	f	JSmith	Jill	Smith	JSmith@example.com	f	t	2025-05-07 14:44:33.488378+00	enduser
+17	pbkdf2_sha256$870000$2z3oOUaOrpzTs6SrwD4HbU$u2c/Kd4Y8gauWUubaj9+qu1ANnjwV/am/3ZAMfcl620=	2025-05-07 14:44:59.948258+00	f	Tbey	Tom	Beyone	TBeyone@gmail.com	f	t	2025-05-07 14:44:59.56211+00	enduser
+18	pbkdf2_sha256$870000$QCg23dJGMCLB2Fp4ExFYui$XqX/P046iErulClZrUkqyb5jqR9QvvXb3SW5fURdY5I=	2025-05-07 14:45:28.911478+00	f	EmsCross	Emily	Cross	EmilyC@hotmail.co.uk	f	t	2025-05-07 14:45:28.518419+00	enduser
+19	pbkdf2_sha256$870000$a5ndsWXvYIxp6r3H7P8tLw$fhW1StI+kTBl3lP9AciDE8gJh+EB0RdlF3UPeHyDYkE=	2025-05-07 14:45:52.501787+00	f	Benno	Ben	Lunch	BLunch@example.com	f	t	2025-05-07 14:45:52.083064+00	enduser
+20	pbkdf2_sha256$870000$aAryGJnzTofjhKKFxKLjal$Srmz8UKmAdBLIkQ74CKdfYMjmsNlq/Jy+qvsiIcHegI=	2025-05-07 14:46:19.014284+00	f	IBarter	Imogen	Barter	Barter47@outlook.com	f	t	2025-05-07 14:46:18.58119+00	enduser
+21	pbkdf2_sha256$870000$JUKAa6smAhid8RaokUkos5$iGh1Tts59Yjr2co3BG8bcHxC5bkzWe0Oq3uBkW7yMXU=	2025-05-07 14:46:55.632889+00	f	Johnpork	John	Pork	JohnPork@example.com	f	t	2025-05-07 14:46:55.240505+00	enduser
+2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-07 14:47:03.591008+00	t	admin_user	admin	user	admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
 \.
 
 
@@ -4488,7 +4497,6 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 8666	2023-07-28 07:59:00+00	Other side changed lanes and collided with clt's vehicle	Swerved to avoid another vehicle.	t	f	Rainy	\N
 8667	2020-12-17 22:19:00+00	Rear end	Rear-ended at a stoplight.	t	f	Snowy	\N
 8668	2021-06-26 14:10:00+00	Rear end	Hit a deer on the highway.	t	t	Snowy	\N
-9760	2025-04-10 21:13:09+00	Rear end	HIT BUS	t	t	Rainy	5
 8669	2023-02-24 17:02:00+00	Other side pulled out of side road	Lost control on a snowy road.	f	f	Rainy	\N
 8670	2020-06-21 00:32:00+00	Rear end - Clt pushed into next vehicle	Side collision at an intersection.	t	t	Sunny	\N
 8671	2023-06-17 10:40:00+00	Rear end	Swerved to avoid another vehicle.	f	t	Rainy	\N
@@ -4942,7 +4950,6 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 9119	2021-04-28 22:34:00+00	Rear end - 3 car - Clt at front	Swerved to avoid another vehicle.	t	t	Rainy	\N
 9120	2023-08-30 01:02:00+00	Other side pulled on to roundabout	Hit a deer on the highway.	t	f	Rainy	\N
 9121	2023-07-17 05:37:00+00	Rear end	Lost control on a snowy road.	t	f	Snowy	\N
-9761	2025-05-02 14:24:19+00	Rear end	Unknown	f	f	Snowy	5
 9122	2021-01-01 19:48:00+00	Other side drove on wrong side of the road	Lost control on a snowy road.	t	f	Rainy	\N
 9123	2023-02-27 15:08:00+00	Rear end - Clt pushed into next vehicle	Side collision at an intersection.	f	f	Snowy	\N
 9124	2020-10-30 10:46:00+00	Rear end	Hit a deer on the highway.	t	f	Rainy	\N
@@ -5580,7 +5587,6 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 9756	2023-03-09 13:27:00+00	Other side pulled out of side road	Swerved to avoid another vehicle.	f	t	Sunny	\N
 9757	2023-02-09 05:32:00+00	Rear end - 3 car - Clt at front	Lost control on a snowy road.	f	f	Rainy	\N
 9758	2020-04-09 00:11:00+00	Rear end	Rear-ended at a stoplight.	t	f	Sunny	\N
-9759	2025-02-05 20:06:09+00	Other side pulled on to roundabout	I hit bus	t	t	Sunny	5
 \.
 
 
@@ -10460,13 +10466,10 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4873	2023-06-13 15:05:00+00	1074.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [230.5490233658866], "request_id": 6, "algorithm_version": "1.0.0", "processing_time_ms": 34.83}	9755
 4872	2022-06-30 19:24:00+00	275.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	60.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [183.1085883619608], "request_id": 8, "algorithm_version": "1.0.0", "processing_time_ms": 40.89}	9754
 4874	2023-08-05 13:27:00+00	2020.00	0.00	0.00	0.00	2020.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [205.91648980615588], "request_id": 10, "algorithm_version": "1.0.0", "processing_time_ms": 5.16}	9756
-4877	2025-05-02 20:07:55.387415+00	0.00	0.03	0.05	0.05	0.05	0.04	0.09	0.08	0.07	0.07	0.06	0.06	0.06	0.07	0.06	0.08	0.13	0.17	{"prediction": [166.7830616840425], "request_id": 2, "algorithm_version": "1.0.0", "processing_time_ms": 238.81}	9759
-4878	2025-05-02 21:14:26.634244+00	0.00	0.06	0.00	0.00	0.00	0.00	0.00	0.00	0.06	0.00	0.00	0.00	0.06	0.00	0.00	10000.00	0.00	0.00	{"prediction": [166.72007768403893], "request_id": 3, "algorithm_version": "1.0.0", "processing_time_ms": 253.4}	9760
 4857	2022-08-15 10:48:00+00	1613.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	895.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [214.12733432606612], "request_id": 4, "algorithm_version": "1.0.0", "processing_time_ms": 56.89}	9739
 4870	2023-01-26 08:35:00+00	3325.00	0.00	0.00	475.00	1950.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [211.39038615276272], "request_id": 5, "algorithm_version": "1.0.0", "processing_time_ms": 1.03}	9752
 4876	2020-06-05 00:11:00+00	1390.00	0.00	0.00	0.00	2300.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1390.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [225.98744307704757], "request_id": 7, "algorithm_version": "1.0.0", "processing_time_ms": 1.29}	9758
 4875	2023-10-18 05:32:00+00	781.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [229.6367073081188], "request_id": 9, "algorithm_version": "1.0.0", "processing_time_ms": 125.07}	9757
-4879	2025-05-06 14:25:10.077605+00	0.00	11.99	12.00	12.00	21.00	21.00	31.00	321.00	42.00	41.00	89.00	8.00	7.00	8.00	1.00	1.00	111.00	11.00	{"prediction": [200.72558208086875], "request_id": 11, "algorithm_version": "1.0.0", "processing_time_ms": 43.95}	9761
 \.
 
 
@@ -25280,7 +25283,7 @@ SELECT pg_catalog.setval('public.authentication_customuser_groups_id_seq', 1, fa
 -- Name: authentication_customuser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.authentication_customuser_id_seq', 9, true);
+SELECT pg_catalog.setval('public.authentication_customuser_id_seq', 21, true);
 
 
 --

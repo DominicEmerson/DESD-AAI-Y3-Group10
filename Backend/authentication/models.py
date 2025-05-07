@@ -15,7 +15,6 @@ class CustomUserManager(BaseUserManager):
         """
         if not email:  # Check if email is provided
             raise ValueError("The Email field must be set")  # Raise error if email is missing
-        email = self.normalize_email(email)  # Normalize email address
         user = self.model(username=username, email=email, **extra_fields)  # Create user instance
         user.set_password(password)  # Set user password
         user.save(using=self._db)  # Save user to the database
@@ -35,6 +34,11 @@ class CustomUser(AbstractUser):
     Custom user model extending Django's AbstractUser.
     Includes a 'role' field to distinguish user roles.
     """
+    email = models.CharField(
+        max_length=254,
+        blank=True,
+        verbose_name='email address'
+    )
     ROLE_CHOICES = [
         ('enduser', 'End User'),  # Choice for end user role
         ('engineer', 'AI Engineer'),  # Choice for engineer role

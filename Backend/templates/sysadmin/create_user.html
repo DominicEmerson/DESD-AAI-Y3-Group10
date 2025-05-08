@@ -18,7 +18,63 @@
     
     <form method="post" class="user-form">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <p>
+          {{ form.first_name.label_tag }}<br>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}
+            <br><span class="error">{{ form.first_name.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.last_name.label_tag }}<br>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}
+            <br><span class="error">{{ form.last_name.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.username.label_tag }}<br>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <br><span class="error">{{ form.username.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.email.label_tag }}<br>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <br><span class="error">{{ form.email.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.role.label_tag }}<br>
+          {{ form.role }}
+          {% if form.role.errors %}
+            <br><span class="error">{{ form.role.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.password1.label_tag }}<br>
+          {{ form.password1 }}
+          {% if form.password1.errors %}
+            <br><span class="error">{{ form.password1.errors|first }}</span>
+          {% endif %}
+        </p>
+
+        <p>
+          {{ form.password2.label_tag }}<br>
+          {{ form.password2 }}
+          {% if form.password2.errors %}
+            <br><span class="error">{{ form.password2.errors|first }}</span>
+          {% endif %}
+        </p>
+
         <button type="submit">Create User</button>
     </form>
 
@@ -33,22 +89,28 @@
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-    top: 0; 
 }
 
-.user-form input, .user-form select, .user-form button {
-    display: block;
+.user-form p {
+    margin-bottom: 1rem;
+}
+
+.user-form input,
+.user-form select {
     width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
 }
 
 .user-form button {
+    width: 100%;
+    padding: 10px;
     background-color: #4CAF50;
     color: white;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -64,5 +126,9 @@
     margin-bottom: 20px;
 }
 
+.error {
+    color: #D8000C;
+    font-size: 0.9em;
+}
 </style>
 {% endblock %}

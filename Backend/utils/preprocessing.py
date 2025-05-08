@@ -10,47 +10,38 @@ import json
 import logging
 import os
 import warnings 
-
-import joblib # For loading scaler
 import numpy as np
 import pandas as pd
 from django.conf import settings
-from sklearn.preprocessing import RobustScaler # For scaling
 
-# Import models directly from the claims app within the Backend project
-from claims.models import Claim
+# Import models directly from the claims app within the backend
+from claims.models import Claim, Driver, Accident, Vehicle, Injury
 
 logger = logging.getLogger(__name__)
 
-# --- Constants (Match original script/notebook) ---
-DROP_COLUMNS = [
-    'SpecialReduction', 'SpecialRehabilitation', 'SpecialMedications',
-    'Driver Age', 'Gender', 'Accident Date', 'Claim Date',
-    'Accident Description', 'Injury Description'
+# --- Constants (from notebook) ---
+NOTEBOOK_REMOVE_VALUES_FROM = [
+    'specialhealthexpenses', 'specialfixes', 'specialrehabilitation', 'specialadditionalinjury'
 ]
-BINARY_COLUMNS = [
-    'Exceptional_Circumstances', 'Minor_Psychological_Injury', 'Whiplash',
-    'Police Report Filed', 'Witness Present'
+NOTEBOOK_DROP_COLUMNS = [
+    'driverage', 'vehicleage', 'accidentdate', 'claimdate', 'policereportfiled',
+    'witnesspresent', 'dominantinjury', 'vehicletype', 'weatherconditions', 'gender',
+    'numberofpassengers', 'accidentdescription', 'injurydescription'
 ]
-CATEGORY_COLUMNS = [
-    'Dominant injury', 'Vehicle Type', 'Weather Conditions', 'AccidentType'
+NOTEBOOK_EXPLICIT_CAT_DROP = [
+    'accidenttype', 'exceptionalcircumstances', 'minorpsychologicalinjury', 'whiplash'
 ]
-# ** IMPORTANT: Verify this list exactly matches columns scaled in training **
-NUMERIC_COLUMNS_FOR_SCALING = [
-    'SpecialHealthExpenses', 'SpecialOverage', 'GeneralRest',
-    'SpecialAdditionalInjury', 'SpecialEarningsLoss', 'SpecialUsageLoss',
-    'SpecialAssetDamage', 'SpecialFixes', 'GeneralFixed', 'GeneralUplift',
-    'SpecialLoanerVehicle', 'SpecialTripCosts', 'SpecialJourneyExpenses',
-    'SpecialTherapy',
-    'Injury_Prognosis', # Assuming this was converted and scaled
+FINAL_FEATURE_COLUMNS_ORDERED = [
+    'injuryprognosis', 'generalfixed', 'generaluplift', 'generalrest', 'specialhealthexpenses',
+    'specialtherapy', 'specialrehabilitation', 'specialmedications', 'specialadditionalinjury',
+    'specialearningsloss', 'specialusageloss', 'specialreduction', 'specialoverage',
+    'specialassetdamage', 'specialfixes', 'specialloanervehicle', 'specialtripcosts', 'specialjourneyexpenses'
 ]
-# TARGET_COLUMN = 'SettlementValue' # Not needed for prediction input
 
 # --- Feature Order Loading ---
 # ** IMPORTANT: Create 'final_feature_order.json' **
-# Place it in this 'utils' directory. List of column names from X_train.
 FINAL_FEATURE_ORDER = None
-EXPECTED_FEATURE_COUNT = 54 # Default/fallback - **VERIFY THIS NUMBER**
+EXPECTED_FEATURE_COUNT = 54 
 try:
     utils_dir = os.path.dirname(os.path.abspath(__file__))
     final_features_path = os.path.join(utils_dir, 'final_feature_order.json')
@@ -69,7 +60,7 @@ except Exception as e:
     logger.error("Error loading final_feature_order.json: %s. Feature order check might fail.", e, exc_info=True)
 
 
-# --- Helper Functions ---
+# --- Helper Functions ---d
 
 def extract_int_from_string(df: pd.DataFrame, col: str) -> pd.DataFrame:
     """Extracts first integer from a string column, converts to Int64."""
@@ -122,160 +113,141 @@ def zero_fill_num_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# --- Main Preprocessing Function for Single Claim (Scaler Included) ---
+# --- Preprocessing Functions (from notebook, adapted) ---
+def apply_tariff_bands_cw(df_: pd.DataFrame):
+    df = df_.copy()
+    col_name = 'injuryprognosis'
+    if col_name not in df.columns:
+        warnings.warn(f"Column '{col_name}' not found for tariff banding. Skipping.")
+        return df
+    df[col_name] = pd.to_numeric(df[col_name], errors='coerce')
+    df[col_name] = df[col_name].fillna(25)
+    conditions = [
+        (df[col_name] <= 3),
+        (df[col_name] >= 4) & (df[col_name] <= 6),
+        (df[col_name] >= 7) & (df[col_name] <= 9),
+        (df[col_name] >= 10) & (df[col_name] <= 12),
+        (df[col_name] >= 13) & (df[col_name] <= 15),
+        (df[col_name] >= 16) & (df[col_name] <= 18),
+        (df[col_name] >= 19) & (df[col_name] <= 24),
+        (df[col_name] >= 25)
+    ]
+    choices = [0, 1, 2, 3, 4, 5, 6, 7]
+    df[col_name] = np.select(conditions, choices, default=7)
+    df[col_name] = df[col_name].astype(int)
+    return df
 
-def preprocess_single_claim(claim: Claim) -> list:
+def drop_unwanted_columns_cw(df_: pd.DataFrame, cols_to_drop_list: list):
+    df = df_.copy()
+    existing_cols_to_drop = [col for col in cols_to_drop_list if col in df.columns]
+    if existing_cols_to_drop:
+        df = df.drop(columns=existing_cols_to_drop)
+        logger.debug(f"Dropped columns: {existing_cols_to_drop}")
+    return df
+
+# --- Main Internal Preprocessing Function ---
+def _preprocess_dataframe_for_prediction(raw_df: pd.DataFrame) -> pd.DataFrame:
+    logger.debug("Starting internal preprocessing for prediction.")
+    df = raw_df.copy()
+    df.columns = df.columns.str.lower()
+    # Warn if any outlier columns are non-zero
+    for col in NOTEBOOK_REMOVE_VALUES_FROM:
+        if col in df.columns and (df[col] != 0).any():
+            warnings.warn(f"Column '{col}' has non-zero value(s) for prediction. Model was trained with these as outliers.")
+            logger.warning(f"Column '{col}' has non-zero value(s) for prediction. Model was trained with these as outliers.")
+    # Drop columns as per notebook
+    df = drop_unwanted_columns_cw(df, NOTEBOOK_DROP_COLUMNS)
+    df = apply_tariff_bands_cw(df)
+    df = drop_unwanted_columns_cw(df, NOTEBOOK_EXPLICIT_CAT_DROP)
+    # Fill NaNs in numeric features with 0 (optionally, use medians from training)
+    for col in df.columns:
+        if col in FINAL_FEATURE_COLUMNS_ORDERED and df[col].isnull().any():
+            logger.warning(f"Filling NaNs in '{col}' with 0 for prediction.")
+            df[col] = df[col].fillna(0)
+    # Ensure all features are numeric
+    for col in FINAL_FEATURE_COLUMNS_ORDERED:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+    # Select and order final features
+    missing_cols = [col for col in FINAL_FEATURE_COLUMNS_ORDERED if col not in df.columns]
+    for col in missing_cols:
+        df[col] = 0
+        logger.warning(f"Added missing feature column '{col}' with 0.")
+    df = df[FINAL_FEATURE_COLUMNS_ORDERED]
+    return df
+
+# --- Helper for Data Sourcing ---
+def get_required_source_columns():
+    """Return all lowercase column names needed from the models for DataFrame construction."""
+    # This is the union of all columns used in the notebook before dropping
+    return [
+        'injuryprognosis', 'injurydescription', 'dominantinjury', 'whiplash', 'minorpsychologicalinjury',
+        'exceptionalcircumstances', 'generalfixed', 'generaluplift', 'generalrest', 'specialhealthexpenses',
+        'specialtherapy', 'specialrehabilitation', 'specialmedications', 'specialadditionalinjury',
+        'specialearningsloss', 'specialusageloss', 'specialreduction', 'specialoverage', 'specialassetdamage',
+        'specialfixes', 'specialloanervehicle', 'specialtripcosts', 'specialjourneyexpenses',
+        'accidenttype', 'accidentdescription', 'vehicletype', 'weatherconditions', 'vehicleage',
+        'driverage', 'numberofpassengers', 'policereportfiled', 'witnesspresent', 'gender',
+        'accidentdate', 'claimdate'
+    ]
+
+# --- Django Model to DataFrame Converter ---
+def create_dataframe_from_claim(claim_instance, driver_instance, accident_instance, vehicle_instance, injury_instance):
     """
-    Takes fetched Claim object, preprocesses (including scaling),
-    ensures correct feature order/count, returns feature vector.
-
-    Requires 'robust_scaler_fitted.joblib' and 'final_feature_order.json'
-    in the 'utils' directory for successful execution.
-
-    Args:
-        claim: A claims.models.Claim object, fetched with related objects.
-
-    Returns:
-        list: A list containing one inner list of processed numeric features.
-              Example: [[feat1, feat2, ..., feat54]]
+    Convert Django model instances to a single-row DataFrame with columns matching the notebook's raw data.
+    All keys must be lowercase and match the notebook/clean_df.csv columns.
     """
-    if not isinstance(claim, Claim):
-        raise TypeError("Input must be a claims.models.Claim object.")
+    data = {}
+    # Injury
+    data['injuryprognosis'] = [injury_instance.injury_prognosis if injury_instance else None]
+    data['injurydescription'] = [injury_instance.injury_description if injury_instance else None]
+    data['dominantinjury'] = [injury_instance.dominant_injury if injury_instance else None]
+    data['whiplash'] = [int(getattr(injury_instance, 'whiplash', False)) if injury_instance else 0]
+    data['minorpsychologicalinjury'] = [int(getattr(injury_instance, 'minor_psychological_injury', False)) if injury_instance else 0]
+    data['exceptionalcircumstances'] = [int(getattr(injury_instance, 'exceptional_circumstances', False)) if injury_instance else 0]
+    # Claim
+    data['generalfixed'] = [claim_instance.general_fixed]
+    data['generaluplift'] = [claim_instance.general_uplift]
+    data['generalrest'] = [claim_instance.general_rest]
+    data['specialhealthexpenses'] = [claim_instance.special_health_expenses]
+    data['specialtherapy'] = [claim_instance.special_therapy]
+    data['specialrehabilitation'] = [claim_instance.special_rehabilitation]
+    data['specialmedications'] = [claim_instance.special_medications]
+    data['specialadditionalinjury'] = [claim_instance.special_additional_injury]
+    data['specialearningsloss'] = [claim_instance.special_earnings_loss]
+    data['specialusageloss'] = [claim_instance.special_usage_loss]
+    data['specialreduction'] = [claim_instance.special_reduction]
+    data['specialoverage'] = [claim_instance.special_overage]
+    data['specialassetdamage'] = [claim_instance.special_asset_damage]
+    data['specialfixes'] = [claim_instance.special_fixes]
+    data['specialloanervehicle'] = [claim_instance.special_loaner_vehicle]
+    data['specialtripcosts'] = [claim_instance.special_trip_costs]
+    data['specialjourneyexpenses'] = [claim_instance.special_journey_expenses]
+    # Accident
+    data['accidenttype'] = [accident_instance.accident_type if accident_instance else None]
+    data['accidentdescription'] = [accident_instance.accident_description if accident_instance else None]
+    data['vehicletype'] = [vehicle_instance.vehicle_type if vehicle_instance else None]
+    data['weatherconditions'] = [accident_instance.weather_conditions if accident_instance else None]
+    data['vehicleage'] = [vehicle_instance.vehicle_age if vehicle_instance else None]
+    data['driverage'] = [driver_instance.driver_age if driver_instance else None]
+    data['numberofpassengers'] = [vehicle_instance.number_of_passengers if vehicle_instance else None]
+    data['policereportfiled'] = [int(getattr(accident_instance, 'police_report_filed', False)) if accident_instance else 0]
+    data['witnesspresent'] = [int(getattr(accident_instance, 'witness_present', False)) if accident_instance else 0]
+    data['gender'] = [driver_instance.gender if driver_instance else None]
+    data['accidentdate'] = [accident_instance.accident_date if accident_instance else None]
+    data['claimdate'] = [claim_instance.claim_date]
+    return pd.DataFrame(data)
 
-    logger.info("Starting preprocessing for Claim ID: %s", claim.pk)
-    start_time = pd.Timestamp.now()
-
-    # 1. Construct Dictionary from Claim Object
-    try:
-        acc = claim.accident
-        driver = getattr(acc, 'driver', None)
-        vehicle = getattr(acc, 'vehicle', None)
-        injury = getattr(acc, 'injury', None)
-    except AttributeError as e:
-        raise AttributeError("Claim requires related 'accident' object.") from e
-
-    record = { # Fields needed based on original script's logic
-        'Claim Date': claim.claim_date,
-        'SpecialHealthExpenses': claim.special_health_expenses,
-        'SpecialReduction': claim.special_reduction, 'SpecialOverage': claim.special_overage,
-        'GeneralRest': claim.general_rest, 'SpecialAdditionalInjury': claim.special_additional_injury,
-        'SpecialEarningsLoss': claim.special_earnings_loss, 'SpecialUsageLoss': claim.special_usage_loss,
-        'SpecialMedications': claim.special_medications, 'SpecialAssetDamage': claim.special_asset_damage,
-        'SpecialRehabilitation': claim.special_rehabilitation, 'SpecialFixes': claim.special_fixes,
-        'GeneralFixed': claim.general_fixed, 'GeneralUplift': claim.general_uplift,
-        'SpecialLoanerVehicle': claim.special_loaner_vehicle, 'SpecialTripCosts': claim.special_trip_costs,
-        'SpecialJourneyExpenses': claim.special_journey_expenses, 'SpecialTherapy': claim.special_therapy,
-        'Accident Date': acc.accident_date if acc else None, 'AccidentType': acc.accident_type if acc else None,
-        'Accident Description': acc.accident_description if acc else None,
-        'Police Report Filed': 'Yes' if acc and acc.police_report_filed else 'No',
-        'Witness Present': 'Yes' if acc and acc.witness_present else 'No',
-        'Weather Conditions': acc.weather_conditions if acc else None,
-        'Driver Age': driver.driver_age if driver else None, 'Gender': driver.gender if driver else None,
-        'Vehicle Age': vehicle.vehicle_age if vehicle else None, 'Vehicle Type': vehicle.vehicle_type if vehicle else None,
-        'Number of Passengers': vehicle.number_of_passengers if vehicle else None,
-        'Injury_Prognosis': injury.injury_prognosis if injury else None,
-        'Injury Description': injury.injury_description if injury else None,
-        'Dominant injury': injury.dominant_injury if injury else None,
-        'Whiplash': 'Yes' if injury and injury.whiplash else 'No',
-        'Minor_Psychological_Injury': 'Yes' if injury and injury.minor_psychological_injury else 'No',
-        'Exceptional_Circumstances': 'Yes' if injury and injury.exceptional_circumstances else 'No',
-    }
-
-    # 2. Create Single-Row DataFrame
-    df = pd.DataFrame([record])
-
-    # 3. Apply Preprocessing Steps (Mirroring original script order)
-    # Drop columns
-    cols_to_drop_present = [col for col in DROP_COLUMNS if col in df.columns]
-    if cols_to_drop_present:
-        df = df.drop(columns=cols_to_drop_present)
-
-    # Handle specific columns
-    df = extract_int_from_string(df, 'Injury_Prognosis')
-    if 'Number of Passengers' in df.columns:
-        df.loc[:, 'Number of Passengers'] = pd.to_numeric(
-            df['Number of Passengers'], errors='coerce'
-        ).fillna(1).astype('Int64')
-    if 'Vehicle Age' in df.columns:
-        df.loc[:, 'Vehicle Age'] = pd.to_numeric(df['Vehicle Age'], errors='coerce')
-
-    # Impute numeric NaNs with 0
-    df = zero_fill_num_columns(df)
-
-    # Encoding
-    df = binary_encode(df, BINARY_COLUMNS, 'Yes')
-    df = one_hot_encode(df, CATEGORY_COLUMNS)
-
-    # --- Scaling Step (Included - Requires scaler file!) ---
-    logger.debug("Attempting scaling step...")
-    numeric_cols_to_scale = df.columns.intersection(NUMERIC_COLUMNS_FOR_SCALING)
-    actual_numeric_cols = df[numeric_cols_to_scale].select_dtypes(include=np.number).columns
-
-    if not actual_numeric_cols.empty:
-        try:
-            scaler_filename = 'robust_scaler_fitted.joblib'
-            utils_dir = os.path.dirname(os.path.abspath(__file__))
-            scaler_path = os.path.join(utils_dir, scaler_filename)
-            logger.debug("Loading scaler from: %s", scaler_path)
-
-            # This line will raise FileNotFoundError until the file exists
-            scaler = joblib.load(scaler_path)
-            logger.info("Loaded fitted scaler: %s", scaler_filename)
-
-            # Apply .transform() only
-            df.loc[:, actual_numeric_cols] = scaler.transform(df[actual_numeric_cols])
-            logger.debug("Applied scaling transformation to %d columns.", len(actual_numeric_cols))
-
-        except FileNotFoundError:
-            logger.error("!!! CRITICAL: SCALER FILE MISSING at %s !!!", scaler_path)
-            # Re-raise for the view to handle and return an appropriate error
-            raise FileNotFoundError(f"Required scaler file not found: {scaler_path}")
-        except Exception as e:
-            logger.exception("Error during scaling step: %s", e)
-            raise ValueError("Failed during the scaling step.") from e
-    else:
-         logger.warning("No numeric columns found for scaling after encoding.")
-    # --- End Scaling Step ---
-
-    # --- Final Checks & Feature Ordering ---
-    non_numeric_features = df.select_dtypes(exclude=np.number).columns
-    if not non_numeric_features.empty:
-        logger.error("Non-numeric columns remain after processing: %s.", non_numeric_features.tolist())
-        raise ValueError(f"Preprocessing resulted in non-numeric columns: {non_numeric_features.tolist()}")
-
-    if df.isnull().values.any():
-        nan_cols = df.columns[df.isnull().any()].tolist()
-        logger.warning("NaNs found in final features: %s. Filling with 0.", nan_cols)
-        df = df.fillna(0)
-
-    # Apply final feature order (CRITICAL)
-    if FINAL_FEATURE_ORDER:
-        logger.debug("Applying final feature order (%d features).", len(FINAL_FEATURE_ORDER))
-        missing_cols = set(FINAL_FEATURE_ORDER) - set(df.columns)
-        for col in missing_cols:
-            df[col] = 0
-            logger.warning("Added missing final feature column '%s' with 0.", col)
-
-        extra_cols = set(df.columns) - set(FINAL_FEATURE_ORDER)
-        if extra_cols:
-             logger.warning("Dropping extra columns not in final feature list: %s", extra_cols)
-             df = df.drop(columns=list(extra_cols))
-
-        try:
-            df = df[FINAL_FEATURE_ORDER] # Select and reorder
-        except KeyError as e:
-             logger.error("Failed to select final features. Error: %s", e)
-             raise ValueError(f"Could not apply final feature order. Error: {e}")
-    else:
-         logger.error("Final feature order list ('final_feature_order.json') not loaded. CANNOT PROCEED.")
-         raise FileNotFoundError("final_feature_order.json is required for prediction but was not found in utils.")
-
-    # Final count check
-    if df.shape[1] != EXPECTED_FEATURE_COUNT:
-        logger.error("Final feature count mismatch! Expected %d, got %d.", EXPECTED_FEATURE_COUNT, df.shape[1])
-        raise ValueError(f"Preprocessing resulted in {df.shape[1]} features, but expected {EXPECTED_FEATURE_COUNT}.")
-
-    processing_time = (pd.Timestamp.now() - start_time).total_seconds()
-    logger.info("Preprocessing for Claim ID %s completed successfully in %.4fs.", claim.pk, processing_time)
-
-    return df.values.tolist() # Return [[feat1, feat2, ...]]
+# --- Main Public Function ---
+def preprocess_single_claim_for_prediction(claim_instance, driver_instance, accident_instance, vehicle_instance, injury_instance):
+    """
+    Orchestrates the process: builds DataFrame, applies preprocessing, returns 18 features as an ordered list.
+    """
+    logger.info(f"Preprocessing claim {claim_instance.id} for prediction.")
+    raw_df = create_dataframe_from_claim(
+        claim_instance, driver_instance, accident_instance, vehicle_instance, injury_instance
+    )
+    processed_df = _preprocess_dataframe_for_prediction(raw_df)
+    features = processed_df.iloc[0].tolist()
+    logger.debug(f"Processed features: {features}")
+    return features

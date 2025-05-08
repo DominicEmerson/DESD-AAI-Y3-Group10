@@ -15,6 +15,7 @@ from django.views.decorators.http import require_http_methods
 import logging
 import requests
 import utils
+from utils.preprocessing import preprocess_single_claim_for_prediction
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -102,52 +103,41 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
         Sends claim data to the MLaaS API to get a prediction.
         Updates the claim object's 'prediction_result' field with the response.
         """
-        # Check if MLaaS URL is configured
         if not getattr(settings, 'MLAAS_SERVICE_URL', None):
             logger.warning("MLAAS_SERVICE_URL not configured. Skipping prediction.")
             claim.prediction_result = {'error': 'MLaaS not configured'}
             claim.save(update_fields=['prediction_result'])
             return
-
-        # For a simple 3-feature regressor, let's pick any 3 fields from the claim:
         try:
-            # fetch related data (accident, vehicle, etc.) if needed
             accident = claim.accident
             driver = Driver.objects.filter(accident=accident).first()
-
-            # If your model expects exactly 3 numeric inputs, just pick 3:
-            input_features = [
-                float(claim.special_health_expenses or 0),
-                float(claim.special_earnings_loss or 0),
-                float(driver.driver_age if driver else 0)
-            ]
-
-            # The MLaaS expects a JSON payload like this:
+            vehicle = Vehicle.objects.filter(accident=accident).first()
+            injury = Injury.objects.filter(accident=accident).first()
+            # Use new preprocessing function to get 18 features
+            input_features = preprocess_single_claim_for_prediction(
+                claim_instance=claim,
+                driver_instance=driver,
+                accident_instance=accident,
+                vehicle_instance=vehicle,
+                injury_instance=injury
+            )
             payload = {
-                "input_data": [input_features],  # a list of lists
-                "algorithm_name": "3feature_regression_model"  # or whatever your ML service expects
+                "input_data": [input_features],  # a list of lists (one list for each instance)
+                "algorithm_name": "xgboost_18feature_model"  # Update as per your MLaaS setup
             }
-
-            # Construct endpoint URL 
             algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
-
             logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url}")
-
             response = requests.post(predict_url, json=payload, timeout=10)
-            response.raise_for_status()  # Raise an HTTPError if status >= 400
-
+            response.raise_for_status()
             result_json = response.json()
             claim.prediction_result = result_json
             claim.save(update_fields=['prediction_result'])
-
             logger.info(f"Claim {claim.id} prediction stored: {result_json}")
-
         except requests.exceptions.RequestException as ex:
             logger.error(f"ML prediction request failed for Claim {claim.id}: {ex}")
             claim.prediction_result = {'error': str(ex)}
             claim.save(update_fields=['prediction_result'])
-
         except Exception as ex:
             logger.exception(f"Unexpected error during ML prediction for Claim {claim.id}: {ex}")
             claim.prediction_result = {'error': f'Unexpected: {ex}'}
@@ -169,13 +159,17 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
             # Get related data for prediction
             accident = claim.accident
             driver = Driver.objects.filter(accident=accident).first()
+            vehicle = Vehicle.objects.filter(accident=accident).first()
+            injury = Injury.objects.filter(accident=accident).first()
 
-            # Prepare input features (same as in ClaimSubmissionView)
-            input_features = [
-                float(claim.special_health_expenses or 0),
-                float(claim.special_earnings_loss or 0),
-                float(driver.driver_age if driver else 0)
-            ]
+            # Use new preprocessing function to get 18 features
+            input_features = preprocess_single_claim_for_prediction(
+                claim_instance=claim,
+                driver_instance=driver,
+                accident_instance=accident,
+                vehicle_instance=vehicle,
+                injury_instance=injury
+            )
 
             # Check if MLaaS URL is configured
             if not getattr(settings, 'MLAAS_SERVICE_URL', None):
@@ -189,9 +183,13 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
 
             # Make prediction request
+            payload = {
+                "input_data": [input_features],
+                "algorithm_name": "xgboost_18feature_model"  # Update as per your MLaaS setup
+            }
             response = requests.post(
                 predict_url,
-                json={"input_data": [input_features]},
+                json=payload,
                 timeout=10
             )
             response.raise_for_status()
@@ -247,11 +245,15 @@ def claim_detail(request, claim_id):
             try:
                 accident = claim.accident
                 driver = Driver.objects.filter(accident=accident).first()
-                input_features = [
-                    float(getattr(claim, 'special_health_expenses', 0)),
-                    float(getattr(claim, 'special_earnings_loss', 0)),
-                    float(getattr(driver, 'driver_age', 0) if driver else 0)
-                ]
+                vehicle = Vehicle.objects.filter(accident=accident).first()
+                injury = Injury.objects.filter(accident=accident).first()
+                input_features = preprocess_single_claim_for_prediction(
+                    claim_instance=claim,
+                    driver_instance=driver,
+                    accident_instance=accident,
+                    vehicle_instance=vehicle,
+                    injury_instance=injury
+                )
                 if not getattr(settings, 'MLAAS_SERVICE_URL', None):
                     error = 'MLaaS service not configured.'
                 else:

@@ -185,3 +185,64 @@ from claims.models import CustomUser
 print(CustomUser.objects.all())  # Should list all users
 exit()
 ```
+
+============================
+
+## Registering a New ML Model (MLaaS)
+
+To add a new ML model to the system, you need to update the explicit list in:
+
+    MLaaS/ml_api/management/commands/register_models.py
+
+1. **Edit the `models_to_register` list** in that file. Add a new dictionary for your model, e.g.:
+
+    {
+        "name": "XGBoost Claim Predictor",
+        "version": "20250507",
+        "relative_path": "ml_models/xgboost_20250507.pkl",
+        "description": "Predicts insurance claims using an XGBoost model.",
+        "model_type": "XGBOOST",
+        "is_active": True,
+    }
+
+   - Make sure the `relative_path` matches the filename in `ml_models/`.
+   - Bump the version if you update a model. Only the latest version is marked active.
+
+2. **Run the registration command:**
+
+    ```sh
+    docker-compose exec mlaas python manage.py register_models
+    ```
+
+   - This will update the database, set the latest version active, and mark old ones as legacy.
+   - You'll see output for each model (created, updated, or already exists).
+
+3. **Check registered models:**
+   - Use the Django admin, or:
+     ```sh
+     curl http://localhost:8009/api/algorithms/
+     ```
+
+============================
+
+## Preprocessing & Retraining (MLaaS CLI)
+
+To preprocess all claims and get your training data for a new model:
+
+```sh
+docker-compose exec mlaas python manage.py shell
+```
+Then in the shell:
+```python
+from ml_api import retrain_preprocessing
+from claims.models import Claim
+qs = Claim.objects.all()
+X, y = retrain_preprocessing.retrain_preprocessing_from_queryset(qs)
+# Now use X, y to train your model (e.g. XGBoost, sklearn, etc.)
+```
+
+- The preprocessing matches the notebook logic: 18 features, correct order, no scaling/encoding.
+- If you change the features, update both the retrain_preprocessing and the model registration.
+
+You can also do all of this in the GUI!
+============================

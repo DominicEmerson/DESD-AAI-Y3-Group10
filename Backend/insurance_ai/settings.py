@@ -154,4 +154,4 @@ CSRF_TRUSTED_ORIGINS = [
 # MLaaS Configuration
 # ------------------------------------------------------------------
 MLAAS_SERVICE_URL = os.getenv('MLAAS_SERVICE_URL', 'http://mlaas:8009/api')
-DEFAULT_ML_ALGORITHM_ID = int(os.getenv('DEFAULT_ML_ALGORITHM_ID', '1'))
+DEFAULT_ML_ALGORITHM_ID = int(os.getenv('DEFAULT_ML_ALGORITHM_ID', '5'))

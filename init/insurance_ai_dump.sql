@@ -25223,9 +25223,11 @@ COPY public.ml_api_endpoint (id, name, owner, created_at) FROM stdin;
 --
 
 COPY public.ml_api_mlalgorithm (id, name, description, version, code, model_file, model_type, created_at, updated_at, is_active, parent_endpoint_id) FROM stdin;
-1	3-Feature Regression Model	Predicts insurance claim values based on three key features.	1.0.0		ml_models/3feature_regression_model.pkl	OTHER	2025-05-02 14:39:30.02647+00	2025-05-02 14:39:30.026494+00	t	1
-2	Random Forest Claim Predictor	Predicts insurance claims using a Random Forest model.	20250424.1		ml_models/random_forest_20250424_2320.pkl	RANDOM_FOREST	2025-05-02 14:39:30.034058+00	2025-05-02 14:39:30.03408+00	f	1
-3	XGBoost Claim Predictor	Predicts insurance claims using an XGBoost model.	20250424.1		ml_models/xgboost_20250424_2320.pkl	XGBOOST	2025-05-02 14:39:30.039985+00	2025-05-02 14:39:30.04+00	f	1
+1	3-Feature Regression Model	Predicts insurance claim values based on three key features.	1.0.0		ml_models/3feature_regression_model.pkl	OTHER	2025-05-02 14:39:30.02647+00	2025-05-07 22:12:53.253148+00	t	1
+2	Random Forest Claim Predictor	Predicts insurance claims using a Random Forest model. (Legacy)	20250424.1		ml_models/random_forest_20250424_2320.pkl	RANDOM_FOREST	2025-05-02 14:39:30.034058+00	2025-05-07 22:12:53.261954+00	f	1
+4	Random Forest Claim Predictor	Predicts insurance claims using a Random Forest model.	20250507		ml_models/random_forest_20250507.pkl	RANDOM_FOREST	2025-05-07 22:12:53.232525+00	2025-05-07 22:12:53.264642+00	t	1
+3	XGBoost Claim Predictor	Predicts insurance claims using an XGBoost model. (Legacy)	20250424.1		ml_models/xgboost_20250424_2320.pkl	XGBOOST	2025-05-02 14:39:30.039985+00	2025-05-07 22:12:53.272963+00	f	1
+5	XGBoost Claim Predictor	Predicts insurance claims using an XGBoost model.	20250507		ml_models/xgboost_20250507.pkl	XGBOOST	2025-05-07 22:12:53.242818+00	2025-05-07 22:12:53.275997+00	t	1
 \.
 
 
@@ -25245,6 +25247,8 @@ COPY public.ml_api_mlrequest (id, input_data, prediction, created_at, response_t
 9	[[0.0, 0.0, 69.0]]	[229.6367073081188]	2025-05-06 14:03:08.457363+00	0.12506818771362305	1
 10	[[0.0, 0.0, 43.0]]	[205.91648980615588]	2025-05-06 14:04:41.303315+00	0.005156278610229492	1
 11	[[11.99, 31.0, 0.0]]	[200.72558208086875]	2025-05-06 14:25:10.608795+00	0.04394721984863281	1
+12	[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]	[6.242452570561243]	2025-05-07 22:13:22.150229+00	0.32845354080200195	4
+13	[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]	[7.009265899658203]	2025-05-07 22:13:49.184068+00	0.38050222396850586	5
 \.
 
 
@@ -25364,14 +25368,14 @@ SELECT pg_catalog.setval('public.ml_api_endpoint_id_seq', 1, true);
 -- Name: ml_api_mlalgorithm_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 3, true);
+SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 5, true);
 
 
 --
 -- Name: ml_api_mlrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 11, true);
+SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 13, true);
 
 
 --

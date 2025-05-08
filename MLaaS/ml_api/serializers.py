@@ -31,7 +31,7 @@ class EndpointSerializer(serializers.ModelSerializer):
 class MLAlgorithmSerializer(serializers.ModelSerializer):
     """Serializer for the MLAlgorithm model, handling file uploads and model type."""
     # Provides readable details of the parent endpoint
-    parent_endpoint_details = EndpointSerializer(source='parent_endpoint', read_only=True)
+    parent_endpoint_details = serializers.SerializerMethodField()
 
     class Meta:
         model = MLAlgorithm
@@ -45,7 +45,7 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
             'model_type',      # Added field
             'is_active',       # Added field
             'parent_endpoint', # Writable FK field for associating with an endpoint
-            'parent_endpoint_details', # Read-only nested details
+            'parent_endpoint_details', 
             'created_at',
             'updated_at'
         ]
@@ -53,7 +53,6 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
             'id',
             'created_at',
             'updated_at',
-            'parent_endpoint_details' # This nested part is read-only
         )
         extra_kwargs = {
             # File is not required on updates (PATCH) unless explicitly provided
@@ -81,6 +80,15 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
                 f"limit of {MAX_MODEL_FILE_SIZE_MB}MB."
             )
         return value
+
+    def get_parent_endpoint_details(self, obj):
+        """
+        Serialize the parent_endpoint with context.
+        """
+        if obj.parent_endpoint:
+            request = self.context.get('request')
+            return EndpointSerializer(obj.parent_endpoint, context={'request': request}).data
+        return None
 
 
 class MLRequestSerializer(serializers.ModelSerializer):

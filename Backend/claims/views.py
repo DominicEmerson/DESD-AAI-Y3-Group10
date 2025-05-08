@@ -38,13 +38,14 @@ class ClaimDashboardView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'enduser':
-            return Claim.objects.filter(accident__reported_by=user).select_related('accident')
+            # Order by newest first for endusers
+            return Claim.objects.filter(accident__reported_by=user).select_related('accident').order_by('-id')
         elif user.role in ['admin', 'finance']:
-            return Claim.objects.all().select_related('accident').order_by('-id')  # Order by newest first
+            return Claim.objects.all().select_related('accident').order_by('-id')
         elif user.role == 'engineer':
             return Claim.objects.all().select_related(
                 'accident', 'accident__vehicle', 'accident__driver', 'accident__injury'
-            ).order_by('-id')  # Order by newest first
+            ).order_by('-id')
         return Claim.objects.none()
 
     def get_context_data(self, **kwargs):
@@ -128,7 +129,7 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
             }
 
             # Construct endpoint URL 
-            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 1)
+            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
 
             logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url}")
@@ -184,7 +185,7 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
                 }, status=500)
 
             # Construct endpoint URL 
-            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 1)
+            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
 
             # Make prediction request
@@ -254,7 +255,7 @@ def claim_detail(request, claim_id):
                 if not getattr(settings, 'MLAAS_SERVICE_URL', None):
                     error = 'MLaaS service not configured.'
                 else:
-                    algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 1)
+                    algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
                     predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
                     response = requests.post(
                         predict_url,

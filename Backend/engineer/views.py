@@ -108,19 +108,17 @@ def _get_dashboard_context_data(request) -> dict:
     prediction_logs = []
     available_endpoints = []
 
-    # Fetch Models
-    mlaas_model_response = _call_mlaas_api('GET', 'algorithms/')
+    # Fetch Models (use new engineer endpoint)
+    mlaas_model_response = _call_mlaas_api('GET', 'engineer/models/')
     if 'error' in mlaas_model_response:
         messages.error(request, f"Could not fetch models: {mlaas_model_response['error']}")
     elif 'data' in mlaas_model_response:
-        model_data = mlaas_model_response['data']
-        results = model_data.get('results') if isinstance(model_data, dict) else model_data
-        if isinstance(results, list):
-            ml_models = results
+        ml_models = mlaas_model_response['data']
+        if isinstance(ml_models, list):
             logger.info("Fetched %d models from MLaaS.", len(ml_models))
         else:
             messages.warning(request, "Received unexpected model data format from MLaaS.")
-            logger.warning("Unexpected model data format: %s", model_data)
+            logger.warning("Unexpected model data format: %s", ml_models)
 
     # Fetch Prediction Logs
     mlaas_log_response = _call_mlaas_api('GET', 'requests/?limit=50')
@@ -285,4 +283,22 @@ def trigger_retrain(request, algorithm_id: int):
             f"Retraining trigger for model ID {algorithm_id}: Unknown response from MLaaS."
         )
 
+    return redirect('engineer:engineer_page')
+
+
+# --- Model Swap View ---
+@require_POST
+@login_required
+@user_passes_test(utils.is_engineer, login_url='role_redirect')
+def swap_active_model(request):
+    """Handles POST request to swap the active model via MLaaS API."""
+    model_id = request.POST.get('model_id')
+    if not model_id:
+        messages.error(request, "No model ID provided for model swap.")
+        return redirect('engineer:engineer_page')
+    response = _call_mlaas_api('POST', 'engineer/set_active_model/', json_payload={'model_id': model_id})
+    if response.get('error'):
+        messages.error(request, f"Failed to activate model: {response['error']}")
+    else:
+        messages.success(request, "Model activated successfully.")
     return redirect('engineer:engineer_page')

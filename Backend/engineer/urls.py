@@ -4,6 +4,7 @@ URL config for engineer app: dashboard, model upload, retraining trigger.
 """
 from django.urls import path
 from . import views # Import views from the current directory
+from .views import swap_active_model
 
 app_name = 'engineer' # Namespace for URLs
 
@@ -28,4 +29,5 @@ urlpatterns = [
     ),
     # Removed or commented out the predict_claim_for_engineer URL unless needed
     # path('predict/<int:claim_id>/', views.predict_claim_for_engineer, name='predict_engineer_claim'),
+    path('swap_active_model/', swap_active_model, name='swap_active_model'),
 ]

@@ -40,6 +40,7 @@ class Command(BaseCommand):
 
         # --- Model Definitions ---
         # Define models as a list of dictionaries for easier management
+        # when registering a new model update the version number to match what is in the file name
         models_to_register = [
             {
                 "name": "3-Feature Regression Model",
@@ -51,19 +52,19 @@ class Command(BaseCommand):
             },
             {
                 "name": "Random Forest Claim Predictor",
-                "version": "20250424.1",  # Example version
-                "relative_path": "ml_models/random_forest_20250424_2320.pkl",
+                "version": "20250507",  # <-- NEW VERSION
+                "relative_path": "ml_models/random_forest_20250507.pkl",
                 "description": "Predicts insurance claims using a Random Forest model.",
                 "model_type": "RANDOM_FOREST",
-                "is_active": False, # Example: Mark others as inactive initially
+                "is_active": True,
             },
             {
                 "name": "XGBoost Claim Predictor",
-                "version": "20250424.1",  # Example version
-                "relative_path": "ml_models/xgboost_20250424_2320.pkl",
+                "version": "20250507",  # <-- NEW VERSION
+                "relative_path": "ml_models/xgboost_20250507.pkl",
                 "description": "Predicts insurance claims using an XGBoost model.",
                 "model_type": "XGBOOST",
-                "is_active": False,
+                "is_active": True,
             },
         ]
 
@@ -117,5 +118,27 @@ class Command(BaseCommand):
                     )
                 )
             self.stdout.write("-" * 20) # Separator
+
+        # --- Now, after the registration loop, do the legacy/active logic ---
+        for model_data in models_to_register:
+            name = model_data["name"]
+            all_versions = MLAlgorithm.objects.filter(name=name, parent_endpoint=endpoint)
+            if not all_versions.exists():
+                continue
+            # Mark all as legacy
+            for m in all_versions:
+                m.is_active = False
+                if m.description and "(Legacy)" not in m.description:
+                    m.description = m.description.strip() + " (Legacy)"
+                elif not m.description:
+                    m.description = "(Legacy)"
+                m.save()
+            # Find the latest version (max by string, works for date-based)
+            latest = max(all_versions, key=lambda m: str(m.version))
+            latest.is_active = True
+            if latest.description and "(Legacy)" in latest.description:
+                latest.description = latest.description.replace("(Legacy)", "").strip()
+            latest.save()
+            self.stdout.write(self.style.SUCCESS(f"Set {latest.name} v{latest.version} as ACTIVE (latest version)"))
 
         self.stdout.write("--- Model Registration Finished ---")

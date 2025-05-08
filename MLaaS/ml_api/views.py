@@ -14,9 +14,10 @@ import base64
 from django.conf import settings  
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from shap import LinearExplainer, KernelExplainer
+from rest_framework.permissions import AllowAny
 
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
@@ -523,3 +524,30 @@ class MLRequestViewSet(viewsets.ReadOnlyModelViewSet):
             "shap_image":   img_b64,
             "top_features": top_feats,
         })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def engineer_list_models(request):
+    """
+    Lists all MLAlgorithms, intended for the engineer's dashboard or similar.
+    """
+    algorithms = MLAlgorithm.objects.all().order_by('-created_at')
+    serializer = MLAlgorithmSerializer(algorithms, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def engineer_set_active_model(request):
+    """Set a model as active (by id) and deactivate others with the same name/endpoint."""
+    model_id = request.data.get('model_id')
+    if not model_id:
+        return Response({'error': 'No model_id provided'}, status=400)
+    try:
+        model = MLAlgorithm.objects.get(pk=model_id)
+        # Deactivate all models with the same name and parent_endpoint
+        MLAlgorithm.objects.filter(name=model.name, parent_endpoint=model.parent_endpoint).update(is_active=False)
+        model.is_active = True
+        model.save()
+        return Response({'success': True, 'active_model_id': model.id})
+    except MLAlgorithm.DoesNotExist:
+        return Response({'error': 'Model not found'}, status=404)

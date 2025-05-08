@@ -18,7 +18,7 @@
             {% if user.is_authenticated %}
               {% if user.role == 'admin' %}
                 <li><a href="{% url 'sysadmin:admin_page' %}">Admin</a></li> <!-- Admin link -->
-                <li><a href="{% url 'sysadmin:system_health' %}">System Health</a></li> <!-- System health link -->
+                
               {% endif %}
               {% if user.role == 'engineer' %}
                 <li><a href="{% url 'engineer:engineer_page' %}">Engineer Home</a></li> <!-- Engineer home link -->

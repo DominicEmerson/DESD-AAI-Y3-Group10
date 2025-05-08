@@ -2,17 +2,137 @@
 
 {% block title %}Admin Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* ——— System‐Health styles ——— */
+  .lights-container {
+    display: flex; flex-wrap: wrap; justify-content: space-around;
+    align-items: flex-start; gap: 2rem; padding: 2rem;
+  }
+  .light-item {
+    display: flex; flex-direction: column;
+    align-items: center; width: 120px;
+  }
+  .light-dot {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: gray; margin-bottom: 1rem;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .light-dot.green {
+    background: #28a745; box-shadow: 0 0 20px rgba(40,167,69,0.7);
+  }
+  .light-dot.red {
+    background: #dc3545; box-shadow: 0 0 20px rgba(220,53,69,0.7);
+  }
+  .container-name {
+    font-weight: bold; text-align: center; margin-bottom: 0.3rem;
+  }
+  .container-status {
+    text-transform: capitalize; font-size: 0.9rem; color: #555;
+  }
+  #error {
+    color: #dc3545; text-align: center; margin-bottom: 1rem;
+  }
+  /* ——— end System‐Health styles ——— */
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="admin-container">
+  <div class="admin-container">
+
+
+
     <h1>Welcome, {{ user.username }} (Admin)</h1>
     <p>You have full admin privileges.</p>
-
+    <h2>System Health</h2>
     <div class="admin-section">
+        <div id="error" hidden>Unable to fetch health checks.</div>
+        <div id="list" class="lights-container"></div>
+
+        
         <h2>User Management</h2>
         <ul>
-            <li><a href="{% url 'sysadmin:create_user' %}">Create User</a></li>
-            <li><a href="{% url 'sysadmin:user_management' %}">Manage Users</a></li>
+          <li><a href="{% url 'sysadmin:create_user' %}">Create User</a></li>
+          <li><a href="{% url 'sysadmin:user_management' %}">Manage Users</a></li>
         </ul>
-    </div>
-</div>
+      </div>
+  
+
+  </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ← now absolute: /system-health/api/?format=json
+    const HEALTH_URL = "/sysadmin/system-health/api/?format=json";
+
+    const DISPLAY_MAP = {
+      'Cache backend: default':    'Cache',
+      'DatabaseBackend':           'Database',
+      'DefaultFileStorageHealthCheck': 'File Storage'
+    };
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch(HEALTH_URL, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        document.getElementById('error').hidden = true;
+        const data = await res.json();
+
+        let checksArr;
+        if (Array.isArray(data.checks)) {
+          checksArr = data.checks.map(c => ({
+            title: c.title || c.id,
+            ok: !!c.ok
+          }));
+        } else {
+          checksArr = Object.entries(data).map(([key, status]) => ({
+            title: key,
+            ok: status === true || status === 'working' || status === 'OK'
+          }));
+        }
+
+        renderLights(checksArr);
+      } catch (err) {
+        document.getElementById('error').hidden = false;
+        console.error('Health-check fetch failed:', err);
+      }
+    }
+
+    function renderLights(items) {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+
+      if (items.length === 0) {
+        list.innerHTML = `
+          <div class="light-item">
+            <div class="light-dot red"></div>
+            <div class="container-name">No Checks</div>
+            <div class="container-status">down</div>
+          </div>`;
+        return;
+      }
+
+      items.forEach(c => {
+        const cls = c.ok ? 'green' : 'red';
+        const statusText = c.ok ? 'Healthy' : 'Down';
+        const name = DISPLAY_MAP[c.title] || c.title;
+
+        const item = document.createElement('div');
+        item.className = 'light-item';
+        item.innerHTML = `
+          <div class="light-dot ${cls}"></div>
+          <div class="container-name">${name}</div>
+          <div class="container-status">${statusText}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    fetchStatus();
+    setInterval(fetchStatus, 30000);
+  });
+</script>
+{% endblock %}
+

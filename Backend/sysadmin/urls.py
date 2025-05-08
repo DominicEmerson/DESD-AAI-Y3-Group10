@@ -10,12 +10,7 @@ urlpatterns = [
     path('create-user/', views.create_user, name='create_user'),  # User creation view
     path('user-management/', views.user_management, name='user_management'),  # User management view
 
-    # HTML page with your traffic-light UI
-    path(
-        'system-health/',
-        TemplateView.as_view(template_name='sysadmin/system_health.html'),  # System health page
-        name='system_health'
-    ),
+
 
     # JSON API endpoint for django-health-check
     path(

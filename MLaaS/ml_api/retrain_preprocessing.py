@@ -5,6 +5,7 @@ No scaling, encoding, or one-hot. Only numeric features, column dropping, tariff
 import pandas as pd
 import numpy as np
 import warnings
+import joblib
 
 # --- Constants (from notebook) ---
 NOTEBOOK_REMOVE_VALUES_FROM = [

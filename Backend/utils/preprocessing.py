@@ -3,7 +3,6 @@
 Preprocessing utilities for single claim prediction, based on original script.
 
 Handles data cleaning, encoding, scaling, and feature preparation.
-Requires 'robust_scaler_fitted.joblib' and 'final_feature_order.json'
 to be present in this 'utils' directory for successful execution.
 """
 import json
@@ -12,6 +11,7 @@ import os
 import warnings 
 import numpy as np
 import pandas as pd
+import joblib
 from django.conf import settings
 
 # Import models directly from the claims app within the backend

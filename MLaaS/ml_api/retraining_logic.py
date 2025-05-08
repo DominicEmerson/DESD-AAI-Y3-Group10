@@ -11,20 +11,21 @@ import pandas as pd
 import numpy as np
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
+from django.core.files.base import ContentFile
 
 # Local imports (ensure these paths are correct for your structure)
-from .models import MLAlgorithm
-from .preprocessing import preprocess_data_from_queryset # Import the adapted preprocessor
+from .models import MLAlgorithm, Endpoint, MLRequest
+from .retrain_preprocessing import retrain_preprocessing_from_queryset # Import the adapted preprocessor
+from .serializers import MLAlgorithmSerializer  # For creating new algorithm instances
 
 # --- Data Fetching Dependency ---
-# Assumes this ML API service shares the same DB/environment as 'claims' app.
 try:
     from claims.models import Claim
     CAN_ACCESS_CLAIMS_DB = True
 except ImportError:
     Claim = None
     CAN_ACCESS_CLAIMS_DB = False
-# --- End Data Fetching Dependency ---
 
 
 class RetrainingError(Exception):
@@ -80,7 +81,7 @@ class BaseRetrainer(abc.ABC):
 
         print("Fetching combined dataset for retraining...")
         # Fetch ALL data deemed relevant for training the model from scratch
-        # Add specific filters here if necessary (e.g., exclude outliers, specific date ranges)
+    
         try:
             claims_queryset = Claim.objects.select_related(
                 'accident', 'accident__driver', 'accident__vehicle', 'accident__injury'
@@ -91,7 +92,7 @@ class BaseRetrainer(abc.ABC):
 
         # Delegate preprocessing
         try:
-            X_processed, y_processed = preprocess_data_from_queryset(claims_queryset)
+            X_processed, y_processed = retrain_preprocessing_from_queryset(claims_queryset)
         except Exception as e:
             print(f"Error during preprocessing: {e}")
             traceback.print_exc()
@@ -173,10 +174,7 @@ class BaseRetrainer(abc.ABC):
                     model_file=new_model_db_path # Assign the relative file path
                     # Set is_active=True if using that flag
                 )
-                # Optional: Deactivate the old version within the same transaction
-                # if hasattr(self.algorithm, 'is_active'):
-                #     self.algorithm.is_active = False
-                #     self.algorithm.save(update_fields=['is_active'])
+                
 
             print(f"Successfully created new algorithm record ID: {new_algorithm.id}")
             return new_algorithm
@@ -289,8 +287,6 @@ class BaseRetrainer(abc.ABC):
         return new_algorithm_instance, results
 
 
-
-
 class RandomForestRetrainer(BaseRetrainer):
     """Retraining logic specific to RandomForest models."""
     def _fit_model(self, model, X_combined, y_combined):
@@ -321,7 +317,6 @@ class XGBoostRetrainer(BaseRetrainer):
             print(f"Error during XGBoost fitting: {e}")
             traceback.print_exc()
             raise RetrainingError(f"XGBoost fitting failed: {e}")
-
 
 
 def get_retrainer(algorithm_instance: MLAlgorithm):

@@ -678,7 +678,7 @@ COPY public.authentication_customuser (id, password, last_login, is_superuser, u
 3	pbkdf2_sha256$870000$qhjxPvRLTeU1126VZpAu2G$KOoXKu/+9sy4ZVcYmb4fPbQ9h/rAkbDtha++6+/hIS4=	2025-05-02 14:37:46.459505+00	f	engineer_user	engineer	user	engineer@example.com	t	t	2025-04-30 16:40:55.347296+00	engineer
 4	pbkdf2_sha256$870000$KiSGwktaZrOtOzBlyZVibM$jnTZwBMo0d/FOMQyb4sByNxHQoo9XcsoZ8cwAQ1es0I=	\N	f	finance_user	finance	user	finance@example.com	t	t	2025-04-30 16:40:55.814788+00	finance
 1	pbkdf2_sha256$870000$Ho4epz2BOkooKRuASY2rZz$Rx5srHBSnvWe9yV/KnbIZD6m18AF0rm9jeSP65ObKQU=	\N	t	Dominic	Dom	inic	dominic@example.com	t	t	2025-04-30 16:40:54.51949+00	admin
-5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-08 03:21:04.173062+00	f	enduser	end	user	enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
+5	pbkdf2_sha256$870000$grAi890b8bHhlxL45XUn5e$2BP6ej9P92hLIteMHtSqpfXq/ncrCqhNhLiK03CleQs=	2025-05-08 05:19:02.615108+00	f	enduser	end	user	enduser@example.com	f	t	2025-04-30 16:40:56.16289+00	enduser
 \.
 
 
@@ -5583,6 +5583,7 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 9759	2025-02-05 20:06:09+00	Other side pulled on to roundabout	I hit bus	t	t	Sunny	5
 9762	2024-10-08 23:57:06+00	Other side reversed into Clt's vehicle	bus	t	t	Rainy	5
 9763	2025-03-07 03:21:08+00	Other side reversed into Clt's vehicle	hit by bus	t	t	Sunny	5
+9764	2025-03-06 05:19:07+00	Other side pulled out of side road	bus	t	t	Sunny	5
 \.
 
 
@@ -10471,6 +10472,7 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4879	2025-05-06 14:25:10.077605+00	0.00	11.99	12.00	12.00	21.00	21.00	31.00	321.00	42.00	41.00	89.00	8.00	7.00	8.00	1.00	1.00	111.00	11.00	{"prediction": [200.72558208086875], "request_id": 11, "algorithm_version": "1.0.0", "processing_time_ms": 43.95}	9761
 4880	2025-05-07 23:58:31.387718+00	0.00	0.40	0.50	0.60	0.70	0.50	0.60	0.40	0.30	0.20	0.40	0.60	0.20	0.10	0.40	0.50	0.60	0.70	{"error": "400 Client Error: Bad Request for url: http://mlaas:8009/api/algorithms/5/predict/"}	9762
 4881	2025-05-08 03:23:05.787791+00	0.00	0.40	0.30	0.50	0.70	0.70	0.30	0.20	0.60	0.70	0.50	0.40	0.80	0.90	0.20	0.30	0.50	0.60	{"prediction": [7.82893705368042], "request_id": 14, "algorithm_version": "20250507", "processing_time_ms": 427.45}	9763
+4882	2025-05-08 05:20:35.850925+00	0.00	0.60	0.70	0.60	0.50	0.40	0.50	0.30	0.80	0.90	0.40	0.50	0.60	0.50	0.20	0.40	0.20	0.70	{"prediction": [7.82893705368042], "request_id": 17, "algorithm_version": "20250507", "processing_time_ms": 556.1}	9764
 \.
 
 
@@ -25204,6 +25206,7 @@ hifeut45qhqnfi8yzm9k1j8c9nmtzp2r	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky
 wwo8gkvl5lqgdxkr67mcoq0esyvosrde	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCJts:Ya1CnGJKwzAaUZx9U4SjZQ1hDTdWAbLRi_Kd9xnz33s	2025-05-06 15:19:04.194053+00
 k2142xta01zd6fabi832m1us247os74w	.eJxVjsEOgjAQRP-lZ9Is0C4tR-9-Q1O6q1SxNRQSjfHfDYaDXufNvMxLOL8uo1sLzy6S6IUW1W82-HDltAG6-HTOMuS0zHGQW0XutMhjJp4Oe_dPMPoybmv2wdZkkJoGTwymRUSlW2sbT9ApNmQHwlp1oAOiMcbaQQfriQMBqE1auJSYk-PHPc5P0SMAVCJMPt6-35Ux8P4AWtREGw:1uCoet:5srI7BCo5kMGtDmNn5_MCEavHFhdQ5FNBAs8JU93oyY	2025-05-08 01:38:39.552003+00
 b9xfc4ijl51b0hzw3nwbiqdkdqoowkab	.eJxVjkEOwiAURO_CuiG0hV_o0r1nIMD_WrSCKW2iMd7dYLrQ7byZl3kx67Z1sluhxUZkI1Os-c28C1dKFeDFpXPmIad1iZ7XCt9p4ceMNB_27p9gcmWqa3LBtKgBuw5OJHQPAFL1xnQOxSBJo_EIrRyECgBaa2O8CsYhBRRCVmmhUmJOlh73uDzZCEKIhoXZxdv3u9S6fX8AWtZEHA:1uCrqq:4boSUdUN6CpPcU1LKCa8n6MF9Xnq5qxPJemRk3o3UF8	2025-05-08 05:03:12.195952+00
+3ulh1jfmy2z1v0lh3qj9ojo1nswzdwke	.eJxVjkEOwiAURO_CuiGUwi906d4zEOB_LVqLKW2iMd7dYLrQ7byZl3kx57d1dFuhxSVkA9Os-c2Cj1eaK8CLn8-ZxzyvSwq8VvhOCz9mpOmwd_8Eoy9jXZOPtkUDKCWcSJgOAJTurJUeRa_IoA0IreqFjgDGGGuDjtYjRRRCVWmhUlKeHT3uaXmyAYQQDYuTT7fvd2WMfH8AWthEHQ:1uCtgc:IludfE-fSTnXEm3usXbdjAV_MQRZCCsmKk60viP4Y8Q	2025-05-08 07:00:46.066381+00
 \.
 
 
@@ -25256,6 +25259,9 @@ COPY public.ml_api_mlrequest (id, input_data, prediction, created_at, response_t
 12	[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]	[6.242452570561243]	2025-05-07 22:13:22.150229+00	0.32845354080200195	4
 13	[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]	[7.009265899658203]	2025-05-07 22:13:49.184068+00	0.38050222396850586	5
 14	[[7.0, 0.8, 0.9, 0.7, 0.4, 0.6, 0.5, 0.6, 0.7, 0.3, 0.2, 0.3, 0.5, 0.7, 0.4, 0.2, 0.3, 0.5]]	[7.82893705368042]	2025-05-08 03:23:12.138712+00	0.42745423316955566	5
+15	[[7.0, 0.6, 0.5, 0.5, 0.6, 0.7, 0.4, 0.8, 0.4, 0.5, 0.3, 0.7, 0.6, 0.9, 0.5, 0.2, 0.4, 0.2]]	[7.82893705368042]	2025-05-08 05:20:50.292328+00	2.2719662189483643	5
+16	[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]]	[7.009265899658203]	2025-05-08 05:27:52.47354+00	1.0333075523376465	5
+17	[[7.0, 0.6, 0.5, 0.5, 0.6, 0.7, 0.4, 0.8, 0.4, 0.5, 0.3, 0.7, 0.6, 0.9, 0.5, 0.2, 0.4, 0.2]]	[7.82893705368042]	2025-05-08 05:29:03.97436+00	0.5561010837554932	5
 \.
 
 
@@ -25305,14 +25311,14 @@ SELECT pg_catalog.setval('public.authentication_customuser_user_permissions_id_s
 -- Name: claims_accident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_accident_id_seq', 9763, true);
+SELECT pg_catalog.setval('public.claims_accident_id_seq', 9764, true);
 
 
 --
 -- Name: claims_claim_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_claim_id_seq', 4881, true);
+SELECT pg_catalog.setval('public.claims_claim_id_seq', 4882, true);
 
 
 --
@@ -25382,7 +25388,7 @@ SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 5, true);
 -- Name: ml_api_mlrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 14, true);
+SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 17, true);
 
 
 --

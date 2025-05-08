@@ -672,7 +672,6 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 --
 
 COPY public.authentication_customuser (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, role) FROM stdin;
-2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-08 10:49:59.29579+00	t	admin_user	admin	user	admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
 11	pbkdf2_sha256$870000$LfjS3RBZ18xosFCnUwyOD5$AVuDvq10SDWKdAKwRFya4ihGt8hgkuwuqSDGd53y6j0=	\N	f	DrFirst1	Dr	First	DFirst@ufcfur_15_3.com	t	t	2025-05-08 10:53:30.258369+00	engineer
 12	pbkdf2_sha256$870000$uKM1QDMvnm7gMK4tlFjCt3$a8Zi07XZtl91jyxe/tCp5B+AM4Z2v0Ssq/AeHhQrVgw=	\N	t	AdminAN	A.N.	Admin	AnAdmin@utcfur_15_3.com	t	t	2025-05-08 10:54:22.32039+00	admin
 13	pbkdf2_sha256$870000$7xc2h8h78wmAE5s6K8vGOs$HW7XU5FQ8E1okNnl6RzImSrW865Xjsj8tnUolPSMQCA=	\N	f	RSmith03	Rob	Smith	RobSmith@example.com	f	t	2025-05-08 10:54:45.950609+00	enduser
@@ -681,10 +680,11 @@ COPY public.authentication_customuser (id, password, last_login, is_superuser, u
 1	pbkdf2_sha256$870000$Ho4epz2BOkooKRuASY2rZz$Rx5srHBSnvWe9yV/KnbIZD6m18AF0rm9jeSP65ObKQU=	\N	f	Dominic	Dom	inic	dominic@example.com	f	t	2025-04-30 16:40:54.51949+00	enduser
 16	pbkdf2_sha256$870000$UFWgufzMm4MW30njnmKSZ2$8dlXk702GmwtBpEeu3m0wjeimeXwJlFQLIwg2MwtnOE=	\N	f	Jpork	John	Pork	JohnPork@example.com	f	t	2025-05-08 10:57:34.716734+00	enduser
 17	pbkdf2_sha256$870000$h8xubVrpSRc9Kct0JvPFBl$nJ4Vucun+yyMuaJsrNpHtzYOUxqMyll/NLj9bh3aO0o=	\N	f	TCheese	Tim	Cheese	TCheese@example.com	f	t	2025-05-08 10:58:08.456991+00	enduser
-18	pbkdf2_sha256$870000$jDmvZqd6hUQrCgCwEzw5N1$MLeDYrboosRVenwZkBg5jl2NgUu7xVJjhaN2v/w0pkQ=	\N	f	Seth7278	Seth	Haslam	Seth2@example.com	f	t	2025-05-08 10:58:50.245159+00	enduser
 19	pbkdf2_sha256$870000$05Jj7Llwfo5yiZ0VCcV3Q0$fG3rudxhiYrBPburnBbTR9zI/sOu9pQM4JYvI3yS+6c=	\N	f	BLunch04	Ben	Lunch	BLunch@example.com	f	t	2025-05-08 10:59:17.419337+00	enduser
 20	pbkdf2_sha256$870000$SsLKRU5GwL8TrpRHYun1tB$KKkzQj2/i6nwqfcRJJAZrs+69RSD2hjIsixwJtVf7R8=	\N	f	Cdavid	Craig	David	Craig123@example.com	f	t	2025-05-08 10:59:44.502863+00	enduser
 21	pbkdf2_sha256$870000$QP8hVCiR2biTHkM6gpQikB$Zy90jdIRNXugoLf4+u12IVehSllYp3ROgjDldwfTtUc=	\N	f	Bill12432	Bill	Trinket	BTrinket@test.com	f	t	2025-05-08 11:00:34.682988+00	enduser
+18	pbkdf2_sha256$870000$jDmvZqd6hUQrCgCwEzw5N1$MLeDYrboosRVenwZkBg5jl2NgUu7xVJjhaN2v/w0pkQ=	2025-05-08 14:39:15.715311+00	f	Seth7278	Seth	Haslam	Seth2@example.com	f	t	2025-05-08 10:58:50.245159+00	enduser
+2	pbkdf2_sha256$870000$v3r0F8KFUOEjmK4uBwT8Q2$NT9I12kUIbNzVMj6TRScgfenT6EK8G44ewLein7JzQ0=	2025-05-08 15:36:20.874434+00	t	admin_user	admin	user	admin@example.com	t	t	2025-04-30 16:40:54.941748+00	admin
 \.
 
 
@@ -5584,6 +5584,7 @@ COPY public.claims_accident (id, accident_date, accident_type, accident_descript
 9756	2023-03-09 13:27:00+00	Other side pulled out of side road	Swerved to avoid another vehicle.	f	t	Sunny	\N
 9757	2023-02-09 05:32:00+00	Rear end - 3 car - Clt at front	Lost control on a snowy road.	f	f	Rainy	\N
 9758	2020-04-09 00:11:00+00	Rear end	Rear-ended at a stoplight.	t	f	Sunny	\N
+9767	2025-05-05 13:50:04+00	Other side pulled on to roundabout	Unknown	f	f	Rainy	18
 \.
 
 
@@ -10467,6 +10468,7 @@ COPY public.claims_claim (id, claim_date, settlement_value, special_health_expen
 4870	2023-01-26 08:35:00+00	3325.00	0.00	0.00	475.00	1950.00	0.00	0.00	260.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [211.39038615276272], "request_id": 5, "algorithm_version": "1.0.0", "processing_time_ms": 1.03}	9752
 4876	2020-06-05 00:11:00+00	1390.00	0.00	0.00	0.00	2300.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	1390.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [225.98744307704757], "request_id": 7, "algorithm_version": "1.0.0", "processing_time_ms": 1.29}	9758
 4875	2023-10-18 05:32:00+00	781.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	0.00	520.00	0.00	0.00	0.00	0.00	0.00	{"prediction": [229.6367073081188], "request_id": 9, "algorithm_version": "1.0.0", "processing_time_ms": 125.07}	9757
+4885	2025-05-08 13:50:50.024418+00	0.00	12.00	166.00	666.00	77.00	89.00	11.00	12.00	656.00	76.00	66.00	551.00	78.00	98.00	99.00	112.00	31.00	12.00	{"prediction": [8.248806953430176], "request_id": 20, "algorithm_version": "20250507", "processing_time_ms": 665.17}	9767
 \.
 
 
@@ -25202,6 +25204,8 @@ k2142xta01zd6fabi832m1us247os74w	.eJxVjsEOgjAQRP-lZ9Is0C4tR-9-Q1O6q1SxNRQSjfHfDY
 b9xfc4ijl51b0hzw3nwbiqdkdqoowkab	.eJxVjkEOwiAURO_CuiG0hV_o0r1nIMD_WrSCKW2iMd7dYLrQ7byZl3kx67Z1sluhxUZkI1Os-c28C1dKFeDFpXPmIad1iZ7XCt9p4ceMNB_27p9gcmWqa3LBtKgBuw5OJHQPAFL1xnQOxSBJo_EIrRyECgBaa2O8CsYhBRRCVmmhUmJOlh73uDzZCEKIhoXZxdv3u9S6fX8AWtZEHA:1uCrqq:4boSUdUN6CpPcU1LKCa8n6MF9Xnq5qxPJemRk3o3UF8	2025-05-08 05:03:12.195952+00
 3ulh1jfmy2z1v0lh3qj9ojo1nswzdwke	.eJxVjkEOwiAURO_CuiGUwi906d4zEOB_LVqLKW2iMd7dYLrQ7byZl3kx57d1dFuhxSVkA9Os-c2Cj1eaK8CLn8-ZxzyvSwq8VvhOCz9mpOmwd_8Eoy9jXZOPtkUDKCWcSJgOAJTurJUeRa_IoA0IreqFjgDGGGuDjtYjRRRCVWmhUlKeHT3uaXmyAYQQDYuTT7fvd2WMfH8AWthEHQ:1uCtgc:IludfE-fSTnXEm3usXbdjAV_MQRZCCsmKk60viP4Y8Q	2025-05-08 07:00:46.066381+00
 pvjhwyj8ek0s500vysvvsng3e9zcoxfv	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCypD:mToRj37drv3meHwd-GzJqXcQPnvAyyQ75TCpgg5Gklc	2025-05-08 11:00:59.306359+00
+0j0ajtzg5g41wzg79i3qm6rb7ce5l73i	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uCz0w:HUXA_1QGFfOfLQBGND9HxoWVrk7Pw3LI4oUn38aka08	2025-05-08 11:13:06.427748+00
+sautc9gm5u25bv1zunfaxo9v816hsh8w	.eJxVjMsOwiAQRf-FtSFTCgPt0r3fQIaXRQ2Y0iYa479rky50e8-558Usrctk1xZnmwMbmWCH382Rv8aygXChcq7c17LM2fFN4Ttt_FRDvB139y8wUZu-b90DdFIBKjRiSNINoJPrSKQeVQIUXjpwqELyhgxJ47XQRg0BlZKY9BZtsbVci42Pe56fbIT3B0ALPgI:1uD3IK:v3i5_yz3FZ0Z3abvE3eQJvwmX4WcIXjkhkbyy_A0MRs	2025-05-08 15:47:20.903741+00
 \.
 
 
@@ -25259,6 +25263,7 @@ COPY public.ml_api_mlrequest (id, input_data, prediction, created_at, response_t
 17	[[7.0, 0.6, 0.5, 0.5, 0.6, 0.7, 0.4, 0.8, 0.4, 0.5, 0.3, 0.7, 0.6, 0.9, 0.5, 0.2, 0.4, 0.2]]	[7.82893705368042]	2025-05-08 05:29:03.97436+00	0.5561010837554932	5
 18	[[7.0, 7.0, 17.0, 5.0, 12.0, 9.0, 9.0, 11.0, 11.0, 7.0, 11.0, 3.0, 4.0, 98.0, 8.0, 8.0, 9.0, 12.0]]	[7.995454788208008]	2025-05-08 10:13:35.644385+00	0.2798492908477783	5
 19	[[7.0, 66.0, 56.0, 8.0, 12.0, 6.0, 7.0, 8.0, 6.0, 9.0, 16.0, 21.0, 77.0, 9.0, 6.0, 568.0, 66.0, 66.0]]	[8.371581077575684]	2025-05-08 10:22:47.012024+00	0.2546815872192383	5
+20	[[7.0, 78.0, 98.0, 77.0, 12.0, 12.0, 66.0, 656.0, 89.0, 11.0, 12.0, 166.0, 666.0, 76.0, 551.0, 99.0, 112.0, 31.0]]	[8.248806953430176]	2025-05-08 13:50:52.45415+00	0.6651732921600342	5
 \.
 
 
@@ -25308,14 +25313,14 @@ SELECT pg_catalog.setval('public.authentication_customuser_user_permissions_id_s
 -- Name: claims_accident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_accident_id_seq', 9766, true);
+SELECT pg_catalog.setval('public.claims_accident_id_seq', 9767, true);
 
 
 --
 -- Name: claims_claim_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.claims_claim_id_seq', 4884, true);
+SELECT pg_catalog.setval('public.claims_claim_id_seq', 4885, true);
 
 
 --
@@ -25385,7 +25390,7 @@ SELECT pg_catalog.setval('public.ml_api_mlalgorithm_id_seq', 5, true);
 -- Name: ml_api_mlrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: user
 --
 
-SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 19, true);
+SELECT pg_catalog.setval('public.ml_api_mlrequest_id_seq', 20, true);
 
 
 --

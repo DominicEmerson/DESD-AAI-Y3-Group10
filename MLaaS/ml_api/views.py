@@ -18,7 +18,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from shap import LinearExplainer, KernelExplainer
 from rest_framework.permissions import AllowAny
-
+from ml_api.retrain_preprocessing import FINAL_FEATURE_COLUMNS_ORDERED as FEATURE_NAMES
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
 # Import logic and CUSTOM exceptions from the retraining module
@@ -36,7 +36,35 @@ from .serializers import (
 
 # Configure logging
 logger = logging.getLogger(__name__)
+FEATURE_NAMES = [
+    'injuryprognosis','generalfixed','generaluplift','generalrest',
+    'specialhealthexpenses','specialtherapy','specialrehabilitation',
+    'specialmedications','specialadditionalinjury','specialearningsloss',
+    'specialusageloss','specialreduction','specialoverage',
+    'specialassetdamage','specialfixes','specialloanervehicle',
+    'specialtripcosts','specialjourneyexpenses',
+]
 
+DISPLAY_NAMES = {
+    'injuryprognosis':        'Injury severity band',
+    'generalfixed':           'Standard fixed costs',
+    'generaluplift':          'General uplift',
+    'generalrest':            'Rest & recuperation',
+    'specialhealthexpenses':  'Health expenses',
+    'specialtherapy':         'Therapy fees',
+    'specialrehabilitation':  'Rehabilitation costs',
+    'specialmedications':     'Medication costs',
+    'specialadditionalinjury': 'Additional injury costs',
+    'specialearningsloss':    'Lost earnings',
+    'specialusageloss':       'Usage loss',
+    'specialreduction':       'Reductions',
+    'specialoverage':         'Over-coverage costs',
+    'specialassetdamage':     'Asset damage',
+    'specialfixes':           'Repair costs',
+    'specialloanervehicle':   'Loaner vehicle',
+    'specialtripcosts':       'Trip expenses',
+    'specialjourneyexpenses': 'Journey expenses',
+}
 class EndpointViewSet(viewsets.ModelViewSet):
     """
     API endpoint for managing logical ML Endpoints.
@@ -455,71 +483,89 @@ class MLRequestViewSet(viewsets.ReadOnlyModelViewSet):
         "algorithm__parent_endpoint__name",  # Filter by parent endpoint name
     ]
     search_fields = ["input_data", "prediction"]  # Fields to search in
-
     @action(detail=True, methods=['get'], url_path='explain')
     def explain(self, request, pk=None):
         """
-        Provides SHAP explanations for a specific prediction request.
-
-        Loads the model and input data, then generates SHAP values and plots.
+        Provides SHAP explanations for a specific prediction request,
+        plotting the top 10 factors but only returning the top 3 in JSON.
         """
-        ml_req = self.get_object()  # Get the ML request object
-        df = pd.DataFrame(ml_req.input_data)  # Convert input data to DataFrame
+        PLOT_N = 10   # how many bars to show in the chart
+        JSON_N = 3    # how many features to include in the JSON
 
-        # Build path under your MODEL_ROOT
-        filename = os.path.basename(ml_req.algorithm.model_file.name)  # Get model file name
-        model_fp = os.path.join(settings.MODEL_ROOT, filename)  # Construct model file path
+        # 1) load the request and build a DataFrame
+        ml_req = self.get_object()
+        df     = pd.DataFrame(ml_req.input_data)  # shape (1, n_features)
+
+        # 2) load the model from disk
+        filename = os.path.basename(ml_req.algorithm.model_file.name)
+        model_fp = os.path.join(settings.MODEL_ROOT, filename)
         if not os.path.exists(model_fp):
             return Response(
                 {"error": f"Model file not found at {model_fp}."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
-
-        model = joblib.load(model_fp)  # Load the model
+        model = joblib.load(model_fp)
 
         try:
-            explainer = shap.Explainer(model, df)  # Create SHAP explainer
-            shap_out = explainer(df)  # Generate SHAP values
-            plt.figure()  # Create a new figure
-            shap.plots.bar(shap_out, show=False)  # Create SHAP bar plot
-            importances = np.abs(shap_out.values).mean(axis=0)  # Calculate feature importances
+            # 3) compute SHAP importances
+            explainer   = shap.Explainer(model, feature_names=FEATURE_NAMES)
+            shap_out    = explainer(df)
+            importances = np.abs(shap_out.values).mean(axis=0)
+
         except Exception:
-            # Fallback to coef_ or feature_importances_
+            # fallback to sklearn importances
             if hasattr(model, "coef_"):
-                importances = np.abs(model.coef_).ravel()  # Get coefficients
+                importances = np.abs(model.coef_).ravel()
             elif hasattr(model, "feature_importances_"):
-                importances = model.feature_importances_  # Get feature importances
+                importances = model.feature_importances_
             else:
                 return Response(
                     {"error": "Could not compute SHAP or fallback importances."},
                     status=status.HTTP_501_NOT_IMPLEMENTED
                 )
-            plt.figure()  # Create a new figure
-            plt.bar(df.columns.astype(str), importances)  # Create bar plot for importances
-            plt.xticks(rotation=45, ha="right")  # Rotate x-axis labels
-            plt.ylabel("importance")  # Y-axis label
 
-        buf = io.BytesIO()  # Create a buffer for the plot
-        plt.tight_layout()  # Adjust layout
-        plt.savefig(buf, format="png")  # Save plot to buffer
-        plt.close()  # Close the plot
-        buf.seek(0)  # Reset buffer position
-        img_b64 = base64.b64encode(buf.read()).decode("utf-8")  # Encode plot as base64
+        # 4) pick indices for plotting vs JSON
+        sorted_idx = np.argsort(importances)[::-1]
+        plot_idx   = sorted_idx[:PLOT_N]
+        json_idx   = sorted_idx[:JSON_N]
 
-        top5 = sorted(
-            zip(importances, df.columns),  # Pair importances with feature names
-            key=lambda x: x[0], reverse=True  # Sort by importance
-        )[:5]  # Get top 5 features
-        top_feats = [{"feature": str(col), "importance": float(val)} for val, col in top5]  # Prepare top features list
+        # 5) build plot for top PLOT_N
+        plot_names = [DISPLAY_NAMES[FEATURE_NAMES[i]] for i in plot_idx]
+        plot_vals  = importances[plot_idx]
 
+        plt.figure(figsize=(6, 4))
+        plt.barh(plot_names[::-1], plot_vals[::-1])
+        plt.xlabel("Average absolute SHAP value")
+        plt.title(f"Top {PLOT_N} Factors Driving This Claim")
+        plt.gca().invert_yaxis()
+        for i, v in enumerate(plot_vals[::-1]):
+            plt.text(v + 1e-6, i, f"{v:.2f}", va="center")
+
+        # 6) serialize figure
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format="png")
+        plt.close()
+        buf.seek(0)
+        img_b64 = base64.b64encode(buf.read()).decode("utf-8")
+
+        # 7) prepare top JSON_N features
+        top_feats = []
+        for i in json_idx:
+            name = FEATURE_NAMES[i]
+            top_feats.append({
+                "feature": DISPLAY_NAMES[name],
+                "importance": float(importances[i])
+            })
+
+        # 8) return response
         return Response({
-            "request_id": ml_req.pk,  # Return request ID
-            "algorithm": ml_req.algorithm.name,  # Return algorithm name
-            "prediction": ml_req.prediction,  # Return prediction result
-            "shap_image": img_b64,  # Return SHAP image
-            "top_features": top_feats,  # Return top features
+            "request_id":   ml_req.pk,
+            "algorithm":    ml_req.algorithm.name,
+            "shap_image":   img_b64,
+            "top_features": top_feats,
+            "metric":       "mean absolute SHAP value"
         })
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def engineer_list_models(request):

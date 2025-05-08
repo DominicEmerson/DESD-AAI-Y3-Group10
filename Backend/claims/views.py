@@ -255,6 +255,7 @@ def claim_detail(request, claim_id):
     claim = get_object_or_404(Claim, id=claim_id)  # Get the claim object or return 404
     error = None  # Initialise error variable
     prediction = None  # Initialise prediction variable
+    request_id = None  # Initialise request_id variable
 
     if request.method == 'POST' and 'get_prediction' in request.POST:
         # Only fetch prediction if not already present
@@ -285,6 +286,7 @@ def claim_detail(request, claim_id):
                     result_json = response.json()
                     claim.prediction_result = result_json
                     claim.save(update_fields=['prediction_result'])
+                    request_id = result_json.get('request_id')  # Get request ID from prediction result
             except Exception as ex:
                 logger.error(f"Prediction error: {ex}")  # Log prediction error
                 error = f"Prediction error: {ex}"  # Set error message
@@ -298,6 +300,7 @@ def claim_detail(request, claim_id):
             error = claim.prediction_result.get('error')  # Get error from prediction result
         elif 'prediction' in claim.prediction_result:
             prediction = claim.prediction_result['prediction']  # Get prediction from prediction result
+            request_id = claim.prediction_result.get('request_id')
         else:
             prediction = claim.prediction_result  # Set prediction to prediction result
 
@@ -305,4 +308,5 @@ def claim_detail(request, claim_id):
         'claim': claim,  # Pass claim to template
         'prediction': prediction,  # Pass prediction to template
         'error': error,  # Pass error to template
+        'request_id': request_id,
     })

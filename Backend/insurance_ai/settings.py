@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'finance.apps.FinanceConfig',
     'sysadmin.apps.SysadminConfig',
     'rest_framework',
-    'ml_api',  # MLaaS API
 ]
 
 MIDDLEWARE = [
@@ -115,8 +114,14 @@ USE_TZ = True
 # Static files
 # ------------------------------------------------------------------
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
-# STATIC_ROOT = BASE_DIR / 'static'
+
+STATICFILES_DIRS = [
+
+
+    BASE_DIR.parent / 'staticfiles',  # Main staticfiles directory
+
+
+]
 STATIC_ROOT = '/app/staticfiles'
 
 # ------------------------------------------------------------------

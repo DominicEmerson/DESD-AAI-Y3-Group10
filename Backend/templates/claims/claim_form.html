@@ -6,235 +6,234 @@
 {% block extra_css %}
 <style>
     .form-container {
-        background-color: #f9fbfe;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #f9fbfe; /* Background colour for the form container */
+        border-radius: 12px; /* Rounded corners for the form container */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Shadow effect for the form container */
     }
     
     .form-header {
-        background: linear-gradient(135deg, #2c73d2, #0c4ea0);
-        color: white;
-        border-radius: 12px 12px 0 0;
-        padding: 25px 30px;
+        background: linear-gradient(135deg, #2c73d2, #0c4ea0); /* Gradient background for the header */
+        color: white; /* Text colour for the header */
+        border-radius: 12px 12px 0 0; /* Rounded corners for the header */
+        padding: 25px 30px; /* Padding inside the header */
     }
     
     .form-title {
-        margin: 0;
-        font-weight: 600;
-        font-size: 28px;
+        margin: 0; /* Remove default margin */
+        font-weight: 600; /* Bold font for the title */
+        font-size: 28px; /* Font size for the title */
     }
     
     .form-body {
-        padding: 30px;
+        padding: 30px; /* Padding inside the form body */
     }
     
     .section-card {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
-        margin-bottom: 20px;
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
+        background-color: white; /* Background colour for section cards */
+        border-radius: 10px; /* Rounded corners for section cards */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03); /* Shadow effect for section cards */
+        margin-bottom: 20px; /* Space below section cards */
+        overflow: hidden; /* Hide overflow for section cards */
+        transition: transform 0.3s, box-shadow 0.3s; /* Transition effects for hover */
     }
     
     .section-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px); /* Lift effect on hover */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06); /* Shadow effect on hover */
     }
     
     .section-header {
-        padding: 18px 20px;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #eaeaea;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        transition: background-color 0.3s;
+        padding: 18px 20px; /* Padding inside section headers */
+        background-color: #f8f9fa; /* Background colour for section headers */
+        border-bottom: 1px solid #eaeaea; /* Bottom border for section headers */
+        cursor: pointer; /* Pointer cursor on hover */
+        display: flex; /* Flexbox layout for section headers */
+        align-items: center; /* Centre items vertically */
+        transition: background-color 0.3s; /* Transition effect for background colour */
     }
     
     .section-header:hover {
-        background-color: #f0f2f5;
+        background-color: #f0f2f5; /* Background colour on hover */
     }
     
     .section-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-        color: #3d4852;
+        margin: 0; /* Remove default margin */
+        font-size: 18px; /* Font size for section header */
+        font-weight: 600; /* Bold font for section header */
+        color: #3d4852; /* Text colour for section header */
     }
     
     .section-header i {
-        margin-right: 10px;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background-color: #e3f2fd;
-        color: #1976d2;
+        margin-right: 10px; /* Space between icon and text */
+        width: 24px; /* Width for icons */
+        height: 24px; /* Height for icons */
+        display: flex; /* Flexbox layout for icons */
+        align-items: center; /* Centre items vertically */
+        justify-content: center; /* Centre items horizontally */
+        border-radius: 50%; /* Rounded corners for icons */
+        background-color: #e3f2fd; /* Background colour for icons */
+        color: #1976d2; /* Icon colour */
     }
     
     .section-body {
-        padding: 20px;
+        padding: 20px; /* Padding inside section bodies */
     }
     
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 20px; /* Space below form groups */
     }
     
     .form-label {
-        font-weight: 500;
-        color: #455a64;
-        margin-bottom: 8px;
+        font-weight: 500; /* Medium font weight for labels */
+        color: #455a64; /* Text colour for labels */
+        margin-bottom: 8px; /* Space below labels */
     }
     
     .form-control {
-        border: 2px solid #e3e8ef;
-        border-radius: 8px;
-        padding: 12px 15px;
-        font-size: 15px;
-        transition: border-color 0.3s, box-shadow 0.3s;
+        border: 2px solid #e3e8ef; /* Border style for inputs */
+        border-radius: 8px; /* Rounded corners for inputs */
+        padding: 12px 15px; /* Padding inside inputs */
+        font-size: 15px; /* Font size for inputs */
+        transition: border-color 0.3s, box-shadow 0.3s; /* Transition effects for inputs */
     }
     
     .form-control:focus {
-        border-color: #90caf9;
-        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+        border-color: #90caf9; /* Border colour on focus */
+        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15); /* Shadow effect on focus */
     }
     
     .form-select {
-        border: 2px solid #e3e8ef;
-        border-radius: 8px;
-        padding: 12px 15px;
-        font-size: 15px;
-        transition: border-color 0.3s, box-shadow 0.3s;
+        border: 2px solid #e3e8ef; /* Border style for select inputs */
+        border-radius: 8px; /* Rounded corners for select inputs */
+        padding: 12px 15px; /* Padding inside select inputs */
+        font-size: 15px; /* Font size for select inputs */
+        transition: border-color 0.3s, box-shadow 0.3s; /* Transition effects for select inputs */
     }
     
     .form-select:focus {
-        border-color: #90caf9;
-        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+        border-color: #90caf9; /* Border colour on focus */
+        box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15); /* Shadow effect on focus */
     }
     
     .form-text {
-        color: #7e8c9a;
-        font-size: 13px;
-        margin-top: 5px;
+        color: #7e8c9a; /* Text colour for help text */
+        font-size: 13px; /* Font size for help text */
+        margin-top: 5px; /* Space above help text */
     }
     
     .submit-btn {
-        background: linear-gradient(135deg, #1976d2, #1565c0);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-weight: 600;
-        padding: 14px 28px;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(25, 118, 210, 0.25);
+        background: linear-gradient(135deg, #1976d2, #1565c0); /* Gradient background for submit button */
+        border: none; /* No border for submit button */
+        border-radius: 8px; /* Rounded corners for submit button */
+        color: white; /* Text colour for submit button */
+        font-weight: 600; /* Bold font for submit button */
+        padding: 14px 28px; /* Padding inside submit button */
+        font-size: 16px; /* Font size for submit button */
+        transition: all 0.3s ease; /* Transition effects for submit button */
+        cursor: pointer; /* Pointer cursor on hover */
     }
     
     .submit-btn:hover {
-        background: linear-gradient(135deg, #1565c0, #0d47a1);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(25, 118, 210, 0.35);
+        background: linear-gradient(135deg, #1565c0, #0d47a1); /* Background colour on hover */
+        transform: translateY(-2px); /* Lift effect on hover */
+        box-shadow: 0 4px 10px rgba(25, 118, 210, 0.25); /* Shadow effect on hover */
     }
     
     .cancel-btn {
-        background-color: #f3f4f6;
-        border: 2px solid #e5e7eb;
-        border-radius: 8px;
-        color: #4b5563;
-        font-weight: 600;
-        padding: 12px 24px;
-        font-size: 16px;
-        transition: all 0.3s ease;
+        background-color: #f3f4f6; /* Background colour for cancel button */
+        border: 2px solid #e5e7eb; /* Border style for cancel button */
+        border-radius: 8px; /* Rounded corners for cancel button */
+        color: #4b5563; /* Text colour for cancel button */
+        font-weight: 600; /* Bold font for cancel button */
+        padding: 12px 24px; /* Padding inside cancel button */
+        font-size: 16px; /* Font size for cancel button */
+        transition: all 0.3s ease; /* Transition effects for cancel button */
     }
     
     .cancel-btn:hover {
-        background-color: #e5e7eb;
-        color: #1f2937;
+        background-color: #e5e7eb; /* Background colour on hover */
+        color: #1f2937; /* Text colour on hover */
     }
     
     .form-buttons {
-        margin-top: 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        margin-top: 30px; /* Space above form buttons */
+        display: flex; /* Flexbox layout for form buttons */
+        justify-content: space-between; /* Space between buttons */
+        align-items: center; /* Centre items vertically */
     }
     
     .required-field::after {
-        content: "*";
-        color: #dc3545;
-        margin-left: 4px;
+        content: "*"; /* Asterisk for required fields */
+        color: #dc3545; /* Colour for asterisk */
+        margin-left: 4px; /* Space between label and asterisk */
     }
     
     .alert-validation {
-        background-color: #fff3f3;
-        border-left: 4px solid #dc3545;
-        border-radius: 6px;
-        padding: 15px 20px;
-        margin-bottom: 25px;
+        background-color: #fff3f3; /* Background colour for validation alerts */
+        border-left: 4px solid #dc3545; /* Left border for validation alerts */
+        border-radius: 6px; /* Rounded corners for validation alerts */
+        padding: 15px 20px; /* Padding inside validation alerts */
+        margin-bottom: 25px; /* Space below validation alerts */
     }
     
     .alert-validation h5 {
-        color: #dc3545;
-        margin-top: 0;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
+        color: #dc3545; /* Text colour for validation alert heading */
+        margin-top: 0; /* Remove top margin */
+        margin-bottom: 10px; /* Space below heading */
+        display: flex; /* Flexbox layout for heading */
+        align-items: center; /* Centre items vertically */
     }
     
     .alert-validation h5 i {
-        margin-right: 8px;
+        margin-right: 8px; /* Space between icon and text */
     }
     
     .alert-validation ul {
-        margin-bottom: 0;
-        padding-left: 25px;
+        margin-bottom: 0; /* Remove bottom margin for lists */
+        padding-left: 25px; /* Padding for list */
     }
     
     .alert-validation li {
-        margin-bottom: 5px;
-        color: #6b1a1a;
+        margin-bottom: 5px; /* Space below list items */
+        color: #6b1a1a; /* Text colour for list items */
     }
     
     .invalid-feedback {
-        color: #dc3545;
-        font-size: 13px;
-        font-weight: 500;
-        margin-top: 5px;
+        color: #dc3545; /* Text colour for invalid feedback */
+        font-size: 13px; /* Font size for invalid feedback */
+        font-weight: 500; /* Medium font weight for invalid feedback */
+        margin-top: 5px; /* Space above invalid feedback */
     }
     
     .is-invalid {
-        border-color: #dc3545 !important;
+        border-color: #dc3545 !important; /* Border colour for invalid inputs */
     }
     
     .is-valid {
-        border-color: #198754 !important;
+        border-color: #198754 !important; /* Border colour for valid inputs */
     }
     
     /* Responsive adjustments */
     @media (max-width: 767px) {
         .form-header {
-            padding: 20px;
+            padding: 20px; /* Padding for header on small screens */
         }
         
         .form-title {
-            font-size: 22px;
+            font-size: 22px; /* Font size for title on small screens */
         }
         
         .form-body {
-            padding: 20px 15px;
+            padding: 20px 15px; /* Padding for body on small screens */
         }
         
         .submit-btn, .cancel-btn {
-            width: 100%;
-            margin-bottom: 10px;
+            width: 100%; /* Full width for buttons on small screens */
+            margin-bottom: 10px; /* Space below buttons on small screens */
         }
         
         .form-buttons {
-            flex-direction: column-reverse;
+            flex-direction: column-reverse; /* Stack buttons on small screens */
         }
     }
 </style>
@@ -244,51 +243,51 @@
 <div class="container py-5">
     <div class="form-container">
         <div class="form-header">
-            <h2 class="form-title"><i class="fas fa-file-medical me-3"></i>Submit New Insurance Claim</h2>
+            <h2 class="form-title"><i class="fas fa-file-medical me-3"></i>Submit New Insurance Claim</h2> <!-- Title for the claim submission form -->
         </div>
         
         <div class="form-body">
             {% if messages %}
-            <div class="messages mb-4">
+            <div class="messages mb-4"> <!-- Container for messages -->
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} shadow">
-                    {{ message }}
+                <div class="alert alert-{{ message.tags }} shadow"> <!-- Alert for messages -->
+                    {{ message }} <!-- Display message -->
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
             
-            <div id="validationErrors" class="alert-validation" style="display: none;">
-                <h5><i class="fas fa-exclamation-triangle"></i>Please fix the following errors:</h5>
-                <ul id="errorList"></ul>
+            <div id="validationErrors" class="alert-validation" style="display: none;"> <!-- Container for validation errors -->
+                <h5><i class="fas fa-exclamation-triangle"></i>Please fix the following errors:</h5> <!-- Heading for validation errors -->
+                <ul id="errorList"></ul> <!-- List for displaying error messages -->
             </div>
             
-            <form method="post" action="{% url 'claims:claim_submission' %}" class="needs-validation" id="claimForm" novalidate>
-                {% csrf_token %}
+            <form method="post" action="{% url 'claims:claim_submission' %}" class="needs-validation" id="claimForm" novalidate> <!-- Form for submitting claims -->
+                {% csrf_token %} <!-- CSRF token for security -->
                 
                 <!-- Accident Details Section -->
-                <div class="section-card" id="accidentSection">
-                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#accidentCollapse" aria-expanded="true">
-                        <i class="fas fa-car-crash"></i>
-                        <h3>Accident Details</h3>
+                <div class="section-card" id="accidentSection"> <!-- Section for accident details -->
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#accidentCollapse" aria-expanded="true"> <!-- Header for accident details section -->
+                        <i class="fas fa-car-crash"></i> <!-- Icon for accident details -->
+                        <h3>Accident Details</h3> <!-- Heading for accident details -->
                     </div>
-                    <div id="accidentCollapse" class="collapse show">
+                    <div id="accidentCollapse" class="collapse show"> <!-- Collapsible body for accident details -->
                         <div class="section-body">
                             <div class="row">
                                 {% for field in accident_form %}
-                                <div class="col-md-6">
+                                <div class="col-md-6"> <!-- Column for each field in accident form -->
                                     <div class="form-group">
-                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}"> <!-- Label for each field -->
                                             {{ field.label }}
                                         </label>
-                                        {{ field }}
+                                        {{ field }} <!-- Render field input -->
                                         {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block"> <!-- Display errors for each field -->
                                             {{ field.errors.0 }}
                                         </div>
                                         {% endif %}
                                         {% if field.help_text %}
-                                        <small class="form-text">{{ field.help_text }}</small>
+                                        <small class="form-text">{{ field.help_text }}</small> <!-- Help text for each field -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -299,28 +298,28 @@
                 </div>
                 
                 <!-- Vehicle Information Section -->
-                <div class="section-card" id="vehicleSection">
-                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#vehicleCollapse">
-                        <i class="fas fa-car"></i>
-                        <h3>Vehicle Information</h3>
+                <div class="section-card" id="vehicleSection"> <!-- Section for vehicle information -->
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#vehicleCollapse"> <!-- Header for vehicle information section -->
+                        <i class="fas fa-car"></i> <!-- Icon for vehicle information -->
+                        <h3>Vehicle Information</h3> <!-- Heading for vehicle information -->
                     </div>
-                    <div id="vehicleCollapse" class="collapse">
+                    <div id="vehicleCollapse" class="collapse"> <!-- Collapsible body for vehicle information -->
                         <div class="section-body">
                             <div class="row">
                                 {% for field in vehicle_form %}
-                                <div class="col-md-4">
+                                <div class="col-md-4"> <!-- Column for each field in vehicle form -->
                                     <div class="form-group">
-                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}"> <!-- Label for each field -->
                                             {{ field.label }}
                                         </label>
-                                        {{ field }}
+                                        {{ field }} <!-- Render field input -->
                                         {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block"> <!-- Display errors for each field -->
                                             {{ field.errors.0 }}
                                         </div>
                                         {% endif %}
                                         {% if field.help_text %}
-                                        <small class="form-text">{{ field.help_text }}</small>
+                                        <small class="form-text">{{ field.help_text }}</small> <!-- Help text for each field -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -331,28 +330,28 @@
                 </div>
                 
                 <!-- Driver Information Section -->
-                <div class="section-card" id="driverSection">
-                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#driverCollapse">
-                        <i class="fas fa-id-card"></i>
-                        <h3>Driver Information</h3>
+                <div class="section-card" id="driverSection"> <!-- Section for driver information -->
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#driverCollapse"> <!-- Header for driver information section -->
+                        <i class="fas fa-id-card"></i> <!-- Icon for driver information -->
+                        <h3>Driver Information</h3> <!-- Heading for driver information -->
                     </div>
-                    <div id="driverCollapse" class="collapse">
+                    <div id="driverCollapse" class="collapse"> <!-- Collapsible body for driver information -->
                         <div class="section-body">
                             <div class="row">
                                 {% for field in driver_form %}
-                                <div class="col-md-6">
+                                <div class="col-md-6"> <!-- Column for each field in driver form -->
                                     <div class="form-group">
-                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}"> <!-- Label for each field -->
                                             {{ field.label }}
                                         </label>
-                                        {{ field }}
+                                        {{ field }} <!-- Render field input -->
                                         {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block"> <!-- Display errors for each field -->
                                             {{ field.errors.0 }}
                                         </div>
                                         {% endif %}
                                         {% if field.help_text %}
-                                        <small class="form-text">{{ field.help_text }}</small>
+                                        <small class="form-text">{{ field.help_text }}</small> <!-- Help text for each field -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -363,28 +362,28 @@
                 </div>
                 
                 <!-- Injury Details Section -->
-                <div class="section-card" id="injurySection">
-                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#injuryCollapse">
-                        <i class="fas fa-first-aid"></i>
-                        <h3>Injury Details</h3>
+                <div class="section-card" id="injurySection"> <!-- Section for injury details -->
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#injuryCollapse"> <!-- Header for injury details section -->
+                        <i class="fas fa-first-aid"></i> <!-- Icon for injury details -->
+                        <h3>Injury Details</h3> <!-- Heading for injury details -->
                     </div>
-                    <div id="injuryCollapse" class="collapse">
+                    <div id="injuryCollapse" class="collapse"> <!-- Collapsible body for injury details -->
                         <div class="section-body">
                             <div class="row">
                                 {% for field in injury_form %}
-                                <div class="{% if field.field.widget.input_type == 'checkbox' %}col-md-4{% else %}col-md-6{% endif %}">
+                                <div class="{% if field.field.widget.input_type == 'checkbox' %}col-md-4{% else %}col-md-6{% endif %}"> <!-- Column for each field in injury form -->
                                     <div class="form-group">
-                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}"> <!-- Label for each field -->
                                             {{ field.label }}
                                         </label>
-                                        {{ field }}
+                                        {{ field }} <!-- Render field input -->
                                         {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block"> <!-- Display errors for each field -->
                                             {{ field.errors.0 }}
                                         </div>
                                         {% endif %}
                                         {% if field.help_text %}
-                                        <small class="form-text">{{ field.help_text }}</small>
+                                        <small class="form-text">{{ field.help_text }}</small> <!-- Help text for each field -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -395,28 +394,28 @@
                 </div>
                 
                 <!-- Claim Details Section -->
-                <div class="section-card" id="claimSection">
-                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#claimCollapse">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <h3>Claim Details</h3>
+                <div class="section-card" id="claimSection"> <!-- Section for claim details -->
+                    <div class="section-header" data-bs-toggle="collapse" data-bs-target="#claimCollapse"> <!-- Header for claim details section -->
+                        <i class="fas fa-money-bill-wave"></i> <!-- Icon for claim details -->
+                        <h3>Claim Details</h3> <!-- Heading for claim details -->
                     </div>
-                    <div id="claimCollapse" class="collapse">
+                    <div id="claimCollapse" class="collapse"> <!-- Collapsible body for claim details -->
                         <div class="section-body">
                             <div class="row">
                                 {% for field in form %}
-                                <div class="col-md-4">
+                                <div class="col-md-4"> <!-- Column for each field in claim form -->
                                     <div class="form-group">
-                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}">
+                                        <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required-field{% endif %}"> <!-- Label for each field -->
                                             {{ field.label }}
                                         </label>
-                                        {{ field }}
+                                        {{ field }} <!-- Render field input -->
                                         {% if field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block"> <!-- Display errors for each field -->
                                             {{ field.errors.0 }}
                                         </div>
                                         {% endif %}
                                         {% if field.help_text %}
-                                        <small class="form-text">{{ field.help_text }}</small>
+                                        <small class="form-text">{{ field.help_text }}</small> <!-- Help text for each field -->
                                         {% endif %}
                                     </div>
                                 </div>
@@ -426,11 +425,11 @@
                     </div>
                 </div>
                 
-                <div class="form-buttons">
-                    <a href="{% url 'claims:claim_dashboard' %}" class="cancel-btn">
+                <div class="form-buttons"> <!-- Container for form buttons -->
+                    <a href="{% url 'claims:claim_dashboard' %}" class="cancel-btn"> <!-- Link to return to dashboard -->
                         <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                     </a>
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn"> <!-- Button to submit claim -->
                         <i class="fas fa-paper-plane me-2"></i>Submit Claim
                     </button>
                 </div>
@@ -445,82 +444,82 @@
     // Form validation script
     document.addEventListener('DOMContentLoaded', function() {
         // Get the form element
-        const form = document.getElementById('claimForm');
-        const errorContainer = document.getElementById('validationErrors');
-        const errorList = document.getElementById('errorList');
+        const form = document.getElementById('claimForm'); // Reference to the claim form
+        const errorContainer = document.getElementById('validationErrors'); // Reference to the error container
+        const errorList = document.getElementById('errorList'); // Reference to the error list
         
         // Form validation
         form.addEventListener('submit', function(event) {
             // Clear previous error messages
-            errorList.innerHTML = '';
-            errorContainer.style.display = 'none';
+            errorList.innerHTML = ''; // Clear error list
+            errorContainer.style.display = 'none'; // Hide error container
             
-            let hasErrors = false;
-            let errorMessages = [];
+            let hasErrors = false; // Flag for errors
+            let errorMessages = []; // Array to store error messages
             
             // Validate each required field
-            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]'); // Get all required fields
             requiredFields.forEach(field => {
-                const fieldLabel = field.previousElementSibling ? field.previousElementSibling.textContent.trim() : field.name;
+                const fieldLabel = field.previousElementSibling ? field.previousElementSibling.textContent.trim() : field.name; // Get field label
                 
-                if (!field.value.trim()) {
-                    hasErrors = true;
-                    field.classList.add('is-invalid');
+                if (!field.value.trim()) { // Check if field is empty
+                    hasErrors = true; // Set error flag
+                    field.classList.add('is-invalid'); // Add invalid class to field
                     
                     // Find the section this field belongs to
-                    const section = field.closest('.collapse');
+                    const section = field.closest('.collapse'); // Get closest collapsible section
                     if (section) {
-                        const sectionHeader = section.previousElementSibling;
+                        const sectionHeader = section.previousElementSibling; // Get section header
                         if (sectionHeader) {
-                            const sectionName = sectionHeader.textContent.trim();
+                            const sectionName = sectionHeader.textContent.trim(); // Get section name
                             
                             // Check if this section is already in our error messages
                             if (!errorMessages.some(msg => msg.includes(sectionName))) {
-                                errorMessages.push(`Fill in all required fields in the "${sectionName}" section`);
+                                errorMessages.push(`Fill in all required fields in the "${sectionName}" section`); // Add error message for section
                             }
                         }
                     }
                 } else {
-                    field.classList.remove('is-invalid');
-                    field.classList.add('is-valid');
+                    field.classList.remove('is-invalid'); // Remove invalid class from field
+                    field.classList.add('is-valid'); // Add valid class to field
                 }
             });
             
             // If there are errors, prevent form submission and show error messages
             if (hasErrors) {
-                event.preventDefault();
+                event.preventDefault(); // Prevent form submission
                 
                 // Add each error message to the error list
                 errorMessages.forEach(message => {
-                    const li = document.createElement('li');
-                    li.textContent = message;
-                    errorList.appendChild(li);
+                    const li = document.createElement('li'); // Create list item for error message
+                    li.textContent = message; // Set message text
+                    errorList.appendChild(li); // Append to error list
                 });
                 
                 // Show the error container
-                errorContainer.style.display = 'block';
+                errorContainer.style.display = 'block'; // Display error container
                 
                 // Open the first section with errors
-                const firstInvalidField = form.querySelector('.is-invalid');
+                const firstInvalidField = form.querySelector('.is-invalid'); // Get first invalid field
                 if (firstInvalidField) {
-                    const section = firstInvalidField.closest('.collapse');
+                    const section = firstInvalidField.closest('.collapse'); // Get closest collapsible section
                     if (section && !section.classList.contains('show')) {
-                        const sectionId = section.id;
-                        const button = document.querySelector(`[data-bs-target="#${sectionId}"]`);
+                        const sectionId = section.id; // Get section ID
+                        const button = document.querySelector(`[data-bs-target="#${sectionId}"]`); // Get button for section
                         if (button) {
                             // Use Bootstrap's API to show the collapse
-                            new bootstrap.Collapse(section).show();
+                            new bootstrap.Collapse(section).show(); // Show section
                         }
                     }
                     
                     // Scroll to the error container
-                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to error container
                 }
             } else {
                 // Show loading state on button but DON'T prevent the default submission
-                const submitBtn = form.querySelector('.submit-btn');
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                submitBtn.disabled = true;
+                const submitBtn = form.querySelector('.submit-btn'); // Get submit button
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...'; // Change button text to loading
+                submitBtn.disabled = true; // Disable button
                 
                 // Let the form submit normally - do not prevent default!
                 // Django will handle the redirect to success page
@@ -528,22 +527,22 @@
         });
         
         // Clear validation state when field value changes
-        const formFields = form.querySelectorAll('input, select, textarea');
+        const formFields = form.querySelectorAll('input, select, textarea'); // Get all form fields
         formFields.forEach(field => {
             field.addEventListener('input', function() {
                 if (field.value.trim()) {
-                    field.classList.remove('is-invalid');
-                    field.classList.add('is-valid');
+                    field.classList.remove('is-invalid'); // Remove invalid class if field is filled
+                    field.classList.add('is-valid'); // Add valid class if field is filled
                 } else if (field.hasAttribute('required')) {
-                    field.classList.add('is-invalid');
-                    field.classList.remove('is-valid');
+                    field.classList.add('is-invalid'); // Add invalid class if field is required and empty
+                    field.classList.remove('is-valid'); // Remove valid class if field is empty
                 }
             });
         });
         
         // Add bootstrap class to form elements
         document.querySelectorAll('.form-control, .form-select').forEach(el => {
-            el.classList.add('shadow-sm');
+            el.classList.add('shadow-sm'); // Add shadow class to form elements
         });
     });
 </script>

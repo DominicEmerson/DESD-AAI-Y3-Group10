@@ -4,101 +4,101 @@
 {% block title %}Finance Dashboard{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'finance/css/finance.css' %}">
+    <link rel="stylesheet" href="{% static 'finance/css/finance.css' %}"> <!-- Link to finance-specific CSS -->
     <style>
         .table-container {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
+            max-height: 400px; /* Maximum height for the table container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            margin-bottom: 1rem; /* Space below the table container */
         }
         .claims-table tbody tr.hidden {
-            display: none;
+            display: none; /* Hide rows marked as hidden */
         }
         .table-pagination {
-            text-align: center;
-            margin: 1rem 0;
+            text-align: center; /* Centre pagination controls */
+            margin: 1rem 0; /* Space above and below pagination */
         }
     </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Finance Dashboard</h1>
+    <h1>Finance Dashboard</h1> <!-- Main title for the finance dashboard -->
     
     <!-- Filter Section -->
     <div class="filter-section">
-        <h2>Filter Claims</h2>
-        <form id="filterForm" class="filter-form">
+        <h2>Filter Claims</h2> <!-- Heading for the filter section -->
+        <form id="filterForm" class="filter-form"> <!-- Form for filtering claims -->
             <div class="form-row">
                 <div class="form-group">
-                    <label for="whiplash">Whiplash</label>
-                    <select id="whiplash" name="whiplash">
-                        <option value="">All</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
+                    <label for="whiplash">Whiplash</label> <!-- Label for whiplash filter -->
+                    <select id="whiplash" name="whiplash"> <!-- Dropdown for whiplash filter -->
+                        <option value="">All</option> <!-- Option for all claims -->
+                        <option value="Yes">Yes</option> <!-- Option for claims with whiplash -->
+                        <option value="No">No</option> <!-- Option for claims without whiplash -->
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="startDate">Start Date</label>
-                    <input type="date" id="startDate" name="start_date">
+                    <label for="startDate">Start Date</label> <!-- Label for start date filter -->
+                    <input type="date" id="startDate" name="start_date"> <!-- Input for start date -->
                 </div>
                 <div class="form-group">
-                    <label for="endDate">End Date</label>
-                    <input type="date" id="endDate" name="end_date">
+                    <label for="endDate">End Date</label> <!-- Label for end date filter -->
+                    <input type="date" id="endDate" name="end_date"> <!-- Input for end date -->
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="minSettlement">Min Settlement</label>
-                    <input type="number" id="minSettlement" name="min_settlement" min="0" step="0.01">
+                    <label for="minSettlement">Min Settlement</label> <!-- Label for minimum settlement filter -->
+                    <input type="number" id="minSettlement" name="min_settlement" min="0" step="0.01"> <!-- Input for minimum settlement -->
                 </div>
                 <div class="form-group">
-                    <label for="maxSettlement">Max Settlement</label>
-                    <input type="number" id="maxSettlement" name="max_settlement" min="0" step="0.01">
+                    <label for="maxSettlement">Max Settlement</label> <!-- Label for maximum settlement filter -->
+                    <input type="number" id="maxSettlement" name="max_settlement" min="0" step="0.01"> <!-- Input for maximum settlement -->
                 </div>
                 <div class="form-group">
-                    <label for="claimId">Claim ID</label>
-                    <input type="number" id="claimId" name="claim_id" min="1" step="1" placeholder="Enter claim ID">
+                    <label for="claimId">Claim ID</label> <!-- Label for claim ID filter -->
+                    <input type="number" id="claimId" name="claim_id" min="1" step="1" placeholder="Enter claim ID"> <!-- Input for claim ID -->
                 </div>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Apply Filters</button>
-                <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                <button type="submit" class="btn btn-primary">Apply Filters</button> <!-- Button to apply filters -->
+                <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button> <!-- Button to reset filters -->
             </div>
         </form>
     </div>
     
     <!-- Results Section -->
     <div id="resultsSection" class="results-section">
-        <h2>Claims</h2>
+        <h2>Claims</h2> <!-- Heading for the claims results section -->
         <div class="table-actions">
-            <button type="button" class="btn btn-secondary" onclick="selectAllClaims()">Select All</button>
+            <button type="button" class="btn btn-secondary" onclick="selectAllClaims()">Select All</button> <!-- Button to select all claims -->
         </div>
         <div class="table-container">
-            <table class="claims-table">
+            <table class="claims-table"> <!-- Table for displaying claims -->
                 <thead>
                     <tr>
-                        <th>Select</th>
-                        <th>Claim ID</th>
-                        <th>Accident Date</th>
-                        <th>Settlement</th>
-                        <th>Whiplash</th>
-                        <th>Health Expenses</th>
-                        <th>Reductions</th>
+                        <th>Select</th> <!-- Column for selecting claims -->
+                        <th>Claim ID</th> <!-- Column for claim ID -->
+                        <th>Accident Date</th> <!-- Column for accident date -->
+                        <th>Settlement</th> <!-- Column for settlement value -->
+                        <th>Whiplash</th> <!-- Column for whiplash status -->
+                        <th>Health Expenses</th> <!-- Column for health expenses -->
+                        <th>Reductions</th> <!-- Column for reductions -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for claim in claims %}
                     <tr>
                         <td>
-                            <input type="checkbox" class="claim-checkbox" value="{{ claim.id }}" onchange="toggleClaimSelection({{ claim.id }})">
+                            <input type="checkbox" class="claim-checkbox" value="{{ claim.id }}" onchange="toggleClaimSelection({{ claim.id }})"> <!-- Checkbox for selecting claims -->
                         </td>
-                        <td>{{ claim.id }}</td>
-                        <td>{{ claim.accident.accident_date|date:"Y-m-d" }}</td>
-                        <td>£{{ claim.settlement_value }}</td>
-                        <td>{{ claim.accident.injury.whiplash|yesno:"Yes,No" }}</td>
-                        <td>£{{ claim.special_health_expenses }}</td>
-                        <td>£{{ claim.special_reduction }}</td>
+                        <td>{{ claim.id }}</td> <!-- Display claim ID -->
+                        <td>{{ claim.accident.accident_date|date:"Y-m-d" }}</td> <!-- Display accident date -->
+                        <td>£{{ claim.settlement_value }}</td> <!-- Display settlement value -->
+                        <td>{{ claim.accident.injury.whiplash|yesno:"Yes,No" }}</td> <!-- Display whiplash status -->
+                        <td>£{{ claim.special_health_expenses }}</td> <!-- Display health expenses -->
+                        <td>£{{ claim.special_reduction }}</td> <!-- Display reductions -->
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -107,42 +107,42 @@
     </div>
     
     <!-- Selected Claims Section -->
-    <div id="selectedSection" class="selected-section" style="display: none;">
-        <h2>Selected Claims</h2>
-        <div id="selectedClaims" class="selected-claims"></div>
+    <div id="selectedSection" class="selected-section" style="display: none;"> <!-- Section for displaying selected claims -->
+        <h2>Selected Claims</h2> <!-- Heading for selected claims -->
+        <div id="selectedClaims" class="selected-claims"></div> <!-- Container for selected claims -->
         <div class="action-buttons">
-            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
-            <button class="btn btn-primary" onclick="openInvoiceModal()">Generate Invoice</button>
+            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button> <!-- Button to generate report -->
+            <button class="btn btn-primary" onclick="openInvoiceModal()">Generate Invoice</button> <!-- Button to generate invoice -->
         </div>
     </div>
 </div>
 
 <!-- Invoice Modal -->
-<div id="invoiceModal" class="modal">
+<div id="invoiceModal" class="modal"> <!-- Modal for generating invoices -->
     <div class="modal-content">
-        <span class="close" onclick="closeInvoiceModal()">&times;</span>
-        <h2>Generate Invoice</h2>
-        <form id="invoiceForm">
+        <span class="close" onclick="closeInvoiceModal()">&times;</span> <!-- Close button for the modal -->
+        <h2>Generate Invoice</h2> <!-- Heading for the invoice generation modal -->
+        <form id="invoiceForm"> <!-- Form for generating invoices -->
             <div class="form-group">
-                <label for="invoiceNumber">Invoice Number</label>
-                <input type="text" id="invoiceNumber" name="invoice_number" required>
+                <label for="invoiceNumber">Invoice Number</label> <!-- Label for invoice number input -->
+                <input type="text" id="invoiceNumber" name="invoice_number" required> <!-- Input for invoice number -->
             </div>
             <div class="form-group">
-                <label for="clientReference">Client Reference</label>
-                <input type="text" id="clientReference" name="client_reference">
+                <label for="clientReference">Client Reference</label> <!-- Label for client reference input -->
+                <input type="text" id="clientReference" name="client_reference"> <!-- Input for client reference -->
             </div>
             <div class="form-group">
                 <label>
-                    <input type="checkbox" name="include_expense_breakdown" checked>
+                    <input type="checkbox" name="include_expense_breakdown" checked> <!-- Checkbox for including expense breakdown -->
                     Include Expense Breakdown
                 </label>
             </div>
-            <button type="submit" class="btn btn-primary">Generate Invoice</button>
+            <button type="submit" class="btn btn-primary">Generate Invoice</button> <!-- Button to generate invoice -->
         </form>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'finance/js/finance.js' %}"></script>
+<script src="{% static 'finance/js/finance.js' %}"></script> <!-- Link to finance-specific JavaScript -->
 {% endblock %}

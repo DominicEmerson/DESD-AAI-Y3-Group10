@@ -3,64 +3,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Insurance App{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'custom/css/styles.css' %}">
-    {% block extra_css %}{% endblock %}
-    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive design -->
+    <title>{% block title %}Insurance App{% endblock %}</title> <!-- Title block for child templates -->
+    <link rel="stylesheet" href="{% static 'custom/css/styles.css' %}"> <!-- Link to custom CSS -->
+    {% block extra_css %}{% endblock %} <!-- Block for additional CSS -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}"> <!-- Favicon -->
 </head>
 <body>
 
-    <nav class="navbar">
+    <nav class="navbar"> <!-- Navigation bar -->
         <div class="navbar-container">
-          <h2 class="logo">Insurance App</h2>
-          <ul class="nav-links">
+          <h2 class="logo">Insurance App</h2> <!-- Logo for the application -->
+          <ul class="nav-links"> <!-- Navigation links -->
             {% if user.is_authenticated %}
               {% if user.role == 'admin' %}
-                <li><a href="{% url 'sysadmin:admin_page' %}">Admin</a></li>
-                <li><a href="{% url 'sysadmin:system_health' %}">System Health</a></li>
+                <li><a href="{% url 'sysadmin:admin_page' %}">Admin</a></li> <!-- Admin link -->
+                <li><a href="{% url 'sysadmin:system_health' %}">System Health</a></li> <!-- System health link -->
               {% endif %}
               {% if user.role == 'engineer' %}
-                <li><a href="{% url 'engineer:engineer_page' %}">Engineer Home</a></li>
+                <li><a href="{% url 'engineer:engineer_page' %}">Engineer Home</a></li> <!-- Engineer home link -->
               {% elif user.role == 'finance' %}
-                <li><a href="{% url 'finance:finance_page' %}">Finance Home</a></li>
+                <li><a href="{% url 'finance:finance_page' %}">Finance Home</a></li> <!-- Finance home link -->
               {% else %}
-                <li><a href="{% url 'claims:claim_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'claims:claim_dashboard' %}">Dashboard</a></li> <!-- User dashboard link -->
               {% endif %}
       
-              <li><a href="{% url 'logout' %}">Logout</a></li>
+              <li><a href="{% url 'logout' %}">Logout</a></li> <!-- Logout link -->
             {% else %}
-              <li><a href="{% url 'login' %}">Login</a></li>
+              <li><a href="{% url 'login' %}">Login</a></li> <!-- Login link -->
             {% endif %}
           </ul>
         </div>
       </nav>
 
 <main class="main-container">
-    {% block content %}{% endblock %}
+    {% block content %}{% endblock %} <!-- Main content block for child templates -->
 </main>
 
 <!-- JavaScript code -->
 {% block extra_js %}
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      fetch("{% url 'session_info' %}")
-        .then(res => res.json())
+    document.addEventListener("DOMContentLoaded", function () { // Wait for the DOM to load
+      fetch("{% url 'session_info' %}") // Fetch session information
+        .then(res => res.json()) // Parse response as JSON
         .then(data => {
-          const expiryTime = new Date(data.session_expiry).getTime();
-          const warningTime = expiryTime - 10 * 60 * 1000; // 10 mins before expiry
-          const now = new Date().getTime();
-          const delay = warningTime - now;
-    
+          const expiryTime = new Date(data.session_expiry).getTime(); // Get session expiry time
+          const warningTime = expiryTime - 10 * 60 * 1000; // 10 minutes before expiry
+          const now = new Date().getTime(); // Current time
+          const delay = warningTime - now; // Time until warning
+
           if (delay > 0) {
             setTimeout(() => {
-              alert("Your session will expire in 10 minutes!");
+              alert("Your session will expire in 10 minutes!"); // Alert user before session expiry
             }, delay);
           }
         });
     });
 </script>
-{{ block.super }}
+{{ block.super }} <!-- Include any additional scripts from child templates -->
 {% endblock %}
 </body>
 </html>

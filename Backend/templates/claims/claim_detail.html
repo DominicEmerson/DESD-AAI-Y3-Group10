@@ -4,34 +4,34 @@
 {% block title %}Claim Details{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Claim Details #{{ claim.id }}</h4>
+<div class="container mt-4"> <!-- Main container for claim details -->
+    <div class="card shadow-sm mb-4"> <!-- Card for claim details -->
+        <div class="card-header bg-primary text-white"> <!-- Card header for claim details -->
+            <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Claim Details #{{ claim.id }}</h4> <!-- Title for claim details -->
         </div>
-        <div class="card-body">
-            <h5>Accident Information</h5>
-            <ul class="list-group mb-3">
-                <li class="list-group-item"><strong>Date:</strong> {{ claim.accident.accident_date|date:"d/m/Y H:i" }}</li>
-                <li class="list-group-item"><strong>Type:</strong> {{ claim.accident.accident_type }}</li>
-                <li class="list-group-item"><strong>Description:</strong> {{ claim.accident.accident_description }}</li>
-                <li class="list-group-item"><strong>Police Report:</strong> {% if claim.accident.police_report_filed %}Yes{% else %}No{% endif %}</li>
-                <li class="list-group-item"><strong>Witnesses:</strong> {% if claim.accident.witness_present %}Yes{% else %}No{% endif %}</li>
-                <li class="list-group-item"><strong>Weather:</strong> {{ claim.accident.weather_conditions }}</li>
+        <div class="card-body"> <!-- Card body for claim details -->
+            <h5>Accident Information</h5> <!-- Heading for accident information -->
+            <ul class="list-group mb-3"> <!-- List for displaying accident information -->
+                <li class="list-group-item"><strong>Date:</strong> {{ claim.accident.accident_date|date:"d/m/Y H:i" }}</li> <!-- Display accident date -->
+                <li class="list-group-item"><strong>Type:</strong> {{ claim.accident.accident_type }}</li> <!-- Display accident type -->
+                <li class="list-group-item"><strong>Description:</strong> {{ claim.accident.accident_description }}</li> <!-- Display accident description -->
+                <li class="list-group-item"><strong>Police Report:</strong> {% if claim.accident.police_report_filed %}Yes{% else %}No{% endif %}</li> <!-- Display if police report was filed -->
+                <li class="list-group-item"><strong>Witnesses:</strong> {% if claim.accident.witness_present %}Yes{% else %}No{% endif %}</li> <!-- Display if witnesses were present -->
+                <li class="list-group-item"><strong>Weather:</strong> {{ claim.accident.weather_conditions }}</li> <!-- Display weather conditions -->
             </ul>
             <!-- Add more claim fields as needed -->
 
-            <h5>Financial Details</h5>
-            <ul class="list-group mb-3">
-                <li class="list-group-item"><strong>Settlement Value:</strong> £{{ claim.settlement_value }}</li>
-                <li class="list-group-item"><strong>Special Health Expenses:</strong> £{{ claim.special_health_expenses }}</li>
-                <li class="list-group-item"><strong>Special Earnings Loss:</strong> £{{ claim.special_earnings_loss }}</li>
+            <h5>Financial Details</h5> <!-- Heading for financial details -->
+            <ul class="list-group mb-3"> <!-- List for displaying financial details -->
+                <li class="list-group-item"><strong>Settlement Value:</strong> £{{ claim.settlement_value }}</li> <!-- Display settlement value -->
+                <li class="list-group-item"><strong>Special Health Expenses:</strong> £{{ claim.special_health_expenses }}</li> <!-- Display special health expenses -->
+                <li class="list-group-item"><strong>Special Earnings Loss:</strong> £{{ claim.special_earnings_loss }}</li> <!-- Display special earnings loss -->
                 <!-- Add more fields as needed -->
             </ul>
 
-            <h5>Prediction</h5>
+            <h5>Prediction</h5> <!-- Heading for prediction section -->
             {% if error %}
-                <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
+                <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div> <!-- Display error message for prediction -->
             {% endif %}
             {% if prediction %}
                 <div class="alert alert-info">
@@ -39,33 +39,33 @@
                     Predicted Settlement Value:
                     <strong>
                         {% if prediction|length == 1 %}
-                            £{{ prediction.0|floatformat:2 }}
+                            £{{ prediction.0|floatformat:2 }} <!-- Display predicted settlement value -->
                         {% else %}
                             {{ prediction }}
                         {% endif %}
                     </strong>
                 </div>
             {% else %}
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" name="get_prediction" class="btn btn-info">
+                <form method="post"> <!-- Form to request prediction -->
+                    {% csrf_token %} <!-- CSRF token for security -->
+                    <button type="submit" name="get_prediction" class="btn btn-info"> <!-- Button to get prediction -->
                         <i class="fas fa-robot me-1"></i>Get Prediction
                     </button>
                 </form>
             {% endif %}
 
-            <div class="card bg-light mt-4">
+            <div class="card bg-light mt-4"> <!-- Card for key factors -->
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="fas fa-chart-bar me-2"></i>Key Factors
                     </h5>
                     <p class="card-text text-muted">
-                        Feature importance and explanation details will be shown here in future updates.
+                        Feature importance and explanation details will be shown here in future updates. <!-- Placeholder for future updates -->
                     </p>
                 </div>
             </div>
         </div>
     </div>
-    <a href="{% url 'claims:claim_dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a>
+    <a href="{% url 'claims:claim_dashboard' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a> <!-- Button to return to dashboard -->
 </div>
 {% endblock %} 

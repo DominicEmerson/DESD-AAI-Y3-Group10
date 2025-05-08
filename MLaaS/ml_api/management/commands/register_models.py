@@ -6,35 +6,33 @@ versions, descriptions, types, and the relative path to their saved file
 within the project structure (e.g., 'ml_models/model_name.pkl').
 """
 
+from django.core.management.base import BaseCommand  # Import base command for management commands
 
-from django.core.management.base import BaseCommand
-
-from ml_api.models import Endpoint, MLAlgorithm
-
+from ml_api.models import Endpoint, MLAlgorithm  # Import models for endpoints and algorithms
 
 class Command(BaseCommand):
     """Registers predefined ML models with their metadata in the database."""
 
-    help = "Register ML models explicitly defined in this command in the database."
+    help = "Register ML models explicitly defined in this command in the database."  # Help text for command
 
     def handle(self, *args, **kwargs):
         """Executes the model registration logic."""
-        self.stdout.write("--- Starting Model Registration ---")
+        self.stdout.write("--- Starting Model Registration ---")  # Log start of registration
 
         # --- Create default endpoint ---
         # get_or_create returns a tuple: (object, created_boolean)
         endpoint, endpoint_created = Endpoint.objects.get_or_create(
-            name="Insurance Claim Prediction",
+            name="Insurance Claim Prediction",  # Name for the endpoint
             # Use defaults for fields only needed on initial creation
-            defaults={'owner': "Insurance AI Team"}
+            defaults={'owner': "Insurance AI Team"}  # Default owner for the endpoint
         )
         if endpoint_created:
             self.stdout.write(
-                self.style.SUCCESS(f"Created Endpoint: {endpoint.name}")
+                self.style.SUCCESS(f"Created Endpoint: {endpoint.name}")  # Log successful endpoint creation
             )
         else:
             self.stdout.write(
-                self.style.SUCCESS(f"Using existing Endpoint: {endpoint.name}")
+                self.style.SUCCESS(f"Using existing Endpoint: {endpoint.name}")  # Log existing endpoint usage
             )
         self.stdout.write("")  # Add a blank line for spacing
 
@@ -43,12 +41,12 @@ class Command(BaseCommand):
         # when registering a new model update the version number to match what is in the file name
         models_to_register = [
             {
-                "name": "3-Feature Regression Model",
-                "version": "1.0.0",
-                "relative_path": "ml_models/3feature_regression_model.pkl",
-                "description": "Predicts insurance claim values based on three key features.",
-                "model_type": "OTHER",
-                "is_active": True,  # Example: Mark this one as active
+                "name": "3-Feature Regression Model",  # Name of the model
+                "version": "1.0.0",  # Version of the model
+                "relative_path": "ml_models/3feature_regression_model.pkl",  # Relative path to model file
+                "description": "Predicts insurance claim values based on three key features.",  # Description of the model
+                "model_type": "OTHER",  # Model type
+                "is_active": True,  # Mark this model as active
             },
             {
                 "name": "Random Forest Claim Predictor",
@@ -70,36 +68,36 @@ class Command(BaseCommand):
 
         # --- Loop through and register/update models ---
         for model_data in models_to_register:
-            model_path = model_data["relative_path"]
+            model_path = model_data["relative_path"]  # Get model file path
             algorithm, created = MLAlgorithm.objects.get_or_create(
-                name=model_data["name"],
-                version=model_data["version"],
-                parent_endpoint=endpoint,
+                name=model_data["name"],  # Get or create algorithm by name
+                version=model_data["version"],  # Get or create algorithm by version
+                parent_endpoint=endpoint,  # Associate with the created endpoint
                 # Fields to set/update if creating OR finding
                 defaults={
-                    'description': model_data["description"],
+                    'description': model_data["description"],  # Set description
                     'code': "",  # Add model code/config if needed
-                    'model_file': model_path,  # Stores the relative path
-                    'model_type': model_data["model_type"],
-                    'is_active': model_data["is_active"],
+                    'model_file': model_path,  # Store the relative path
+                    'model_type': model_data["model_type"],  # Set model type
+                    'is_active': model_data["is_active"],  # Set active status
                 }
             )
 
             # Check if the model was found (not created) and if the path needs updating
-            updated = False
-            if not created:
+            updated = False  # Initialise updated flag
+            if not created:  # If the model already exists
                 # Check multiple fields that might need updating if defaults change
-                fields_to_check = ['description', 'model_file', 'model_type', 'is_active']
+                fields_to_check = ['description', 'model_file', 'model_type', 'is_active']  # Fields to check for updates
                 for field in fields_to_check:
                     if getattr(algorithm, field) != model_data.get(field, getattr(algorithm, field)):
-                        setattr(algorithm, field, model_data[field])
-                        updated = True
+                        setattr(algorithm, field, model_data[field])  # Update field value
+                        updated = True  # Set updated flag
                 if updated:
-                    algorithm.save()
+                    algorithm.save()  # Save updated algorithm
                     self.stdout.write(
                         self.style.WARNING(
                             f"Updated details for existing model "
-                            f"{algorithm.name} v{algorithm.version}"
+                            f"{algorithm.name} v{algorithm.version}"  # Log updated model details
                         )
                     )
 
@@ -107,17 +105,17 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(
                         f"Successfully registered model "
-                        f"{algorithm.name} v{algorithm.version}"
+                        f"{algorithm.name} v{algorithm.version}"  # Log successful model registration
                     )
                 )
-            elif not updated: # Only print 'already exists' if no updates were made
+            elif not updated:  # Only print 'already exists' if no updates were made
                 self.stdout.write(
                     self.style.SUCCESS(
                         f"Model {algorithm.name} v{algorithm.version} "
-                        f"already exists and is up-to-date."
+                        f"already exists and is up-to-date."  # Log existing model status
                     )
                 )
-            self.stdout.write("-" * 20) # Separator
+            self.stdout.write("-" * 20)  # Separator for output
 
         # --- Now, after the registration loop, do the legacy/active logic ---
         for model_data in models_to_register:

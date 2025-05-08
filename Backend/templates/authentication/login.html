@@ -3,77 +3,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive design -->
+    <title>Login & Sign Up</title> <!-- Title for the page -->
     <style>
+        /* Styles for the body and layout */
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; /* Font style for the page */
             background-color: #b3b3b3; /* Grey background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            display: flex; /* Flexbox layout for centring content */
+            justify-content: center; /* Centre horizontally */
+            align-items: center; /* Centre vertically */
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
         }
         .container {
-            background: #c2c2c2; /* Slightly darker grey */
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            width: 600px;
-            display: flex;
-            justify-content: space-between;
+            background: #c2c2c2; /* Slightly darker grey for the container */
+            padding: 40px; /* Padding inside the container */
+            border-radius: 10px; /* Rounded corners for the container */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Shadow effect for the container */
+            width: 600px; /* Fixed width for the container */
+            display: flex; /* Flexbox layout for forms */
+            justify-content: space-between; /* Space between forms */
         }
         .form-container {
-            width: 45%;
-            text-align: center;
+            width: 45%; /* Width for each form */
+            text-align: center; /* Centre text inside forms */
         }
         h2 {
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Space below headings */
         }
         input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            background: #d3d3d3;
-            border-radius: 5px;
+            width: 100%; /* Full width for inputs */
+            padding: 10px; /* Padding inside inputs */
+            margin: 10px 0; /* Space above and below inputs */
+            border: none; /* No border for inputs */
+            background: #d3d3d3; /* Background colour for inputs */
+            border-radius: 5px; /* Rounded corners for inputs */
         }
         .input-row {
-            display: flex;
-            gap: 10px;
+            display: flex; /* Flexbox layout for input rows */
+            gap: 10px; /* Space between inputs */
         }
         .input-row input {
-            width: 50%;
+            width: 50%; /* Half width for inputs in a row */
         }
         button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
+            width: 100%; /* Full width for buttons */
+            padding: 10px; /* Padding inside buttons */
+            border: none; /* No border for buttons */
+            font-size: 16px; /* Font size for buttons */
+            font-weight: bold; /* Bold text for buttons */
+            border-radius: 20px; /* Rounded corners for buttons */
+            cursor: pointer; /* Pointer cursor on hover */
         }
         .login-btn {
-            background: #8bc34a; /* Green */
-            color: black;
+            background: #8bc34a; /* Green background for login button */
+            color: black; /* Text colour for login button */
         }
         .signup-btn {
-            background: #64b5f6; /* Blue */
-            color: black;
+            background: #64b5f6; /* Blue background for signup button */
+            color: black; /* Text colour for signup button */
         }
         .forgot-password {
-            color: blue;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
+            color: blue; /* Colour for forgotten password link */
+            font-size: 14px; /* Font size for link */
+            text-decoration: none; /* No underline for link */
+            display: inline-block; /* Inline block for link */
+            margin-top: 10px; /* Space above the link */
         }
         .error {
-            color: red;
-            font-size: 14px;
-            margin-bottom: 10px;
+            color: red; /* Red colour for error messages */
+            font-size: 14px; /* Font size for error messages */
+            margin-bottom: 10px; /* Space below error messages */
         }
     </style>
 </head>
@@ -82,70 +83,70 @@
         <div class="container">
             <!-- LOGIN FORM -->
             <div class="form-container">
-                <h2>Login</h2>
+                <h2>Login</h2> <!-- Heading for login form -->
         
                 {% if form.errors %}
-                    <p class="error">Invalid username or password. Please try again.</p>
+                    <p class="error">Invalid username or password. Please try again.</p> <!-- Error message for login -->
                 {% endif %}
                 {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
-                        <li class="{{ message.tags }}">{{ message }}</li>
+                        <li class="{{ message.tags }}">{{ message }}</li> <!-- Display messages to the user -->
                     {% endfor %}
                 </ul>
                 {% endif %}
         
-                <form method="post" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    <input type="text" name="username" placeholder="Username" required>
-                    <input type="password" name="password" placeholder="Password" required>
-                    <button class="login-btn" type="submit">Login</button>
+                <form method="post" action="{% url 'login' %}"> <!-- Form for login -->
+                    {% csrf_token %} <!-- CSRF token for security -->
+                    <input type="text" name="username" placeholder="Username" required> <!-- Username input -->
+                    <input type="password" name="password" placeholder="Password" required> <!-- Password input -->
+                    <button class="login-btn" type="submit">Login</button> <!-- Button to submit login form -->
                 </form>
                     <!-- Forgotten Password Link -->
                 <div class="forgot-password-link">
-                    <a href="{% url 'forgot_password' %}">Forgotten Password?</a>
+                    <a href="{% url 'forgot_password' %}">Forgotten Password?</a> <!-- Link to forgotten password page -->
                 </div>
             </div>
         
             <!-- SIGNUP FORM -->
             <div class="form-container">
-                <h2>Sign Up</h2>
+                <h2>Sign Up</h2> <!-- Heading for signup form -->
         
                 {% if signup_form.errors %}
                     <div class="error">
                         {% for field in signup_form %}
                             {% for error in field.errors %}
-                                <p>{{ error }}</p>
+                                <p>{{ error }}</p> <!-- Display errors for signup form -->
                             {% endfor %}
                         {% endfor %}
                         {% for error in signup_form.non_field_errors %}
-                            <p>{{ error }}</p>
+                            <p>{{ error }}</p> <!-- Display non-field errors for signup form -->
                         {% endfor %}
                     </div>
                 {% endif %}
         
-                <form method="post" action="{% url 'signup' %}">
-                    {% csrf_token %}
+                <form method="post" action="{% url 'signup' %}" novalidate> <!-- Form for signup -->
+                    {% csrf_token %} <!-- CSRF token for security -->
                     <div class="input-row">
-                        <input type="text" name="first_name" placeholder="First Name" required>
-                        <input type="text" name="last_name" placeholder="Last Name" required>
+                        <input type="text" name="first_name" placeholder="First Name" required> <!-- First name input -->
+                        <input type="text" name="last_name" placeholder="Last Name" required> <!-- Last name input -->
                     </div>
-                    <input type="text" name="username" placeholder="Username" required>
-                    <input type="email" name="email" placeholder="Email" required>
-                    <input type="password" name="password" placeholder="Password" required>
-                    <input type="password" name="password_confirm" placeholder="Confirm Password" required>
+                    <input type="text" name="username" placeholder="Username" required> <!-- Username input -->
+                    <input type="text" name="email" placeholder="Email" required> <!-- Email input -->
+                    <input type="password" name="password" placeholder="Password" required> <!-- Password input -->
+                    <input type="password" name="password_confirm" placeholder="Confirm Password" required> <!-- Confirm password input -->
 
-                    <button class="signup-btn" type="submit">Sign Up</button>
+                    <button class="signup-btn" type="submit">Sign Up</button> <!-- Button to submit signup form -->
                 </form>
                 <div class="user-data-conditions">
-                    <p>By signing up, you agree to our Terms and Conditions and acknowledge that your data will be handled in accordance with our <a href="{% url 'privacy_policy' %}">Privacy Policy</a>.</p>
+                    <p>By signing up, you agree to our Terms and Conditions and acknowledge that your data will be handled in accordance with our <a href="{% url 'privacy_policy' %}">Privacy Policy</a>.</p> <!-- Terms and conditions notice -->
                 </div>
             </div>
         </div>
         
         <script>
             if (window.location.search.includes('timeout=1') || window.location.search.includes('logged_out=1')) {
-              window.history.replaceState({}, document.title, window.location.pathname);
+              window.history.replaceState({}, document.title, window.location.pathname); // Clear URL parameters after timeout or logout
             }
           </script>
           

@@ -4,16 +4,16 @@
 {% block title %}Claim Submitted Successfully{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-success shadow-lg">
-                <div class="card-header bg-success text-white">
-                    <h2 class="mb-0 text-center"><i class="fas fa-check-circle me-2"></i>Claim Submitted Successfully</h2>
+<div class="container mt-5"> <!-- Main container for success message -->
+    <div class="row justify-content-center"> <!-- Center the success message -->
+        <div class="col-md-8"> <!-- Column for success card -->
+            <div class="card border-success shadow-lg"> <!-- Card for success message -->
+                <div class="card-header bg-success text-white"> <!-- Card header for success message -->
+                    <h2 class="mb-0 text-center"><i class="fas fa-check-circle me-2"></i>Claim Submitted Successfully</h2> <!-- Title for success message -->
                 </div>
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="success-checkmark">
+                <div class="card-body p-5"> <!-- Card body for success message -->
+                    <div class="text-center mb-4"> <!-- Centered content for success message -->
+                        <div class="success-checkmark"> <!-- Checkmark animation -->
                             <div class="check-icon">
                                 <span class="icon-line line-tip"></span>
                                 <span class="icon-line line-long"></span>
@@ -21,32 +21,32 @@
                                 <div class="icon-fix"></div>
                             </div>
                         </div>
-                        <h3 class="mb-3">Thank you for your submission!</h3>
-                        <p class="lead">Your claim has been received and is now being processed.</p>
+                        <h3 class="mb-3">Thank you for your submission!</h3> <!-- Thank you message -->
+                        <p class="lead">Your claim has been received and is now being processed.</p> <!-- Processing message -->
                     </div>
                     
-                    <div class="card mb-4 bg-light">
+                    <div class="card mb-4 bg-light"> <!-- Card for claim information -->
                         <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>Claim Information</h5>
+                            <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>Claim Information</h5> <!-- Title for claim information -->
                             <hr>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Claim ID:</strong> #{{ claim.id }}</p>
-                                    <p><strong>Submission Date:</strong> {{ claim.claim_date|date:"d/m/Y H:i" }}</p>
+                            <div class="row"> <!-- Row for displaying claim information -->
+                                <div class="col-md-6"> <!-- Column for claim ID and submission date -->
+                                    <p><strong>Claim ID:</strong> #{{ claim.id }}</p> <!-- Display claim ID -->
+                                    <p><strong>Submission Date:</strong> {{ claim.claim_date|date:"d/m/Y H:i" }}</p> <!-- Display submission date -->
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Accident Type:</strong> {{ claim.accident.accident_type }}</p>
-                                    <p><strong>Status:</strong> <span class="badge bg-warning">Pending Review</span></p>
+                                <div class="col-md-6"> <!-- Column for accident type and status -->
+                                    <p><strong>Accident Type:</strong> {{ claim.accident.accident_type }}</p> <!-- Display accident type -->
+                                    <p><strong>Status:</strong> <span class="badge bg-warning">Pending Review</span></p> <!-- Display status -->
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="alert alert-info">
-                        <i class="fas fa-lightbulb me-2"></i> Our team will review your claim and may contact you if additional information is needed.
+                    <div class="alert alert-info"> <!-- Alert for additional information -->
+                        <i class="fas fa-lightbulb me-2"></i> Our team will review your claim and may contact you if additional information is needed. <!-- Information message -->
                     </div>
                     
-                    <div class="text-center mt-4">
+                    <div class="text-center mt-4"> <!-- Centered button for returning to dashboard -->
                         <a href="{% url 'claims:claim_dashboard' %}" class="btn btn-primary btn-lg">
                             <i class="fas fa-home me-2"></i>Return to Dashboard
                         </a>
@@ -63,7 +63,7 @@
     // Add a small delay before showing the success animation
     window.onload = function() {
         setTimeout(function() {
-            document.querySelector('.success-checkmark').classList.add('animate');
+            document.querySelector('.success-checkmark').classList.add('animate'); // Trigger animation for success checkmark
         }, 200);
     }
 </script>
@@ -73,157 +73,157 @@
 <style>
     /* Success Checkmark Animation */
     .success-checkmark {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto;
-        position: relative;
+        width: 80px; /* Width for checkmark */
+        height: 80px; /* Height for checkmark */
+        margin: 0 auto; /* Center checkmark */
+        position: relative; /* Position for checkmark */
     }
     
     .success-checkmark .check-icon {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        border-radius: 50%;
-        box-sizing: content-box;
-        border: 4px solid #4CAF50;
+        width: 80px; /* Width for checkmark icon */
+        height: 80px; /* Height for checkmark icon */
+        position: relative; /* Position for checkmark icon */
+        border-radius: 50%; /* Rounded corners for checkmark icon */
+        box-sizing: content-box; /* Box sizing for checkmark icon */
+        border: 4px solid #4CAF50; /* Border for checkmark icon */
     }
     
     .success-checkmark .check-icon::before {
-        top: 3px;
-        left: -2px;
-        width: 30px;
-        transform-origin: 100% 50%;
-        border-radius: 100px 0 0 100px;
+        top: 3px; /* Position for before element */
+        left: -2px; /* Position for before element */
+        width: 30px; /* Width for before element */
+        transform-origin: 100% 50%; /* Transform origin for before element */
+        border-radius: 100px 0 0 100px; /* Rounded corners for before element */
     }
     
     .success-checkmark .check-icon::after {
-        top: 0;
-        left: 30px;
-        width: 60px;
-        transform-origin: 0 50%;
-        border-radius: 0 100px 100px 0;
-        animation: rotate-circle 4.25s ease-in;
+        top: 0; /* Position for after element */
+        left: 30px; /* Position for after element */
+        width: 60px; /* Width for after element */
+        transform-origin: 0 50%; /* Transform origin for after element */
+        border-radius: 0 100px 100px 0; /* Rounded corners for after element */
+        animation: rotate-circle 4.25s ease-in; /* Animation for after element */
     }
     
     .success-checkmark .check-icon::before, .success-checkmark .check-icon::after {
-        content: '';
-        height: 100px;
-        position: absolute;
-        background: #FFFFFF;
-        transform: rotate(-45deg);
+        content: ''; /* Content for before and after elements */
+        height: 100px; /* Height for before and after elements */
+        position: absolute; /* Position for before and after elements */
+        background: #FFFFFF; /* Background colour for before and after elements */
+        transform: rotate(-45deg); /* Rotation for before and after elements */
     }
     
     .success-checkmark .check-icon .icon-line {
-        height: 5px;
-        background-color: #4CAF50;
-        display: block;
-        border-radius: 2px;
-        position: absolute;
-        z-index: 10;
+        height: 5px; /* Height for icon lines */
+        background-color: #4CAF50; /* Background colour for icon lines */
+        display: block; /* Display for icon lines */
+        border-radius: 2px; /* Rounded corners for icon lines */
+        position: absolute; /* Position for icon lines */
+        z-index: 10; /* Z-index for icon lines */
     }
     
     .success-checkmark .check-icon .icon-line.line-tip {
-        top: 46px;
-        left: 14px;
-        width: 25px;
-        transform: rotate(45deg);
-        animation: icon-line-tip 0.75s;
+        top: 46px; /* Position for line tip */
+        left: 14px; /* Position for line tip */
+        width: 25px; /* Width for line tip */
+        transform: rotate(45deg); /* Rotation for line tip */
+        animation: icon-line-tip 0.75s; /* Animation for line tip */
     }
     
     .success-checkmark .check-icon .icon-line.line-long {
-        top: 38px;
-        right: 8px;
-        width: 47px;
-        transform: rotate(-45deg);
-        animation: icon-line-long 0.75s;
+        top: 38px; /* Position for line long */
+        right: 8px; /* Position for line long */
+        width: 47px; /* Width for line long */
+        transform: rotate(-45deg); /* Rotation for line long */
+        animation: icon-line-long 0.75s; /* Animation for line long */
     }
     
     .success-checkmark .check-icon .icon-circle {
-        top: -4px;
-        left: -4px;
-        z-index: 10;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        position: absolute;
-        box-sizing: content-box;
-        border: 4px solid rgba(76, 175, 80, 0.5);
+        top: -4px; /* Position for icon circle */
+        left: -4px; /* Position for icon circle */
+        z-index: 10; /* Z-index for icon circle */
+        width: 80px; /* Width for icon circle */
+        height: 80px; /* Height for icon circle */
+        border-radius: 50%; /* Rounded corners for icon circle */
+        position: absolute; /* Position for icon circle */
+        box-sizing: content-box; /* Box sizing for icon circle */
+        border: 4px solid rgba(76, 175, 80, 0.5); /* Border for icon circle */
     }
     
     .success-checkmark .check-icon .icon-fix {
-        top: 8px;
-        width: 5px;
-        left: 26px;
-        z-index: 1;
-        height: 85px;
-        position: absolute;
-        transform: rotate(-45deg);
-        background-color: #FFFFFF;
+        top: 8px; /* Position for icon fix */
+        width: 5px; /* Width for icon fix */
+        left: 26px; /* Position for icon fix */
+        z-index: 1; /* Z-index for icon fix */
+        height: 85px; /* Height for icon fix */
+        position: absolute; /* Position for icon fix */
+        transform: rotate(-45deg); /* Rotation for icon fix */
+        background-color: #FFFFFF; /* Background colour for icon fix */
     }
     
     @keyframes rotate-circle {
         0% {
-            transform: rotate(-45deg);
+            transform: rotate(-45deg); /* Initial rotation for circle */
         }
         5% {
-            transform: rotate(-45deg);
+            transform: rotate(-45deg); /* Maintain rotation */
         }
         12% {
-            transform: rotate(-405deg);
+            transform: rotate(-405deg); /* Rotate circle */
         }
         100% {
-            transform: rotate(-405deg);
+            transform: rotate(-405deg); /* Final rotation for circle */
         }
     }
     
     @keyframes icon-line-tip {
         0% {
-            width: 0;
-            left: 1px;
-            top: 19px;
+            width: 0; /* Initial width for line tip */
+            left: 1px; /* Initial position for line tip */
+            top: 19px; /* Initial position for line tip */
         }
         54% {
-            width: 0;
-            left: 1px;
-            top: 19px;
+            width: 0; /* Maintain width */
+            left: 1px; /* Maintain position */
+            top: 19px; /* Maintain position */
         }
         70% {
-            width: 50px;
-            left: -8px;
-            top: 37px;
+            width: 50px; /* Width for line tip */
+            left: -8px; /* Position for line tip */
+            top: 37px; /* Position for line tip */
         }
         84% {
-            width: 17px;
-            left: 21px;
-            top: 48px;
+            width: 17px; /* Width for line tip */
+            left: 21px; /* Position for line tip */
+            top: 48px; /* Position for line tip */
         }
         100% {
-            width: 25px;
-            left: 14px;
-            top: 45px;
+            width: 25px; /* Final width for line tip */
+            left: 14px; /* Final position for line tip */
+            top: 45px; /* Final position for line tip */
         }
     }
     
     @keyframes icon-line-long {
         0% {
-            width: 0;
-            right: 46px;
-            top: 54px;
+            width: 0; /* Initial width for line long */
+            right: 46px; /* Initial position for line long */
+            top: 54px; /* Initial position for line long */
         }
         65% {
-            width: 0;
-            right: 46px;
-            top: 54px;
+            width: 0; /* Maintain width */
+            right: 46px; /* Maintain position */
+            top: 54px; /* Maintain position */
         }
         84% {
-            width: 55px;
-            right: 0px;
-            top: 35px;
+            width: 55px; /* Width for line long */
+            right: 0px; /* Position for line long */
+            top: 35px; /* Position for line long */
         }
         100% {
-            width: 47px;
-            right: 8px;
-            top: 38px;
+            width: 47px; /* Final width for line long */
+            right: 8px; /* Final position for line long */
+            top: 38px; /* Final position for line long */
         }
     }
 </style>

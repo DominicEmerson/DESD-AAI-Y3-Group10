@@ -1,27 +1,27 @@
 # sysadmin/urls.py
-from django.urls import path, include
-from django.views.generic import TemplateView
-from . import views
+from django.urls import path, include  # Import path and include for URL routing
+from django.views.generic import TemplateView  # Import TemplateView for rendering templates
+from . import views  # Import views from the current directory
 
-app_name = 'sysadmin'
+app_name = 'sysadmin'  # Namespace for the sysadmin app
 
 urlpatterns = [
-    path('', views.admin_page, name='admin_page'),
-    path('create-user/', views.create_user, name='create_user'),
-    path('user-management/', views.user_management, name='user_management'),
+    path('', views.admin_page, name='admin_page'),  # Admin dashboard view
+    path('create-user/', views.create_user, name='create_user'),  # User creation view
+    path('user-management/', views.user_management, name='user_management'),  # User management view
 
-    # HTML page with your traffic‐light UI
+    # HTML page with your traffic-light UI
     path(
         'system-health/',
-        TemplateView.as_view(template_name='sysadmin/system_health.html'),
+        TemplateView.as_view(template_name='sysadmin/system_health.html'),  # System health page
         name='system_health'
     ),
 
-    # JSON API endpoint for django‐health‐check
+    # JSON API endpoint for django-health-check
     path(
         'system-health/api/',
         include(
-            ('health_check.urls', 'health_check'),
+            ('health_check.urls', 'health_check'),  # Include health check URLs
             namespace='health_check'
         )
     ),

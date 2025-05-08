@@ -1,86 +1,84 @@
 services:
-  postgres_db:
-    image: postgres:latest
-    container_name: desd-aai-y3-group10-database-1
-    restart: always
-    environment:
-      POSTGRES_DB: insurance_ai
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password         # ← move to .env in future
+  postgres_db:  # Service for PostgreSQL database
+    image: postgres:latest  # Use the latest PostgreSQL image
+    container_name: desd-aai-y3-group10-database-1  # Name of the database container
+    restart: always  # Always restart the container
+    environment:  # Environment variables for PostgreSQL
+      POSTGRES_DB: insurance_ai  # Database name
+      POSTGRES_USER: user  # Database user
+      POSTGRES_PASSWORD: password  # Database password (should be moved to .env in future)
     # ports:
-    #   - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data        # Docker-managed
-      - ./init:/docker-entrypoint-initdb.d            # auto-import SQL
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "user", "-d", "insurance_ai"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
+    #   - "5432:5432"  # Uncomment to expose PostgreSQL port
+    volumes:  # Volumes for persistent data
+      - postgres_data:/var/lib/postgresql/data  # Docker-managed volume for PostgreSQL data
+      - ./init:/docker-entrypoint-initdb.d  # Auto-import SQL scripts on initialization
+    healthcheck:  # Health check configuration
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "insurance_ai"]  # Command to check if PostgreSQL is ready
+      interval: 10s  # Check every 10 seconds
+      retries: 5  # Retry 5 times before considering the service unhealthy
+      start_period: 30s  # Initial delay before starting health checks
 
-  mlaas:
-    build:
-      context: ./MLaaS
-      dockerfile: Dockerfile
-    container_name: desd-aai-y3-group10-mlaas-1
-    depends_on:
+  mlaas:  # Service for the MLaaS application
+    build:  # Build configuration for the MLaaS service
+      context: ./MLaaS  # Build context directory
+      dockerfile: Dockerfile  # Dockerfile to use for building the image
+    container_name: desd-aai-y3-group10-mlaas-1  # Name of the MLaaS container
+    depends_on:  # Dependencies for the MLaaS service
       postgres_db:
-        condition: service_healthy
+        condition: service_healthy  # Wait for the database to be healthy
    
-    environment:
-      - DEBUG=True
-      - ALLOWED_HOSTS=mlaas,localhost,127.0.0.1
-      - DATABASE_NAME=insurance_ai
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=password
-      - DATABASE_HOST=postgres_db
-      - DATABASE_PORT=5432
-      - SECRET_KEY=mlaas-secure-key-change-in-production
+    environment:  # Environment variables for MLaaS
+      - DEBUG=True  # Enable debug mode
+      - ALLOWED_HOSTS=mlaas,localhost,127.0.0.1  # Allowed hosts for the MLaaS service
+      - DATABASE_NAME=insurance_ai  # Database name
+      - DATABASE_USER=user  # Database user
+      - DATABASE_PASSWORD=password  # Database password
+      - DATABASE_HOST=postgres_db  # Database host
+      - DATABASE_PORT=5432  # Database port
+      - SECRET_KEY=mlaas-secure-key-change-in-production  # Secret key for the MLaaS service
     ports:
-      - "8009:8009"
+      - "8009:8009"  # Expose port 8009 for the MLaaS service
 
-  backend:
-    build:
-      context: ./Backend
-      dockerfile: Dockerfile
-    container_name: desd-aai-y3-group10-backend-1
-    depends_on:
+  backend:  # Service for the backend application
+    build:  # Build configuration for the backend service
+      context: ./Backend  # Build context directory
+      dockerfile: Dockerfile  # Dockerfile to use for building the image
+    container_name: desd-aai-y3-group10-backend-1  # Name of the backend container
+    depends_on:  # Dependencies for the backend service
       postgres_db:
-        condition: service_healthy
+        condition: service_healthy  # Wait for the database to be healthy
       mlaas:
-        condition: service_started
-    volumes:
-      - ./Backend:/app                           # Mount source code
-      - ./staticfiles:/app/staticfiles           # Mount static files directly
-    environment:
-      - ALLOWED_HOSTS=frontend,mlaas,localhost,127.0.0.1
-      - DJANGO_SETTINGS_MODULE=insurance_ai.settings
-      - DATABASE_NAME=insurance_ai
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=password
-      - DATABASE_HOST=postgres_db
-      - DATABASE_PORT=5432
-      - MLAAS_SERVICE_URL=http://mlaas:8009/api/
+        condition: service_started  # Wait for the MLaaS service to start
+    volumes:  # Volumes for persistent data
+      - ./Backend:/app  # Mount source code
+      - ./staticfiles:/app/staticfiles  # Mount static files directly
+    environment:  # Environment variables for the backend
+      - ALLOWED_HOSTS=frontend,mlaas,localhost,127.0.0.1  # Allowed hosts for the backend
+      - DJANGO_SETTINGS_MODULE=insurance_ai.settings  # Django settings module
+      - DATABASE_NAME=insurance_ai  # Database name
+      - DATABASE_USER=user  # Database user
+      - DATABASE_PASSWORD=password  # Database password
+      - DATABASE_HOST=postgres_db  # Database host
+      - DATABASE_PORT=5432  # Database port
+      - MLAAS_SERVICE_URL=http://mlaas:8009/api/  # MLaaS service URL
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 --workers 4 insurance_ai.wsgi:application"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/accounts/login/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      sh -c "python manage.py migrate &&  # Run migrations
+             python manage.py collectstatic --noinput &&  # Collect static files
+             gunicorn --bind 0.0.0.0:8000 --workers 4 insurance_ai.wsgi:application"  # Start Gunicorn server
+    healthcheck:  # Health check configuration
+      test: ["CMD", "curl", "-f", "http://localhost:8000/accounts/login/"]  # Command to check if the backend is healthy
+      interval: 10s  # Check every 10 seconds
+      timeout: 5s  # Timeout for health check
+      retries: 5  # Retry 5 times before considering the service unhealthy
 
-  frontend:
-    build: ./Frontend
-    container_name: desd-aai-y3-group10-frontend-1
+  frontend:  # Service for the frontend application
+    build: ./Frontend  # Build configuration for the frontend service
+    container_name: desd-aai-y3-group10-frontend-1  # Name of the frontend container
     ports:
-      - "8080:8080"
-    depends_on:
+      - "8080:8080"  # Expose port 8080 for the frontend service
+    depends_on:  # Dependencies for the frontend service
       backend:
-        condition: service_healthy
-    volumes:
-      - ./staticfiles:/app/staticfiles           # Mount static files directly
+        condition: service_healthy  # Wait for the backend to be healthy
 
 volumes:
-  postgres_data: {}        # Docker-managed Postgres data
+  postgres_data: {}  # Docker-managed volume for PostgreSQL data

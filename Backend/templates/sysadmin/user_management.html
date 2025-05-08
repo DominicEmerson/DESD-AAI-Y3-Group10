@@ -3,51 +3,50 @@
 {% block title %}User Management{% endblock %}
 
 {% block content %}
-<div class="admin-container">
-    <h1>User Management</h1>
+<div class="admin-container"> <!-- Main container for user management -->
+    <h1>User Management</h1> <!-- Main title for user management -->
 
     <!-- Search Form -->
-    <form method="get" class="search-form">
-        <input type="text" name="query" value="{{ query }}" placeholder="Search by email">
-        <button type="submit">Search</button>
+    <form method="get" class="search-form"> <!-- Form for searching users -->
+        <input type="text" name="query" value="{{ query }}" placeholder="Search by email"> <!-- Input for search query -->
+        <button type="submit">Search</button> <!-- Button to submit search -->
     </form>
 
     {% if messages %}
-    <ul class="messages">
+    <ul class="messages"> <!-- Container for messages -->
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}> <!-- Display messages -->
             {{ message }}
         </li>
         {% endfor %}
     </ul>
     {% endif %}
 
-    <table>
+    <table> <!-- Table for displaying users -->
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Reset Password</th>
-                <th>Delete User</th>
+                <th>ID</th> <!-- Column for user ID -->
+                <th>Username</th> <!-- Column for username -->
+                <th>Email</th> <!-- Column for email -->
+                <th>Name</th> <!-- Column for name -->
+                <th>Role</th> <!-- Column for role -->
+                <th>Reset Password</th> <!-- Column for resetting password -->
+                <th>Delete User</th> <!-- Column for deleting user -->
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
             <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
+                <td>{{ user.id }}</td> <!-- Display user ID -->
+                <td>{{ user.username }}</td> <!-- Display username -->
+                <td>{{ user.email }}</td> <!-- Display email -->
 
                 <!-- Name column with stacked inputs -->
                 <td>
-                    <form method="post" action="{% url 'sysadmin:user_management' %}"
-                          style="display: flex; flex-direction: column; gap: 4px;">
-                        {% csrf_token %}
-                        <input type="hidden" name="user_id" value="{{ user.id }}">
-                        <input type="hidden" name="action" value="update_role">
+                    <form method="post" action="{% url 'sysadmin:user_management' %}" style="display: flex; flex-direction: column; gap: 4px;"> <!-- Form for updating user details -->
+                        {% csrf_token %} <!-- CSRF token for security -->
+                        <input type="hidden" name="user_id" value="{{ user.id }}"> <!-- Hidden input for user ID -->
+                        <input type="hidden" name="action" value="update_role"> <!-- Hidden input for action type -->
 
                         <input
                           type="text"
@@ -55,47 +54,46 @@
                           value="{{ user.first_name }}"
                           placeholder="First name"
                           required
-                        >
+                        > <!-- Input for first name -->
                         <input
                           type="text"
                           name="last_name"
                           value="{{ user.last_name }}"
                           placeholder="Last name"
                           required
-                        >
+                        > <!-- Input for last name -->
                 </td>
 
                 <!-- Role & Update button -->
                 <td>
-                        <select name="role">
-                            <option value="admin"    {% if user.role == 'admin'    %}selected{% endif %}>Admin</option>
-                            <option value="engineer" {% if user.role == 'engineer' %}selected{% endif %}>Engineer</option>
-                            <option value="finance"  {% if user.role == 'finance'  %}selected{% endif %}>Finance</option>
-                            <option value="enduser"  {% if user.role == 'enduser'  %}selected{% endif %}>End User</option>
+                        <select name="role"> <!-- Dropdown for user role -->
+                            <option value="admin"    {% if user.role == 'admin'    %}selected{% endif %}>Admin</option> <!-- Admin option -->
+                            <option value="engineer" {% if user.role == 'engineer' %}selected{% endif %}>Engineer</option> <!-- Engineer option -->
+                            <option value="finance"  {% if user.role == 'finance'  %}selected{% endif %}>Finance</option> <!-- Finance option -->
+                            <option value="enduser"  {% if user.role == 'enduser'  %}selected{% endif %}>End User</option> <!-- End User option -->
                         </select>
-                        <button type="submit" class="btn" style="margin-top:4px;">Update</button>
+                        <button type="submit" class="btn" style="margin-top:4px;">Update</button> <!-- Button to update user role -->
                     </form>
                 </td>
 
                 <!-- Reset Password -->
                 <td>
-                    <form method="post" action="{% url 'sysadmin:user_management' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="user_id" value="{{ user.id }}">
-                        <input type="hidden" name="action" value="reset_password">
-                        <input type="password" name="new_password" placeholder="New password" required>
-                        <button type="submit" class="btn">Reset</button>
+                    <form method="post" action="{% url 'sysadmin:user_management' %}"> <!-- Form for resetting password -->
+                        {% csrf_token %} <!-- CSRF token for security -->
+                        <input type="hidden" name="user_id" value="{{ user.id }}"> <!-- Hidden input for user ID -->
+                        <input type="hidden" name="action" value="reset_password"> <!-- Hidden input for action type -->
+                        <input type="password" name="new_password" placeholder="New password" required> <!-- Input for new password -->
+                        <button type="submit" class="btn">Reset</button> <!-- Button to reset password -->
                     </form>
                 </td>
 
                 <!-- Delete User -->
                 <td>
-                    <form method="post" action="{% url 'sysadmin:user_management' %}"
-                          onsubmit="return confirm('Are you sure you want to delete {{ user.username }}?');">
-                        {% csrf_token %}
-                        <input type="hidden" name="user_id" value="{{ user.id }}">
-                        <input type="hidden" name="action" value="delete_user">
-                        <button type="submit" class="delete-btn">Delete</button>
+                    <form method="post" action="{% url 'sysadmin:user_management' %}" onsubmit="return confirm('Are you sure you want to delete {{ user.username }}?');"> <!-- Form for deleting user -->
+                        {% csrf_token %} <!-- CSRF token for security -->
+                        <input type="hidden" name="user_id" value="{{ user.id }}"> <!-- Hidden input for user ID -->
+                        <input type="hidden" name="action" value="delete_user"> <!-- Hidden input for action type -->
+                        <button type="submit" class="delete-btn">Delete</button> <!-- Button to delete user -->
                     </form>
                 </td>
             </tr>
@@ -106,67 +104,67 @@
 
 <style>
     .admin-container {
-        max-width: 900px;
-        margin: 20px auto;
-        padding: 20px;
+        max-width: 900px; /* Maximum width for admin container */
+        margin: 20px auto; /* Center container with margin */
+        padding: 20px; /* Padding inside container */
     }
 
     .search-form input,
     .search-form button {
-        padding: 8px;
-        margin-bottom: 10px;
-        width: 100%;
-        box-sizing: border-box;
+        padding: 8px; /* Padding for search input and button */
+        margin-bottom: 10px; /* Space below search input and button */
+        width: 100%; /* Full width for search input and button */
+        box-sizing: border-box; /* Box sizing for search input and button */
     }
 
     table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
+        width: 100%; /* Full width for table */
+        border-collapse: collapse; /* Collapse borders for table */
+        margin-top: 20px; /* Space above table */
     }
 
     th, td {
-        padding: 10px;
-        border: 1px solid #ccc;
-        text-align: left;
-        vertical-align: middle;
+        padding: 10px; /* Padding for table cells */
+        border: 1px solid #ccc; /* Border for table cells */
+        text-align: left; /* Align text to the left */
+        vertical-align: middle; /* Align text vertically in the middle */
     }
 
     th {
-        background-color: #f4f4f4;
+        background-color: #f4f4f4; /* Background colour for table headers */
     }
 
     /* Make the name inputs full-width within the cell */
     td form input[type="text"] {
-        width: 100%;
-        box-sizing: border-box;
+        width: 100%; /* Full width for text inputs in table */
+        box-sizing: border-box; /* Box sizing for text inputs in table */
     }
 
     .btn {
-        background-color: #4CAF50;
-        color: white;
-        padding: 5px 10px;
-        cursor: pointer;
-        border: none;
-        border-radius: 3px;
-        transition: background-color 0.3s;
+        background-color: #4CAF50; /* Background colour for buttons */
+        color: white; /* Text colour for buttons */
+        padding: 5px 10px; /* Padding for buttons */
+        cursor: pointer; /* Pointer cursor on hover */
+        border: none; /* No border for buttons */
+        border-radius: 3px; /* Rounded corners for buttons */
+        transition: background-color 0.3s; /* Transition effect for button background */
     }
 
     .btn:hover {
-        background-color: #45a049;
+        background-color: #45a049; /* Darker green on hover */
     }
 
     .delete-btn {
-        background-color: #f44336;
-        color: white;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
+        background-color: #f44336; /* Red background for delete button */
+        color: white; /* Text colour for delete button */
+        padding: 5px 10px; /* Padding for delete button */
+        border: none; /* No border for delete button */
+        border-radius: 3px; /* Rounded corners for delete button */
+        cursor: pointer; /* Pointer cursor on hover */
     }
 
     .delete-btn:hover {
-        background-color: #e53935;
+        background-color: #e53935; /* Darker red on hover */
     }
 </style>
 {% endblock %}

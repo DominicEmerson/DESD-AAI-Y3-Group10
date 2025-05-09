@@ -255,12 +255,12 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
             )
 
             # --- Prediction logic  ---
-            input_data = np.array(serializer.validated_data["input_data"])  # Prepare input data
+            input_data_np = np.array(serializer.validated_data["input_data"])  # Prepare input data
 
             expected_features = getattr(model, "n_features_in_", None)  # Get expected number of features
-            if expected_features is not None and input_data.shape[1] != expected_features:
+            if expected_features is not None and input_data_np.shape[1] != expected_features:
                 error_msg = (
-                    f"Input data shape mismatch: received {input_data.shape[1]} features, "
+                    f"Input data shape mismatch: received {input_data_np.shape[1]} features, "
                     f"but model expects {expected_features}."
                 )
                 logger.warning(
@@ -269,14 +269,28 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
                 return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
 
             predict_start = time.time()  # Start timer for prediction
-            prediction = model.predict(input_data)  # Perform prediction
+            log_scale_prediction = model.predict(input_data_np)  # Perform prediction
             predict_time = time.time() - predict_start  # Calculate prediction time
+            
+            if isinstance(log_scale_prediction, np.ndarray):
+                original_scale_prediction = np.expm1(log_scale_prediction)
+                original_scale_prediction[original_scale_prediction < 0] = 0
+            elif isinstance(log_scale_prediction, (int, float)):
+                original_scale_prediction = np.expm1(float(log_scale_prediction))
+                if original_scale_prediction < 0:
+                    original_scale_prediction = 0
+            else:
+                logger.warning(f"Prediction for Algo ID {pk} was not a NumPy array or single number. Type: {type(log_scale_prediction)}. Skipping inverse transform or apply with caution.")
+                original_scale_prediction = log_scale_prediction
 
             prediction_list = (
-                prediction.tolist()
-                if isinstance(prediction, np.ndarray)
-                else prediction
+                original_scale_prediction.tolist()
+                if isinstance(original_scale_prediction, np.ndarray)
+                else [original_scale_prediction] if isinstance(original_scale_prediction, (int, float)) else original_scale_prediction
             )
+            if not isinstance(prediction_list, list) and original_scale_prediction is not None:
+                prediction_list = [original_scale_prediction]
+
             response_time_secs = load_time + predict_time  # Total processing time
 
             # --- Logging request  ---
@@ -293,10 +307,11 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
                     "request_id": ml_request.id,
                     "algorithm_version": algorithm.version,
                     "processing_time_ms": round(response_time_secs * 1000, 2),
+                    "prediction_scale": "original_monetary_value"
                 }
                 logger.info(
-                    "Prediction successful for Algorithm ID %s. Request ID: %d. Time: %.4fs",
-                    pk, ml_request.id, response_time_secs
+                    "Prediction successful for Algorithm ID %s. Request ID: %d. Prediction (original scale): %s. Time: %.4fs",
+                    pk, ml_request.id, prediction_list, response_time_secs
                 )
                 return Response(response_data, status=status.HTTP_200_OK)
             except Exception as db_error:
@@ -309,6 +324,7 @@ class MLAlgorithmViewSet(viewsets.ModelViewSet):
                     "warning": "Prediction successful, but failed to log request details.",
                     "algorithm_version": algorithm.version,
                     "processing_time_ms": round(response_time_secs * 1000, 2),
+                    "prediction_scale": "original_monetary_value"
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
 
@@ -579,16 +595,17 @@ def engineer_list_models(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def engineer_set_active_model(request):
-    """Set a model as active (by id) and deactivate others with the same name/endpoint."""
     model_id = request.data.get('model_id')
     if not model_id:
-        return Response({'error': 'No model_id provided'}, status=400)
+        return Response({'error': 'No model_id provided'}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        model = MLAlgorithm.objects.get(pk=model_id)
-        # Deactivate all models with the same name and parent_endpoint
-        MLAlgorithm.objects.filter(name=model.name, parent_endpoint=model.parent_endpoint).update(is_active=False)
-        model.is_active = True
-        model.save()
-        return Response({'success': True, 'active_model_id': model.id})
+        model_to_activate = MLAlgorithm.objects.get(pk=model_id)
+        model_to_activate.is_active = True
+        model_to_activate.save()
+        return Response({'success': True, 'active_model_id': model_to_activate.id})
     except MLAlgorithm.DoesNotExist:
-        return Response({'error': 'Model not found'}, status=404)
+        return Response({'error': 'Model not found'}, status=status.HTTP_404_NOT_FOUND)
+    except MLAlgorithm.MultipleObjectsReturned:
+        return Response({'error': 'Multiple models found for this ID. Please check the database.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as ex:
+        return Response({'error': f'Unexpected error: {str(ex)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

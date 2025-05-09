@@ -11,4 +11,5 @@ urlpatterns = [
     path('success/', views.ClaimSuccessView.as_view(), name='claim_submission_success'),  # Claim success view
     path('<int:pk>/prediction/', views.ClaimPredictionView.as_view(), name='claim_prediction'),  # Prediction view
     path('details/<int:claim_id>/', views.claim_detail, name='claim_detail'),  # Claim detail view
+    path('api/export/', views.export_claims_data, name='export_claims_data'),  # Claims export API
 ]

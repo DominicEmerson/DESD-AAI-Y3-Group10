@@ -1,6 +1,6 @@
 # ml_api/models.py
 
-from django.db import models  # Import models from Django ORM
+from django.db import models, transaction  # Import models from Django ORM and transaction
 
 class Endpoint(models.Model):
     """Represents a logical grouping for related ML algorithms."""
@@ -73,7 +73,7 @@ class MLAlgorithm(models.Model):
         help_text="Timestamp of the last update to this algorithm record."  # Help text for update timestamp
     )
     # Add an is_active flag for easier version management via API
-    is_active = models.BooleanField(default=True, help_text="Is this the currently active/recommended version?")  # Help text for active status
+    is_active = models.BooleanField(default=False, help_text="Is this the currently active/recommended version?")  # Help text for active status
 
     class Meta:
         ordering = ['parent_endpoint', 'name', '-version']  # Order by endpoint, name, then newest version
@@ -81,6 +81,21 @@ class MLAlgorithm(models.Model):
 
     def __str__(self):
         return f"{self.name} v{self.version} ({self.get_model_type_display()})"  # String representation of the algorithm
+
+    def save(self, *args, **kwargs):
+        """
+        Override save to ensure only one algorithm version for a given
+        name and parent_endpoint is active at any time.
+        """
+        if self.is_active and self.parent_endpoint:
+            with transaction.atomic():
+                MLAlgorithm.objects.filter(
+                    parent_endpoint=self.parent_endpoint,
+                    is_active=True
+                ).exclude(pk=self.pk).update(is_active=False)
+        
+        # Now, call the original save() method
+        super().save(*args, **kwargs)
 
 class MLRequest(models.Model):
     """Logs prediction requests made to an MLAlgorithm."""

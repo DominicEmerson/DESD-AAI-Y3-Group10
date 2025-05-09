@@ -24,15 +24,19 @@ def _call_mlaas_api(method: str, endpoint_path: str, json_payload: dict = None,
     Makes a request to the configured MLaaS API endpoint.
     Returns a dictionary with 'data'/'status_code' or 'error'/'status_code'.
     """
+    print(f"ENGINEER _call_mlaas_api: Called with method={method}, endpoint={endpoint_path}")
+    logger.info(f"ENGINEER _call_mlaas_api: Called with method={method}, endpoint={endpoint_path}")
+
     mlaas_base_url = os.environ.get('MLAAS_SERVICE_URL', 'http://mlaas:8009/api/')  # Get MLaaS base URL from environment
     if not mlaas_base_url:
-        logger.error("MLAAS_SERVICE_URL environment variable is not set.")  # Log error if URL is not set
+        logger.error("ENGINEER _call_mlaas_api: MLAAS_SERVICE_URL environment variable is not set.")  # Log error if URL is not set
         return {'error': 'MLaaS service URL not configured.', 'status_code': 500}  # Return error response
 
     url = f"{mlaas_base_url.rstrip('/')}/{endpoint_path.lstrip('/')}"  # Construct full URL
     headers = {}  # Initialise headers
-    # Add Auth headers here if needed, e.g.,
-    # headers['Authorization'] = f"Bearer {your_token_logic()}"
+
+    print(f"ENGINEER _call_mlaas_api: Attempting request to URL: {url} with payload: {json_payload}")
+    logger.info(f"ENGINEER _call_mlaas_api: Attempting request to URL: {url}")
 
     logger.debug("Calling MLaaS API: %s %s", method.upper(), url)  # Log API call
     try:
@@ -46,6 +50,9 @@ def _call_mlaas_api(method: str, endpoint_path: str, json_payload: dict = None,
                 response = session.request(
                     method, url, json=json_payload, timeout=timeout  # Send request with JSON payload
                 )
+
+        print(f"ENGINEER _call_mlaas_api: Raw response status from MLaaS: {response.status_code}")
+        logger.info(f"ENGINEER _call_mlaas_api: Raw response status from MLaaS: {response.status_code}")
 
         response.raise_for_status()  # Raise an HTTPError if status >= 400
 
@@ -107,18 +114,34 @@ def _get_dashboard_context_data(request) -> dict:
 
     # Fetch Models (use new engineer endpoint)
     mlaas_model_response = _call_mlaas_api('GET', 'engineer/models/')
+    ml_models_from_api = []
     if 'error' in mlaas_model_response:
         messages.error(request, f"Could not fetch models: {mlaas_model_response['error']}")  # Log error if fetching models fails
     elif 'data' in mlaas_model_response:
-        ml_models = mlaas_model_response['data']
-        if isinstance(ml_models, list):
-            logger.info("Fetched %d models from MLaaS.", len(ml_models))
+        ml_models_from_api = mlaas_model_response['data']
+        if isinstance(ml_models_from_api, list):
+            logger.info("Fetched %d raw models from MLaaS.", len(ml_models_from_api))
         else:
             messages.warning(request, "Received unexpected model data format from MLaaS.")
-            logger.warning("Unexpected model data format: %s", ml_models)
+            logger.warning("Unexpected model data format: %s", ml_models_from_api)
+
+    # Filter models: only show those where model_file_status is "found"
+    # or if the status is not provided (fallback to show, but log a warning)
+    ml_models_to_display = []
+    for model_data in ml_models_from_api:
+        status = model_data.get('model_file_status')
+        if status == "found":
+            ml_models_to_display.append(model_data)
+        elif status == "missing":
+            logger.warning(f"Hiding model ID {model_data.get('id')} ('{model_data.get('name')}') from engineer UI because its file is reported missing by MLaaS.")
+        else: # status is "not_specified", "error_basename", or None (field missing)
+            logger.warning(f"Model ID {model_data.get('id')} ('{model_data.get('name')}') has an unknown or unspecified file status ('{status}'). Displaying by default.")
+            ml_models_to_display.append(model_data) # Fallback: show if status is unclear
+
+    context['ml_models'] = ml_models_to_display  # This now contains only "found" (or unclear status) models
 
     # Fetch Prediction Logs
-    mlaas_log_response = _call_mlaas_api('GET', 'requests/?limit=50')  # Call MLaaS API to get prediction logs
+    mlaas_log_response = _call_mlaas_api('GET', 'requests/?limit=50')
     if 'error' in mlaas_log_response:
         messages.error(request, f"Could not fetch prediction logs: {mlaas_log_response['error']}")  # Log error if fetching logs fails
     elif 'data' in mlaas_log_response:
@@ -132,7 +155,7 @@ def _get_dashboard_context_data(request) -> dict:
             logger.warning("Unexpected prediction log data format: %s", log_data)  # Log unexpected format
 
     # Fetch Available Endpoints
-    mlaas_endpoint_response = _call_mlaas_api('GET', 'endpoints/')  # Call MLaaS API to get endpoints
+    mlaas_endpoint_response = _call_mlaas_api('GET', 'endpoints/')
     if 'error' in mlaas_endpoint_response:
         messages.warning(request, f"Could not fetch endpoint list: {mlaas_endpoint_response['error']}")  # Log warning if fetching endpoints fails
     elif 'data' in mlaas_endpoint_response:
@@ -149,7 +172,6 @@ def _get_dashboard_context_data(request) -> dict:
             messages.warning(request, "No endpoints found via API or unexpected format.")  # Log warning for unexpected format
             logger.warning("No endpoints fetched or unexpected endpoint format: %s", endpoint_data)  # Log unexpected format
 
-    context['ml_models'] = ml_models  # Add models to context
     context['prediction_logs'] = prediction_logs  # Add logs to context
     context['available_endpoints'] = available_endpoints  # Add endpoints to context
     return context  # Return context dictionary
@@ -285,14 +307,37 @@ def trigger_retrain(request, algorithm_id: int):
 @login_required
 @user_passes_test(utils.is_engineer, login_url='role_redirect')
 def swap_active_model(request):
-    """Handles POST request to swap the active model via MLaaS API."""
+    print("--- [DEBUG Backend] swap_active_model: ENTER ---") 
+    print(f"ENGINEER VIEW: swap_active_model view CALLED by user {request.user.username if request.user.is_authenticated else 'Anonymous'}!")
+    logger.info("ENGINEER VIEW: swap_active_model view CALLED by user %s!", request.user.username if request.user.is_authenticated else "Anonymous")
+
     model_id = request.POST.get('model_id')
+    print(f"ENGINEER VIEW: Received model_id from POST: {model_id}")
+    logger.info(f"ENGINEER VIEW: Received model_id from POST: {model_id}")
+
     if not model_id:
         messages.error(request, "No model ID provided for model swap.")
+        print("ENGINEER VIEW: No model_id provided in POST.")
+        logger.warning("ENGINEER VIEW: No model_id provided in POST for swap_active_model.")
         return redirect('engineer:engineer_page')
-    response = _call_mlaas_api('POST', 'engineer/set_active_model/', json_payload={'model_id': model_id})
-    if response.get('error'):
-        messages.error(request, f"Failed to activate model: {response['error']}")
+
+    print(f"ENGINEER VIEW: Attempting to call MLaaS to set active model_id: {model_id}")
+    logger.info(f"ENGINEER VIEW: Attempting to call MLaaS to set active model_id: {model_id}")
+    
+    response_from_mlaas = _call_mlaas_api('POST', 'engineer/set_active_model/', json_payload={'model_id': model_id})
+    
+    print(f"ENGINEER VIEW: MLaaS API response for set_active_model: {response_from_mlaas}")
+    logger.info(f"ENGINEER VIEW: MLaaS API response for set_active_model: {response_from_mlaas}")
+
+    if response_from_mlaas.get('error'):
+        messages.error(request, f"Failed to activate model: {response_from_mlaas['error']}")
     else:
-        messages.success(request, "Model activated successfully.")
+        if response_from_mlaas.get('status_code') == 200 and response_from_mlaas.get('data', {}).get('success'):
+             messages.success(request, f"Model ID {response_from_mlaas.get('data', {}).get('active_model_id', model_id)} activated successfully.")
+        elif response_from_mlaas.get('status_code') in [200, 201]:
+             messages.success(request, "Model activation request sent successfully to MLaaS.")
+        else:
+             messages.warning(request, f"Activation request sent, but MLaaS response was: {response_from_mlaas.get('data', 'No data')}")
+    
+    print("--- [DEBUG Backend] swap_active_model: EXIT - Redirecting to engineer_page ---")
     return redirect('engineer:engineer_page')

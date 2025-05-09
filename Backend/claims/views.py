@@ -14,8 +14,12 @@ from django.views.generic import ListView, CreateView, DetailView
 from django.views.decorators.http import require_http_methods
 import logging
 import requests
-import utils
+from utils.ml_service_utils import get_active_insurance_model_id
 from utils.preprocessing import preprocess_single_claim_for_prediction
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from .serializers import ClaimExportSerializer
 
 User = get_user_model()  # Get the user model
 logger = logging.getLogger(__name__)  # Set up logging
@@ -127,13 +131,17 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
                 vehicle_instance=vehicle,
                 injury_instance=injury
             )
-            payload = {
-                "input_data": [input_features],  # a list of lists (one list for each instance)
-                "algorithm_name": "xgboost_18feature_model"  # Update as per your MLaaS setup
-            }
-            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
+            payload = {"input_data": [input_features]}
+            algorithm_id = get_active_insurance_model_id()
+
+            if not algorithm_id:
+                logger.error(f"Could not determine active ML algorithm for Claim {claim.id}. Prediction skipped.")
+                claim.prediction_result = {'error': 'MLaaS: Could not determine active model ID for prediction.'}
+                claim.save(update_fields=['prediction_result'])
+                return
+
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
-            logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url}")
+            logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url} (using active model ID: {algorithm_id})")
             response = requests.post(predict_url, json=payload, timeout=10)
             response.raise_for_status()
             result_json = response.json()
@@ -145,9 +153,9 @@ class ClaimSubmissionView(LoginRequiredMixin, CreateView):
             claim.prediction_result = {'error': str(ex)}
             claim.save(update_fields=['prediction_result'])
         except Exception as ex:
-            logger.exception(f"Unexpected error during ML prediction for Claim {claim.id}: {ex}")  # Log unexpected error
-            claim.prediction_result = {'error': f'Unexpected: {ex}'}  # Set unexpected error in prediction result
-            claim.save(update_fields=['prediction_result'])  # Save the claim
+            logger.exception(f"Unexpected error during ML prediction for Claim {claim.id}")
+            claim.prediction_result = {'error': f'Unexpected error during prediction: {ex}'}
+            claim.save(update_fields=['prediction_result'])
 
 class ClaimPredictionView(LoginRequiredMixin, DetailView):
     """
@@ -188,14 +196,17 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
                 }, status=500)
 
             # Construct endpoint URL 
-            algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
+            algorithm_id = get_active_insurance_model_id()
+
+            if not algorithm_id:
+                logger.error(f"Could not determine active ML algorithm for Claim {claim.id} (ClaimPredictionView).")
+                return JsonResponse({'status': 'error', 'message': 'MLaaS: Could not determine active model ID for prediction.'}, status=500)
+
             predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
 
             # Make prediction request
-            payload = {
-                "input_data": [input_features],
-                "algorithm_name": "xgboost_18feature_model"  # Update as per your MLaaS setup
-            }
+            payload = {"input_data": [input_features]}
+            logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url} (ClaimPredictionView, active_id: {algorithm_id})")
             response = requests.post(
                 predict_url,
                 json=payload,
@@ -211,13 +222,13 @@ class ClaimPredictionView(LoginRequiredMixin, DetailView):
             return JsonResponse(result_json)  # Return prediction result
 
         except requests.exceptions.RequestException as ex:
-            logger.error(f"ML prediction request failed for Claim {claim.id}: {ex}")  # Log prediction request failure
+            logger.error(f"ML prediction request failed for Claim {claim.id} (ClaimPredictionView): {ex}")  # Log prediction request failure
             return JsonResponse({
                 'status': 'error',
                 'message': f'Failed to get prediction: {str(ex)}'  # Return error message
             }, status=503)
         except Exception as ex:
-            logger.error(f"Unexpected error during prediction for Claim {claim.id}: {ex}")  # Log unexpected error
+            logger.error(f"Unexpected error during prediction for Claim {claim.id} (ClaimPredictionView)")
             return JsonResponse({
                 'status': 'error',
                 'message': f'Unexpected error: {str(ex)}'  # Return unexpected error message
@@ -259,7 +270,7 @@ def claim_detail(request, claim_id):
 
     if request.method == 'POST' and 'get_prediction' in request.POST:
         # Only fetch prediction if not already present
-        if not claim.prediction_result or 'error' in claim.prediction_result:
+        if not claim.prediction_result or 'error' in claim.prediction_result or request.GET.get('force_refresh'):
             try:
                 accident = claim.accident
                 driver = Driver.objects.filter(accident=accident).first()
@@ -275,24 +286,27 @@ def claim_detail(request, claim_id):
                 if not getattr(settings, 'MLAAS_SERVICE_URL', None):
                     error = 'MLaaS service not configured.'  # Set error if MLaaS is not configured
                 else:
-                    algorithm_id = getattr(settings, 'DEFAULT_ML_ALGORITHM_ID', 5)
-                    predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
-                    response = requests.post(
-                        predict_url,
-                        json={"input_data": [input_features]},
-                        timeout=10
-                    )
-                    response.raise_for_status()
-                    result_json = response.json()
-                    claim.prediction_result = result_json
-                    claim.save(update_fields=['prediction_result'])
-                    request_id = result_json.get('request_id')  # Get request ID from prediction result
+                    algorithm_id = get_active_insurance_model_id()
+                    
+                    if not algorithm_id:
+                        error = 'MLaaS: Could not determine active model ID for prediction.'
+                    else:
+                        predict_url = f"{settings.MLAAS_SERVICE_URL.rstrip('/')}/algorithms/{algorithm_id}/predict/"
+                        payload = {"input_data": [input_features]}
+                        
+                        logger.info(f"Sending ML prediction request for Claim {claim.id} to {predict_url} (claim_detail view, active_id: {algorithm_id})")
+                        response = requests.post(predict_url, json=payload, timeout=10)
+                        response.raise_for_status()
+                        result_json = response.json()
+                        claim.prediction_result = result_json
+                        claim.save(update_fields=['prediction_result'])
+                        request_id = result_json.get('request_id')
             except Exception as ex:
-                logger.error(f"Prediction error: {ex}")  # Log prediction error
-                error = f"Prediction error: {ex}"  # Set error message
-                claim.prediction_result = {'error': str(ex)}  # Set error in prediction result
-                claim.save(update_fields=['prediction_result'])  # Save the claim
-        return redirect('claims:claim_detail', claim_id=claim.id)  # Redirect to claim detail page
+                logger.exception(f"Prediction error in claim_detail for Claim {claim.id}")
+                error = f"Prediction error: {ex}"
+                claim.prediction_result = {'error': str(ex)}
+                claim.save(update_fields=['prediction_result'])
+        return redirect('claims:claim_detail', claim_id=claim.id)
 
     # Prepare context
     if claim.prediction_result:
@@ -310,3 +324,10 @@ def claim_detail(request, claim_id):
         'error': error,  # Pass error to template
         'request_id': request_id,
     })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def export_claims_data(request):
+    queryset = Claim.objects.select_related('accident').all()
+    serializer = ClaimExportSerializer(queryset, many=True)
+    return Response(serializer.data)

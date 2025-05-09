@@ -161,7 +161,7 @@
                                 <td>{{ model.id }}</td> <td>{{ model.name }}</td> <!-- Display model ID and name -->
                                 <td>{{ model.version }}</td> <td>{{ model.model_type }}</td> <!-- Display model version and type -->
                                 <td>
-                                    {% if model.is_active %}<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Active</span>{% else %}<span class="badge bg-secondary"><i class="fas fa-pause-circle me-1"></i>Inactive</span>{% endif %} <!-- Display model status -->
+                                    {% if model.is_active %}<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>In Use</span>{% else %}<span class="badge bg-secondary"><i class="fas fa-pause-circle me-1"></i>Available</span>{% endif %}
                                 </td>
                                 <td title="{{ model.description|default:"-" }}">{{ model.description|default:"-"|truncatechars:60 }}</td> <!-- Display model description -->
                                 <td>{{ model.created_at|date:"Y-m-d H:i" }}</td> <!-- Display model creation date -->
@@ -176,8 +176,8 @@
                                      <form action="{% url 'engineer:swap_active_model' %}" method="post" style="display: inline;">
                                          {% csrf_token %}
                                          <input type="hidden" name="model_id" value="{{ model.id }}">
-                                         <button type="submit" class="btn btn-sm btn-primary ms-1" title="Make Active">
-                                             <i class="fas fa-bolt"></i> Make Active
+                                         <button type="submit" class="btn btn-sm btn-primary ms-1" title="Set as Predictor">
+                                             <i class="fas fa-bolt"></i> Set as Predictor
                                          </button>
                                      </form>
                                      {% else %}

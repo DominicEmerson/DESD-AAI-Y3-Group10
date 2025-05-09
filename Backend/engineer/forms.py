@@ -54,9 +54,9 @@ class ModelUploadForm(forms.Form):
     )
     is_active = forms.BooleanField(
         required=False,
-        initial=True,
+        initial=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        label="Set as active model upon registration?"
+        label="Set as 'In Use' (predictor) upon registration? (Otherwise, model will be available but not in use)"
     )
 
     def clean_model_file(self):

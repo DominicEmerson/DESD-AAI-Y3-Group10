@@ -13,19 +13,11 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.core.files.base import ContentFile
+import requests  # Added for Backend API calls
 
-# Local imports (ensure these paths are correct for your structure)
 from .models import MLAlgorithm, Endpoint, MLRequest
-from .retrain_preprocessing import retrain_preprocessing_from_queryset # Import the adapted preprocessor
+from .retrain_preprocessing import _preprocess_raw_dataframe_for_retraining  # Import the preprocessor
 from .serializers import MLAlgorithmSerializer  # For creating new algorithm instances
-
-# --- Data Fetching Dependency ---
-try:
-    from claims.models import Claim
-    CAN_ACCESS_CLAIMS_DB = True
-except ImportError:
-    Claim = None
-    CAN_ACCESS_CLAIMS_DB = False
 
 
 class RetrainingError(Exception):
@@ -40,68 +32,127 @@ class BaseRetrainer(abc.ABC):
     def __init__(self, algorithm_instance: MLAlgorithm):
         """
         Initializes the retrainer with the algorithm instance to be updated.
-
-        Args:
-            algorithm_instance: The MLAlgorithm object representing the model
-                                version to be retrained.
-        Raises:
-            TypeError: If algorithm_instance is not an MLAlgorithm object.
-            ValueError: If the algorithm instance lacks a valid model file path.
-            FileNotFoundError: If the model file path exists in the DB record
-                               but the file is not found on the filesystem.
+        Models are expected to be found relative to settings.MODEL_ROOT.
         """
         if not isinstance(algorithm_instance, MLAlgorithm):
             raise TypeError("algorithm_instance must be an MLAlgorithm object.")
         self.algorithm = algorithm_instance
         self.original_model_path = None
 
-        # Validate model file path and existence
-        if self.algorithm.model_file and hasattr(self.algorithm.model_file, 'path'):
-            self.original_model_path = self.algorithm.model_file.path
-            if not os.path.exists(self.original_model_path):
-                print(f"Error: Original model file not found at path: {self.original_model_path}")
-                raise FileNotFoundError(f"Original model file not found at {self.original_model_path}")
-        else:
-            raise ValueError("Algorithm instance provided has no valid model file path.")
-        print(f"Retrainer initialized for Algorithm ID: {self.algorithm.id}, Path: {self.original_model_path}")
+        if not self.algorithm.model_file or not hasattr(self.algorithm.model_file, 'name') or not self.algorithm.model_file.name:
+            raise ValueError(
+                "Algorithm instance provided (ID: {}) has no model file name associated in its 'model_file' field.".format(self.algorithm.id)
+            )
 
-    def _get_combined_data_for_retraining(self):
+        # Get the base filename from the FileField's name attribute.
+        # self.algorithm.model_file.name is typically "ml_models/filename.pkl" or just "filename.pkl"
+        # os.path.basename() will correctly extract "filename.pkl".
+        model_basename = os.path.basename(self.algorithm.model_file.name)
+
+        if not model_basename:
+             raise ValueError(
+                "Could not determine model basename from algorithm's model_file.name: '{}'".format(self.algorithm.model_file.name)
+            )
+
+        # Construct path using MODEL_ROOT.
+        # settings.MODEL_ROOT is expected to be like '/app/ml_models'
+        self.original_model_path = os.path.join(settings.MODEL_ROOT, model_basename)
+        
+        print(f"[BaseRetrainer Debug] Algorithm ID: {self.algorithm.id}")
+        print(f"[BaseRetrainer Debug] model_file.name from DB: '{self.algorithm.model_file.name}'")
+        print(f"[BaseRetrainer Debug] Extracted model_basename: '{model_basename}'")
+        print(f"[BaseRetrainer Debug] settings.MODEL_ROOT: '{settings.MODEL_ROOT}'")
+        print(f"[BaseRetrainer Debug] Constructed original_model_path: '{self.original_model_path}'")
+
+        if not os.path.exists(self.original_model_path):
+            # For clarity, log the FileField's default path (based on MEDIA_ROOT)
+            file_field_default_path = "N/A (model_file attribute missing or no path method)"
+            if hasattr(self.algorithm.model_file, 'path'):
+                 file_field_default_path = self.algorithm.model_file.path
+            
+            error_msg = (
+                f"Original model file not found at derived MODEL_ROOT path: '{self.original_model_path}'. "
+                f"FileField's default path (using MEDIA_ROOT) would be: '{file_field_default_path}'."
+            )
+            print(f"[BaseRetrainer Error] {error_msg}")
+            raise FileNotFoundError(error_msg)
+        
+        print(f"Retrainer initialized for Algorithm ID: {self.algorithm.id}, Path from MODEL_ROOT: {self.original_model_path}")
+
+    def _get_combined_data_for_retraining(self) -> tuple:
         """
-        Fetches ALL relevant data from the 'claims' DB using the ORM
-        and preprocesses it using the dedicated preprocessing module.
-
-        Returns:
-            tuple: (pd.DataFrame: Processed features X, pd.Series: Processed target y)
-        Raises:
-            EnvironmentError: If 'claims' DB models cannot be accessed.
-            RetrainingError: If preprocessing fails or returns no valid data.
+        Fetches data from the Backend service's export API,
+        transforms it into a suitable DataFrame, and then preprocesses it.
         """
-        if not CAN_ACCESS_CLAIMS_DB:
-            raise EnvironmentError("Cannot access 'claims' database models. Retraining aborted.")
+        print("Fetching combined dataset for retraining via Backend API...")
+        backend_export_url = getattr(settings, 'BACKEND_DATA_EXPORT_URL', None)
+        if not backend_export_url:
+            backend_export_url = 'http://backend:8000/claims/api/export/'
+            print(f"Warning: BACKEND_DATA_EXPORT_URL not found in MLaaS settings. Using default: {backend_export_url}")
+        if not backend_export_url:
+            raise RetrainingError("Backend data export URL is not configured or found.")
 
-        print("Fetching combined dataset for retraining...")
-        # Fetch ALL data deemed relevant for training the model from scratch
-    
         try:
-            claims_queryset = Claim.objects.select_related(
-                'accident', 'accident__driver', 'accident__vehicle', 'accident__injury'
-            ).all() # Modify this query as needed
-            print(f"Retrieved {claims_queryset.count()} potential claim records from DB.")
-        except Exception as e:
-             raise RetrainingError(f"Database error during data fetching: {e}")
+            print(f"Calling Backend API at: {backend_export_url}")
+            response = requests.get(backend_export_url, timeout=180)
+            response.raise_for_status()
+            claims_data_from_api = response.json()
+            if not claims_data_from_api:
+                raise RetrainingError("No data received from Backend data export API or data is empty.")
 
-        # Delegate preprocessing
-        try:
-            X_processed, y_processed = retrain_preprocessing_from_queryset(claims_queryset)
+            flattened_data_list = []
+            for claim_export_item in claims_data_from_api:
+                current_flat_item = {}
+                for k, v in claim_export_item.items():
+                    if k not in ['accident', 'driver', 'vehicle', 'injury', 'id', 'prediction_result']:
+                        transformed_key = k.replace('_', '')
+                        current_flat_item[transformed_key] = v
+                nested_sources = ['accident', 'driver', 'vehicle', 'injury']
+                for source_key in nested_sources:
+                    nested_dict = claim_export_item.get(source_key)
+                    if isinstance(nested_dict, dict):
+                        for k, v in nested_dict.items():
+                            if k != 'id' and not k.endswith("_id"):
+                                transformed_key = k.replace('_', '')
+                                current_flat_item[transformed_key] = v
+                flattened_data_list.append(current_flat_item)
+
+            if not flattened_data_list:
+                raise RetrainingError("Data fetched from Backend API resulted in an empty list after flattening.")
+
+            raw_df_for_mlaas = pd.DataFrame(flattened_data_list)
+            raw_df_for_mlaas.columns = raw_df_for_mlaas.columns.str.lower()
+            new_column_names = [col.replace('_', '') for col in raw_df_for_mlaas.columns]
+            raw_df_for_mlaas.columns = new_column_names
+            print(f"Successfully transformed {len(raw_df_for_mlaas)} records from Backend API into DataFrame.")
+            print(f"DataFrame columns AFTER renaming (before MLaaS preprocessing): {raw_df_for_mlaas.columns.tolist()}")
+            if raw_df_for_mlaas.empty:
+                raise RetrainingError("DataFrame created from Backend API data is empty.")
+
+        except requests.exceptions.RequestException as e:
+            detailed_error = f"Failed to fetch/process training data from Backend API ({backend_export_url}): {e}."
+            if hasattr(e, 'response') and e.response is not None:
+                detailed_error += f" Status: {e.response.status_code}. Response text: {e.response.text[:500]}"
+            print(detailed_error)
+            raise RetrainingError(detailed_error)
+        except ValueError as e:
+            raise RetrainingError(f"Failed to decode JSON or process data from Backend API: {e}")
         except Exception as e:
-            print(f"Error during preprocessing: {e}")
+            print(f"Unexpected error during data fetching/preparation: {e}")
             traceback.print_exc()
-            raise RetrainingError(f"Data preprocessing failed: {e}")
+            raise RetrainingError(f"Unexpected error during MLaaS data fetching: {e}")
+
+        try:
+            X_processed, y_processed = _preprocess_raw_dataframe_for_retraining(raw_df_for_mlaas)
+        except Exception as e:
+            print(f"Error during MLaaS preprocessing of data from Backend API: {e}")
+            traceback.print_exc()
+            raise RetrainingError(f"Data preprocessing failed in MLaaS: {e}")
 
         if X_processed.empty or y_processed.empty:
-            raise RetrainingError("Preprocessing resulted in no valid data points.")
+            raise RetrainingError("MLaaS preprocessing resulted in no valid data points from API data.")
         if X_processed.shape[0] != y_processed.shape[0]:
-             raise RetrainingError(f"Mismatch in feature ({X_processed.shape[0]}) and target ({y_processed.shape[0]}) counts after preprocessing.")
+            raise RetrainingError(f"Mismatch in feature ({X_processed.shape[0]}) and target ({y_processed.shape[0]}) counts after MLaaS preprocessing.")
 
         return X_processed, y_processed
 
@@ -122,61 +173,48 @@ class BaseRetrainer(abc.ABC):
             return f"{current_version}_retrained_{datetime.now().strftime('%Y%m%d%H%M')}"
 
     def _save_new_version(self, trained_model, new_version_str):
-        """
-        Saves the retrained model file to a new path and creates the
-        corresponding MLAlgorithm database record within a transaction.
-
-        Args:
-            trained_model: The newly fitted model object.
-            new_version_str: The generated version string for the new model.
-
-        Returns:
-            MLAlgorithm: The newly created database instance.
-        Raises:
-            RetrainingError: If saving the file or creating the DB record fails.
-        """
-        # Define New File Path 
-        model_dir = os.path.join(settings.MEDIA_ROOT, 'ml_models')
+        # Define New File Path using MODEL_ROOT
+        # model_dir = os.path.join(settings.MEDIA_ROOT, 'ml_models') # OLD, used MEDIA_ROOT
+        model_dir = settings.MODEL_ROOT # NEW, use MODEL_ROOT directly
         os.makedirs(model_dir, exist_ok=True) # Ensure directory exists
 
-        # Clean base name (remove potential old version markers)
-        original_basename = os.path.splitext(os.path.basename(self.original_model_path))[0]
-        base_name_parts = original_basename.split('_v')
+        # Clean base name (remove potential old version markers from the original path's basename)
+        original_basename_for_new_file = os.path.splitext(os.path.basename(self.original_model_path))[0] # Use basename of the path we loaded from
+        base_name_parts = original_basename_for_new_file.split('_v')
         clean_base_name = base_name_parts[0]
 
         # Create new filename
         new_model_filename = f"{clean_base_name}_v{new_version_str.replace('.', '_')}.pkl"
-        new_model_full_path = os.path.join(model_dir, new_model_filename)
+        new_model_full_path = os.path.join(model_dir, new_model_filename) # Path in MODEL_ROOT
 
         # Save Model File
-        print(f"Saving retrained model version {new_version_str} to {new_model_full_path}...")
+        print(f"Saving retrained model version {new_version_str} to {new_model_full_path} (in MODEL_ROOT)...")
         try:
             joblib.dump(trained_model, new_model_full_path)
         except Exception as e:
-            print(f"Error saving model file: {e}")
+            print(f"Error saving model file to MODEL_ROOT: {e}")
             traceback.print_exc()
-            raise RetrainingError(f"Failed to save retrained model file: {e}")
+            raise RetrainingError(f"Failed to save retrained model file to MODEL_ROOT: {e}")
 
-        # Create Database Record 
+        # Create Database Record
         print(f"Creating new MLAlgorithm database record for version {new_version_str}...")
-        new_model_db_path = os.path.join('ml_models', new_model_filename) # Relative path for DB field
+        # The MLAlgorithm.model_file field is a FileField.
+        new_model_db_path_representation = os.path.join('ml_models', new_model_filename)
+
 
         try:
-            # Use atomic transaction for DB safety
             with transaction.atomic():
                 new_algorithm = MLAlgorithm.objects.create(
-                    name=self.algorithm.name, # Keep the same logical name
+                    name=self.algorithm.name,
                     description=f"{self.algorithm.description} (Retrained on {datetime.now().isoformat()})",
                     version=new_version_str,
-                    code=self.algorithm.code, # Copy code/metadata if any
-                    model_type=self.algorithm.model_type, # Critical: copy type
+                    code=self.algorithm.code,
+                    model_type=self.algorithm.model_type,
                     parent_endpoint=self.algorithm.parent_endpoint,
-                    model_file=new_model_db_path # Assign the relative file path
-                    # Set is_active=True if using that flag
+                    model_file=new_model_db_path_representation, # This is the string stored in DB
+                    is_active=False # New retrained models are not active by default
                 )
-                
-
-            print(f"Successfully created new algorithm record ID: {new_algorithm.id}")
+            print(f"Successfully created new algorithm record ID: {new_algorithm.id} with model_file='{new_model_db_path_representation}'")
             return new_algorithm
         except Exception as e:
             # If DB creation fails, attempt to clean up the saved model file

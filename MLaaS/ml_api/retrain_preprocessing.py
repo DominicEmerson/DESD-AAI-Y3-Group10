@@ -1,3 +1,4 @@
+# ml_api/retrain_preprocessing.py
 """
 preprocessing for retraining: produces 18 features in the correct order for model training.
 No scaling, encoding, or one-hot. Only numeric features, column dropping, tariff banding, and NaN handling.
@@ -5,7 +6,6 @@ No scaling, encoding, or one-hot. Only numeric features, column dropping, tariff
 import pandas as pd
 import numpy as np
 import warnings
-import joblib
 
 # --- Constants (from notebook) ---
 NOTEBOOK_REMOVE_VALUES_FROM = [
@@ -27,108 +27,86 @@ FINAL_FEATURE_COLUMNS_ORDERED = [
 ]
 TARGET_COLUMN = 'settlementvalue'
 
-def apply_tariff_bands_cw(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Bin 'injuryprognosis' into tariff bands as per notebook logic.
-    """
-    df = df.copy()
+def apply_tariff_bands_cw(df_input: pd.DataFrame) -> pd.DataFrame:
+    df = df_input.copy()
     col = 'injuryprognosis'
     if col not in df.columns:
         warnings.warn(f"Column '{col}' not found for tariff banding. Skipping.")
         return df
     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(25)
     conditions = [
-        (df[col] <= 3),
-        (df[col] >= 4) & (df[col] <= 6),
-        (df[col] >= 7) & (df[col] <= 9),
-        (df[col] >= 10) & (df[col] <= 12),
-        (df[col] >= 13) & (df[col] <= 15),
-        (df[col] >= 16) & (df[col] <= 18),
-        (df[col] >= 19) & (df[col] <= 24),
-        (df[col] >= 25)
+        (df[col] <= 3), (df[col] >= 4) & (df[col] <= 6), (df[col] >= 7) & (df[col] <= 9),
+        (df[col] >= 10) & (df[col] <= 12), (df[col] >= 13) & (df[col] <= 15),
+        (df[col] >= 16) & (df[col] <= 18), (df[col] >= 19) & (df[col] <= 24), (df[col] >= 25)
     ]
     choices = list(range(8))
     df[col] = np.select(conditions, choices, default=7).astype(int)
     return df
 
 def drop_unwanted_columns_cw(df: pd.DataFrame, cols_to_drop: list) -> pd.DataFrame:
-    """
-    Drop columns from DataFrame if present.
-    """
     return df.drop(columns=[col for col in cols_to_drop if col in df.columns], errors='ignore')
 
-def retrain_preprocessing_from_queryset(claims_queryset) -> tuple:
+def _preprocess_raw_dataframe_for_retraining(df_raw: pd.DataFrame) -> tuple:
     """
-    Preprocess a QuerySet of Claim objects for retraining.
-    Returns (X, y) where X is a DataFrame of 18 features and y is the target.
+    Core preprocessing logic, takes a raw DataFrame and returns (X, y).
+    Assumes df_raw contains columns like 'settlementvalue', 'injuryprognosis',
+    'generalfixed', and all other columns needed by the preprocessing steps.
+    The column names in df_raw should be lowercase.
     """
-    try:
-        from claims.models import Claim  # noqa: F401
-    except ImportError:
-        raise EnvironmentError("Cannot access 'claims' database models. Preprocessing failed.")
-    data_list = []
-    for claim in claims_queryset:
-        accident = getattr(claim, 'accident', None)
-        driver = getattr(accident, 'driver', None) if accident else None
-        vehicle = getattr(accident, 'vehicle', None) if accident else None
-        injury = getattr(accident, 'injury', None) if accident else None
-        data = {
-            'settlementvalue': claim.settlement_value,
-            'injuryprognosis': getattr(injury, 'injury_prognosis', None) if injury else None,
-            'generalfixed': claim.general_fixed,
-            'generaluplift': claim.general_uplift,
-            'generalrest': claim.general_rest,
-            'specialhealthexpenses': claim.special_health_expenses,
-            'specialtherapy': claim.special_therapy,
-            'specialrehabilitation': claim.special_rehabilitation,
-            'specialmedications': claim.special_medications,
-            'specialadditionalinjury': claim.special_additional_injury,
-            'specialearningsloss': claim.special_earnings_loss,
-            'specialusageloss': claim.special_usage_loss,
-            'specialreduction': claim.special_reduction,
-            'specialoverage': claim.special_overage,
-            'specialassetdamage': claim.special_asset_damage,
-            'specialfixes': claim.special_fixes,
-            'specialloanervehicle': claim.special_loaner_vehicle,
-            'specialtripcosts': claim.special_trip_costs,
-            'specialjourneyexpenses': claim.special_journey_expenses,
-            # The rest are dropped by preprocessing
-        }
-        # Add any extra columns needed for dropping
-        data['injurydescription'] = getattr(injury, 'injury_description', None) if injury else None
-        data['dominantinjury'] = getattr(injury, 'dominant_injury', None) if injury else None
-        data['whiplash'] = int(getattr(injury, 'whiplash', False)) if injury else 0
-        data['minorpsychologicalinjury'] = int(getattr(injury, 'minor_psychological_injury', False)) if injury else 0
-        data['exceptionalcircumstances'] = int(getattr(injury, 'exceptional_circumstances', False)) if injury else 0
-        data['accidenttype'] = getattr(accident, 'accident_type', None) if accident else None
-        data['accidentdescription'] = getattr(accident, 'accident_description', None) if accident else None
-        data['vehicletype'] = getattr(vehicle, 'vehicle_type', None) if vehicle else None
-        data['weatherconditions'] = getattr(accident, 'weather_conditions', None) if accident else None
-        data['vehicleage'] = getattr(vehicle, 'vehicle_age', None) if vehicle else None
-        data['driverage'] = getattr(driver, 'driver_age', None) if driver else None
-        data['numberofpassengers'] = getattr(vehicle, 'number_of_passengers', None) if vehicle else None
-        data['policereportfiled'] = int(getattr(accident, 'police_report_filed', False)) if accident else 0
-        data['witnesspresent'] = int(getattr(accident, 'witness_present', False)) if accident else 0
-        data['gender'] = getattr(driver, 'gender', None) if driver else None
-        data['accidentdate'] = getattr(accident, 'accident_date', None) if accident else None
-        data['claimdate'] = claim.claim_date
-        data_list.append(data)
-    if not data_list:
-        return pd.DataFrame(), pd.Series(dtype='float64')
-    df = pd.DataFrame(data_list)
-    df.columns = df.columns.str.lower()
+    print(f"MLaaS Preprocessing: Received raw DataFrame with columns: {df_raw.columns.tolist()}")
+    df = df_raw.copy()
+    # df.columns = df.columns.str.lower() # Already done by API data assembly if keys are lowercase
+
+    if TARGET_COLUMN not in df.columns:
+        raise ValueError(f"Target column '{TARGET_COLUMN}' not found in input DataFrame to MLaaS preprocessing.")
+    
+    # Convert target to numeric and drop rows where target becomes NaN
+    df[TARGET_COLUMN] = pd.to_numeric(df[TARGET_COLUMN], errors='coerce')
     df = df.dropna(subset=[TARGET_COLUMN])
-    for col in NOTEBOOK_REMOVE_VALUES_FROM:
-        if col in df.columns:
-            df = df[df[col] == 0]
+    if df.empty:
+        warnings.warn("DataFrame became empty after dropping NaNs in target column during MLaaS preprocessing.")
+        return pd.DataFrame(), pd.Series(dtype='float64')
+
+    # Apply NOTEBOOK_REMOVE_VALUES_FROM logic (filter rows based on specific columns being zero)
+    for col_remove in NOTEBOOK_REMOVE_VALUES_FROM:
+        if col_remove in df.columns:
+            try:
+                numeric_col = pd.to_numeric(df[col_remove], errors='coerce').fillna(0)
+                df = df[numeric_col == 0]
+            except Exception as e:
+                warnings.warn(f"Could not process column {col_remove} for outlier removal during MLaaS preprocessing: {e}")
+        if df.empty:
+            warnings.warn(f"DataFrame became empty after filtering on column '{col_remove}' during MLaaS preprocessing.")
+            return pd.DataFrame(), pd.Series(dtype='float64')
+
     df = drop_unwanted_columns_cw(df, NOTEBOOK_DROP_COLUMNS)
-    df = apply_tariff_bands_cw(df)
+    df = apply_tariff_bands_cw(df) 
     df = drop_unwanted_columns_cw(df, NOTEBOOK_EXPLICIT_CAT_DROP)
-    for col in FINAL_FEATURE_COLUMNS_ORDERED:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+    # Ensure all FINAL_FEATURE_COLUMNS_ORDERED are present, numeric, and NaNs handled (filled with 0)
+    processed_features_dict = {}
+    for col_final in FINAL_FEATURE_COLUMNS_ORDERED:
+        if col_final in df.columns:
+            feature_series = pd.to_numeric(df[col_final], errors='coerce').fillna(0)
         else:
-            df[col] = 0
-    X = df[FINAL_FEATURE_COLUMNS_ORDERED]
-    y = df[TARGET_COLUMN]
+            warnings.warn(f"Expected feature '{col_final}' not found in DataFrame during MLaaS preprocessing. Adding as zeros.")
+            feature_series = pd.Series([0.0] * len(df), index=df.index, name=col_final, dtype='float64')
+        processed_features_dict[col_final] = feature_series
+    
+    X = pd.DataFrame(processed_features_dict, index=df.index)
+    X = X[FINAL_FEATURE_COLUMNS_ORDERED] # Enforce order
+
+    y = df[TARGET_COLUMN].copy() # Already ensured numeric and NaNs dropped
+    
+    # Final alignment of X and y indices, just in case any operation misaligned them
+    common_index = X.index.intersection(y.index)
+    X = X.loc[common_index]
+    y = y.loc[common_index]
+    
+    if X.empty or y.empty:
+        warnings.warn("X or y DataFrame became empty at the end of MLaaS preprocessing.")
+        return pd.DataFrame(), pd.Series(dtype='float64')
+        
+    print(f"MLaaS Preprocessing: Produced X shape: {X.shape}, y shape: {y.shape}")
     return X, y
+

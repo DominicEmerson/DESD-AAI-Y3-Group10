@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 "relative_path": "ml_models/3feature_regression_model.pkl",  # Relative path to model file
                 "description": "Predicts insurance claim values based on three key features.",  # Description of the model
                 "model_type": "OTHER",  # Model type
-                "is_active": True,  # Mark this model as active
+                "is_active": False,  # Not active by default
             },
             {
                 "name": "Random Forest Claim Predictor",
@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 "relative_path": "ml_models/random_forest_20250507.pkl",
                 "description": "Predicts insurance claims using a Random Forest model.",
                 "model_type": "RANDOM_FOREST",
-                "is_active": True,
+                "is_active": False,  # Not active by default
             },
             {
                 "name": "XGBoost Claim Predictor",
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 "relative_path": "ml_models/xgboost_20250507.pkl",
                 "description": "Predicts insurance claims using an XGBoost model.",
                 "model_type": "XGBOOST",
-                "is_active": True,
+                "is_active": True,  # Only this one is active
             },
         ]
 
@@ -73,31 +73,28 @@ class Command(BaseCommand):
                 name=model_data["name"],  # Get or create algorithm by name
                 version=model_data["version"],  # Get or create algorithm by version
                 parent_endpoint=endpoint,  # Associate with the created endpoint
-                # Fields to set/update if creating OR finding
                 defaults={
-                    'description': model_data["description"],  # Set description
-                    'code': "",  # Add model code/config if needed
-                    'model_file': model_path,  # Store the relative path
-                    'model_type': model_data["model_type"],  # Set model type
-                    'is_active': model_data["is_active"],  # Set active status
+                    'description': model_data["description"],
+                    'code': "",
+                    'model_file': model_path,
+                    'model_type': model_data["model_type"],
+                    'is_active': model_data["is_active"],
                 }
             )
 
-            # Check if the model was found (not created) and if the path needs updating
-            updated = False  # Initialise updated flag
-            if not created:  # If the model already exists
-                # Check multiple fields that might need updating if defaults change
-                fields_to_check = ['description', 'model_file', 'model_type', 'is_active']  # Fields to check for updates
+            updated = False
+            if not created:
+                fields_to_check = ['description', 'model_file', 'model_type', 'is_active']
                 for field in fields_to_check:
                     if getattr(algorithm, field) != model_data.get(field, getattr(algorithm, field)):
-                        setattr(algorithm, field, model_data[field])  # Update field value
-                        updated = True  # Set updated flag
+                        setattr(algorithm, field, model_data[field])
+                        updated = True
                 if updated:
-                    algorithm.save()  # Save updated algorithm
+                    algorithm.save()
                     self.stdout.write(
                         self.style.WARNING(
                             f"Updated details for existing model "
-                            f"{algorithm.name} v{algorithm.version}"  # Log updated model details
+                            f"{algorithm.name} v{algorithm.version}"
                         )
                     )
 
@@ -105,38 +102,38 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(
                         f"Successfully registered model "
-                        f"{algorithm.name} v{algorithm.version}"  # Log successful model registration
+                        f"{algorithm.name} v{algorithm.version}"
                     )
                 )
-            elif not updated:  # Only print 'already exists' if no updates were made
+            elif not updated:
                 self.stdout.write(
                     self.style.SUCCESS(
                         f"Model {algorithm.name} v{algorithm.version} "
-                        f"already exists and is up-to-date."  # Log existing model status
+                        f"already exists and is up-to-date."
                     )
                 )
-            self.stdout.write("-" * 20)  # Separator for output
+            self.stdout.write("-" * 20)
 
-        # --- Now, after the registration loop, do the legacy/active logic ---
-        for model_data in models_to_register:
-            name = model_data["name"]
-            all_versions = MLAlgorithm.objects.filter(name=name, parent_endpoint=endpoint)
-            if not all_versions.exists():
-                continue
-            # Mark all as legacy
-            for m in all_versions:
-                m.is_active = False
-                if m.description and "(Legacy)" not in m.description:
-                    m.description = m.description.strip() + " (Legacy)"
-                elif not m.description:
-                    m.description = "(Legacy)"
-                m.save()
-            # Find the latest version (max by string, works for date-based)
-            latest = max(all_versions, key=lambda m: str(m.version))
-            latest.is_active = True
-            if latest.description and "(Legacy)" in latest.description:
-                latest.description = latest.description.replace("(Legacy)", "").strip()
-            latest.save()
-            self.stdout.write(self.style.SUCCESS(f"Set {latest.name} v{latest.version} as ACTIVE (latest version)"))
+        # --- Explicitly set ONE default active model for the endpoint ---
+        endpoint, _ = Endpoint.objects.get_or_create(name="Insurance Claim Prediction", defaults={'owner': "Insurance AI Team"})
+        default_model_name = "XGBoost Claim Predictor"
+        try:
+            default_algo_to_activate = MLAlgorithm.objects.filter(
+                name=default_model_name,
+                parent_endpoint=endpoint
+            ).latest('version')
+            default_algo_to_activate.is_active = True
+            default_algo_to_activate.save()
+            self.stdout.write(self.style.SUCCESS(
+                f"Set {default_algo_to_activate.name} v{default_algo_to_activate.version} as DEFAULT ACTIVE for endpoint '{endpoint.name}'"
+            ))
+        except MLAlgorithm.DoesNotExist:
+            self.stdout.write(self.style.ERROR(
+                f"Could not find model named '{default_model_name}' to set as default active for endpoint '{endpoint.name}'."
+            ))
+        except MLAlgorithm.MultipleObjectsReturned:
+            self.stdout.write(self.style.ERROR(
+                f"Found multiple 'latest' versions for '{default_model_name}'. Manual intervention needed or refine 'latest' logic."
+            ))
 
         self.stdout.write("--- Model Registration Finished ---")

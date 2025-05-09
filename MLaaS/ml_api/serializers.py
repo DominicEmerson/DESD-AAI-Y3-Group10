@@ -4,6 +4,7 @@ import os
 from rest_framework import serializers
 from .models import Endpoint, MLAlgorithm, MLRequest
 import numpy as np # Needed for isnumeric check example
+from django.conf import settings
 
 # Define validation constants
 VALID_MODEL_EXTENSIONS = ['.pkl', '.joblib']
@@ -32,6 +33,7 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
     """Serializer for the MLAlgorithm model, handling file uploads and model type."""
     # Provides readable details of the parent endpoint
     parent_endpoint_details = serializers.SerializerMethodField()
+    model_file_status = serializers.SerializerMethodField()
 
     class Meta:
         model = MLAlgorithm
@@ -42,6 +44,7 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
             'version',
             'code',
             'model_file',      # For upload and displaying the file path
+            'model_file_status',
             'model_type',      # Added field
             'is_active',       # Added field
             'parent_endpoint', # Writable FK field for associating with an endpoint
@@ -53,6 +56,8 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
             'id',
             'created_at',
             'updated_at',
+            'parent_endpoint_details',
+            'model_file_status',
         )
         extra_kwargs = {
             # File is not required on updates (PATCH) unless explicitly provided
@@ -89,6 +94,18 @@ class MLAlgorithmSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             return EndpointSerializer(obj.parent_endpoint, context={'request': request}).data
         return None
+
+    def get_model_file_status(self, obj):
+        if not obj.model_file or not obj.model_file.name:
+            return "not_specified"
+        model_basename = os.path.basename(obj.model_file.name)
+        if not model_basename:
+            return "error_basename"
+        expected_path = os.path.join(settings.MODEL_ROOT, model_basename)
+        if os.path.exists(expected_path):
+            return "found"
+        else:
+            return "missing"
 
 
 class MLRequestSerializer(serializers.ModelSerializer):

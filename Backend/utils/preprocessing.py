@@ -5,13 +5,11 @@ Preprocessing utilities for single claim prediction, based on original script.
 Handles data cleaning, encoding, scaling, and feature preparation.
 to be present in this 'utils' directory for successful execution.
 """
-import json
 import logging
 import os
 import warnings 
 import numpy as np
 import pandas as pd
-import joblib
 from django.conf import settings
 
 # Import models directly from the claims app within the backend
@@ -37,28 +35,6 @@ FINAL_FEATURE_COLUMNS_ORDERED = [
     'specialearningsloss', 'specialusageloss', 'specialreduction', 'specialoverage',
     'specialassetdamage', 'specialfixes', 'specialloanervehicle', 'specialtripcosts', 'specialjourneyexpenses'
 ]
-
-# --- Feature Order Loading ---
-# ** IMPORTANT: Create 'final_feature_order.json' **
-FINAL_FEATURE_ORDER = None
-EXPECTED_FEATURE_COUNT = 54 
-try:
-    utils_dir = os.path.dirname(os.path.abspath(__file__))
-    final_features_path = os.path.join(utils_dir, 'final_feature_order.json')
-    with open(final_features_path, 'r') as f:
-        FINAL_FEATURE_ORDER = json.load(f)
-    EXPECTED_FEATURE_COUNT = len(FINAL_FEATURE_ORDER)
-    logger.info("Loaded final feature order (%d features) from utils/final_feature_order.json.", EXPECTED_FEATURE_COUNT)
-except FileNotFoundError:
-    logger.error( # Changed to ERROR as this file is critical
-        "*** CRITICAL: 'final_feature_order.json' not found in utils directory! "
-        "Cannot guarantee correct feature order for prediction. "
-        "Prediction will likely fail or be incorrect. "
-        "Using feature count %d as fallback check.", EXPECTED_FEATURE_COUNT
-    )
-except Exception as e:
-    logger.error("Error loading final_feature_order.json: %s. Feature order check might fail.", e, exc_info=True)
-
 
 # --- Helper Functions ---d
 

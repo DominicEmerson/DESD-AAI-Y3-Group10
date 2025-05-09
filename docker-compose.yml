@@ -36,8 +36,8 @@ services:
       - DATABASE_HOST=postgres_db  # Database host
       - DATABASE_PORT=5432  # Database port
       - SECRET_KEY=mlaas-secure-key-change-in-production  # Secret key for the MLaaS service
-    ports:
-      - "8009:8009"  # Expose port 8009 for the MLaaS service
+    #ports:
+    #  - "8009:8009"  # Uncomment to expose port 8009 for the MLaaS service testing
 
   backend:  # Service for the backend application
     build:  # Build configuration for the backend service
